@@ -102,7 +102,7 @@
       '    <div class="powered-by">' +
       '      <span>Powered by</span>' +
       '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="Ir a CmLayer">' +
-      '        <img class="footer-cmlayer-logo" src="' + localUrl("/assets/img/B01.png") + '" alt="Isotipo B01 de CmLayer" width="54" height="54" loading="lazy" />' +
+      '        <span class="footer-cmlayer-logo" aria-hidden="true"></span>' +
       '        <span>CmLayer</span>' +
       "      </a>" +
       "    </div>" +
