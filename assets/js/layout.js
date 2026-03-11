@@ -4,6 +4,28 @@
     return;
   }
 
+  function getBasePath() {
+    var host = window.location.hostname || "";
+    var pathname = window.location.pathname || "/";
+    if (host.endsWith("github.io")) {
+      var segments = pathname.split("/").filter(Boolean);
+      if (segments.length > 0) {
+        return "/" + segments[0];
+      }
+    }
+    return "";
+  }
+
+  function localUrl(path) {
+    if (typeof path !== "string") {
+      return path;
+    }
+    if (!path.startsWith("/")) {
+      return path;
+    }
+    return getBasePath() + path;
+  }
+
   var page = document.body.getAttribute("data-page") || "";
   var headerHost = document.getElementById("site-header");
   var footerHost = document.getElementById("site-footer");
@@ -12,7 +34,7 @@
     return data.nav
       .map(function (item) {
         var activeClass = item.key === page ? " is-active" : "";
-        return '<a class="site-nav-link' + activeClass + '" href="' + item.href + '">' + item.label + "</a>";
+        return '<a class="site-nav-link' + activeClass + '" href="' + localUrl(item.href) + '">' + item.label + "</a>";
       })
       .join("");
   }
@@ -21,8 +43,8 @@
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
       '  <div class="shell">' +
-      '    <a class="brand" href="/index.html" aria-label="Ir al inicio de ' + data.siteName + '">' +
-      '      <img src="/assets/img/isotipo.png" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
+      '    <a class="brand" href="' + localUrl("/index.html") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
+      '      <img src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
       '      <span class="brand-copy">' +
       '        <strong>' + data.clinic.name + '</strong>' +
       '        <small>Pediatrics</small>' +
@@ -33,7 +55,7 @@
       '      <span class="sr-only">Abrir menú</span>' +
       '    </button>' +
       '    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">' + navTemplate() + "</nav>" +
-      '    <a class="btn btn-primary btn-top-cta" href="/agenda-tu-cita.html">Agendar cita</a>' +
+      '    <a class="btn btn-primary btn-top-cta" href="' + localUrl("/agenda-tu-cita.html") + '">Agendar cita</a>' +
       "  </div>" +
       "</header>";
   }
@@ -58,7 +80,7 @@
       "      <ul>" +
       data.nav
         .map(function (item) {
-          return '<li><a href="' + item.href + '">' + item.label + "</a></li>";
+          return '<li><a href="' + localUrl(item.href) + '">' + item.label + "</a></li>";
         })
         .join("") +
       "      </ul>" +
@@ -72,7 +94,7 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary" href="/agenda-tu-cita.html">Agenda en linea</a>' +
+      '      <a class="btn btn-secondary" href="' + localUrl("/agenda-tu-cita.html") + '">Agenda en linea</a>' +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +

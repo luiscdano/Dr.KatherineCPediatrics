@@ -4,6 +4,28 @@
     return;
   }
 
+  function getBasePath() {
+    var host = window.location.hostname || "";
+    var pathname = window.location.pathname || "/";
+    if (host.endsWith("github.io")) {
+      var segments = pathname.split("/").filter(Boolean);
+      if (segments.length > 0) {
+        return "/" + segments[0];
+      }
+    }
+    return "";
+  }
+
+  function localUrl(path) {
+    if (typeof path !== "string") {
+      return path;
+    }
+    if (!path.startsWith("/")) {
+      return path;
+    }
+    return getBasePath() + path;
+  }
+
   function setHTML(id, html) {
     var node = document.getElementById(id);
     if (node) {
@@ -65,7 +87,7 @@
       '<h3>' + item.title + '</h3>' +
       '<p>' + item.summary + '</p>' +
       (compact ? "" : '<ul class="service-list">' + bullets + "</ul>") +
-      '<a class="text-link" href="' + item.detailHref + '">Ver detalle</a>' +
+      '<a class="text-link" href="' + localUrl(item.detailHref) + '">Ver detalle</a>' +
       '</article>'
     );
   }
@@ -132,7 +154,7 @@
           '<span class="pill">' + item.tag + '</span>' +
           '<h3>' + item.title + '</h3>' +
           '<p>' + item.excerpt + '</p>' +
-          '<a class="text-link" href="' + item.href + '">Leer recurso</a>' +
+          '<a class="text-link" href="' + localUrl(item.href) + '">Leer recurso</a>' +
           '</article>'
         );
       })
@@ -150,7 +172,7 @@
           '<div class="blog-meta"><span>' + post.category + '</span><span>' + post.readTime + '</span></div>' +
           '<h3>' + post.title + '</h3>' +
           '<p>' + post.excerpt + '</p>' +
-          '<a class="text-link" href="' + post.href + '">Leer artículo</a>' +
+          '<a class="text-link" href="' + localUrl(post.href) + '">Leer artículo</a>' +
           '</article>'
         );
       })
