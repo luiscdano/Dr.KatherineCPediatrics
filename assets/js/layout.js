@@ -22,7 +22,7 @@
       '<header class="site-header" id="inicio">' +
       '  <div class="shell">' +
       '    <a class="brand" href="/index.html" aria-label="Ir al inicio de ' + data.siteName + '">' +
-      '      <img src="/assets/img/brand-icon.svg" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
+      '      <img src="/assets/img/isotipo.png" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
       '      <span class="brand-copy">' +
       '        <strong>' + data.clinic.name + '</strong>' +
       '        <small>Pediatrics</small>' +
