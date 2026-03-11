@@ -21,7 +21,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/styles.css" />
@@ -52,133 +52,145 @@
     <div id="site-header"></div>
 
     <main>
-      <section class="hero">
-        <div class="shell hero-grid">
-          <div class="hero-copy reveal">
-            <span class="eyebrow">Pediatría integral</span>
-            <h1>Dr. Katherine C Pediatrics</h1>
-            <p>
-              Cuidado pediátrico profesional y cercano para cada etapa de la infancia. Te acompañamos con atención
-              humana, prevención y seguimiento continuo del crecimiento de tu hijo.
-            </p>
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="agenda-tu-cita.html">Agendar cita</a>
-              <a class="btn btn-secondary" href="servicios-pediatricos.html">Conocer servicios</a>
+      <section class="hero-section">
+        <div class="container-full shell">
+          <div class="hero-wrap reveal">
+            <img
+              class="hero-image"
+              src="assets/img/drkatherinecpediatrics.png"
+              alt="Logo de Dr. Katherine C Pediatrics"
+              width="832"
+              height="414"
+            />
+            <div class="hero-overlay"></div>
+            <div class="hero-content-wrap">
+              <div class="hero-content">
+                <div class="section-title-badge section-title-badge-light">
+                  <span class="pre-title">Best pediatric clinic [Pendiente]</span>
+                </div>
+                <h1 class="hero-title">Where kids come first</h1>
+                <p class="hero-description">
+                  Cuidado pediátrico cálido y profesional para recién nacidos, niños y adolescentes. Atención enfocada
+                  en prevención, confianza familiar y seguimiento continuo.
+                </p>
+                <div class="hero-actions">
+                  <a class="btn btn-primary" href="agenda-tu-cita.html">Agendar cita</a>
+                  <a class="btn btn-secondary" href="servicios-pediatricos.html">Conocer servicios</a>
+                </div>
+              </div>
+
+              <div class="hero-avatar-wrap">
+                <div class="hero-avatar-image">
+                  <img src="assets/img/isotipo.png" loading="eager" alt="Avatar" class="avatar-image left" />
+                  <img src="assets/img/isotipo.png" loading="eager" alt="Avatar" class="avatar-image" />
+                  <img src="assets/img/isotipo.png" loading="eager" alt="Avatar" class="avatar-image" />
+                  <div class="rating-image-wrap">
+                    <span>★</span>
+                  </div>
+                </div>
+                <div class="hero-avatar-content">4.9/5 [Pendiente validación con reseñas reales]</div>
+              </div>
             </div>
-            <div class="hero-badges">
-              <span>Atención personalizada</span>
-              <span>Agenda digital</span>
-              <span>Orientación para padres</span>
-            </div>
-          </div>
-
-          <div class="hero-visual reveal">
-            <div class="hero-image">
-              <img
-                src="assets/img/drkatherinecpediatrics.png"
-                alt="Logo de Dr. Katherine C Pediatrics"
-                width="832"
-                height="414"
-              />
-            </div>
-            <div class="hero-notes">
-              <div class="hero-note">Consultas pediátricas y seguimiento del desarrollo</div>
-              <div class="hero-note">Vacunación y prevención para una infancia saludable</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section alt" aria-labelledby="prueba-social-title">
-        <div class="shell">
-          <header class="section-head reveal">
-            <span class="eyebrow">Prueba social</span>
-            <h2 id="prueba-social-title">Confianza de familias que priorizan el bienestar infantil</h2>
-            <p>
-              Atención pediátrica enfocada en el bienestar integral de cada niño, con comunicación clara y seguimiento
-              clínico oportuno.
-            </p>
-          </header>
-          <div id="social-proof-grid" class="grid-3"></div>
-        </div>
-      </section>
-
-      <section class="section" aria-labelledby="why-choose-title">
-        <div class="shell">
-          <header class="section-head reveal">
-            <span class="eyebrow">Por qué elegirnos</span>
-            <h2 id="why-choose-title">Una experiencia pediátrica amigable para niños y padres</h2>
-            <p>
-              Modelo de atención diseñado para brindar tranquilidad, información útil y decisiones médicas compartidas.
-            </p>
-          </header>
-          <div id="advantages-grid" class="grid-4"></div>
-        </div>
-      </section>
-
-      <section class="section alt" aria-labelledby="services-title">
-        <div class="shell">
-          <header class="section-head reveal">
-            <span class="eyebrow">Servicios pediátricos</span>
-            <h2 id="services-title">Servicios principales del consultorio</h2>
-            <p>
-              Consulta pediátrica, control de crecimiento, vacunación y seguimiento preventivo. Cada servicio cuenta con
-              su propio detalle clínico.
-            </p>
-          </header>
-          <div id="home-services-grid" class="grid-2"></div>
-        </div>
-      </section>
-
-      <section class="section" aria-labelledby="doctor-title">
-        <div class="shell profile-grid">
-          <figure class="profile-visual reveal">
-              <img
-                src="assets/img/isotipo.png"
-                alt="Isotipo de Dr. Katherine C Pediatrics"
-                width="512"
-                height="512"
-              />
-          </figure>
-
-          <div class="profile-content reveal">
-            <header class="section-head">
-              <span class="eyebrow">Perfil de la doctora</span>
-              <h2 id="doctor-title">Dr. Katherine Cedano</h2>
-              <p>
-                Pediatra comprometida con una atención cercana, preventiva y enfocada en construir confianza con cada
-                familia.
-              </p>
-            </header>
-
-            <div class="panel">
-              <h3>Formación y experiencia</h3>
-              <ul id="doctor-education-list"></ul>
-            </div>
-
-            <div class="panel">
-              <h3>Enfoque de atención pediátrica</h3>
-              <ul id="doctor-approach-list"></ul>
-            </div>
-
-            <a class="btn btn-ghost" href="sobre-la-doctora.html">Ver perfil completo</a>
           </div>
         </div>
       </section>
 
-      <section class="section alt" aria-labelledby="agenda-home-title">
+      <section class="about-section section-spacing" aria-labelledby="why-choose-title">
+        <div class="shell">
+          <div class="w-layout-grid grid-about">
+            <div class="about-visual reveal">
+              <div class="section-title-badge">
+                <span class="pre-title">Why choose us</span>
+              </div>
+              <div class="about-image-wrap">
+                <img src="assets/img/isotipo.png" loading="lazy" alt="Isotipo consultorio" class="about-image" />
+                <div class="pending-badge">[Pendiente] Foto consultorio/Doctora</div>
+              </div>
+            </div>
+
+            <div class="about-content-wrap reveal">
+              <div class="about-content">
+                <div class="about-title-wrap">
+                  <h2 id="why-choose-title" class="about-title">Care that puts children first</h2>
+                  <p class="about-description">
+                    Atención pediátrica personalizada, ambiente amigable y orientación clara para padres en cada etapa.
+                    Diseñado para reducir ansiedad y aumentar confianza en cada visita.
+                  </p>
+                </div>
+                <div>
+                  <a class="btn btn-primary" href="sobre-la-doctora.html">Sobre la doctora</a>
+                </div>
+              </div>
+              <div id="advantages-grid" class="w-layout-grid grid-about-feature"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="service-section section-spacing-bottom" aria-labelledby="services-title">
+        <div class="shell">
+          <div class="service-section-title reveal">
+            <h2 id="services-title">Treatment &amp; procedures</h2>
+            <a class="button-link" href="servicios-pediatricos.html">Explore all services</a>
+          </div>
+          <div id="home-services-grid" class="w-layout-grid grid-service home"></div>
+        </div>
+      </section>
+
+      <section class="bg-team-section section-spacing" aria-labelledby="doctor-title">
+        <div class="shell">
+          <div class="team-section-title-center reveal">
+            <div class="section-title-badge section-title-badge-light">
+              <span class="pre-title">Our pediatric specialist</span>
+            </div>
+            <h2 id="doctor-title">Dr. Katherine Cedano</h2>
+            <p>
+              Pediatra comprometida con atención cercana, prevención y acompañamiento familiar continuo.
+            </p>
+          </div>
+
+          <div class="profile-grid reveal">
+            <figure class="profile-visual">
+              <img src="assets/img/isotipo.png" alt="Isotipo Dr. Katherine C Pediatrics" width="512" height="512" />
+            </figure>
+
+            <div class="profile-content">
+              <article class="panel">
+                <h3>Formación y experiencia</h3>
+                <ul id="doctor-education-list"></ul>
+              </article>
+
+              <article class="panel">
+                <h3>Enfoque de atención pediátrica</h3>
+                <ul id="doctor-approach-list"></ul>
+              </article>
+
+              <article class="panel">
+                <h3>Equipo en expansión</h3>
+                <ul>
+                  <li>[Pendiente] Subespecialidad 1</li>
+                  <li>[Pendiente] Subespecialidad 2</li>
+                  <li>[Pendiente] Subespecialidad 3</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="appointment-section section-spacing" aria-labelledby="agenda-home-title">
         <div class="shell agenda-grid">
           <article class="agenda-card reveal">
             <h3 id="agenda-home-title">Agenda médica digital</h3>
             <p>
-              AgendaTuCita facilita la reserva online con selección de fecha, horarios disponibles, formulario del
-              paciente y confirmación automática.
+              AgendaTuCita permite reservar consulta con selección de fecha, horario, datos del paciente y confirmación
+              automática.
             </p>
             <ul class="agenda-flow">
               <li>1. Selecciona fecha y horario</li>
               <li>2. Completa los datos del paciente</li>
-              <li>3. Recibe confirmación de cita</li>
-              <li>4. Activa recordatorio opcional</li>
+              <li>3. Recibe confirmación</li>
+              <li>4. Recordatorio opcional</li>
             </ul>
             <div class="form-actions">
               <a class="btn btn-primary" href="agenda-tu-cita.html">Agendar ahora</a>
@@ -187,52 +199,62 @@
           </article>
 
           <article class="agenda-card reveal">
-            <h3>Modelo escalable para crecimiento</h3>
-            <p>
-              La plataforma está preparada para integrar nuevos profesionales, más servicios clínicos y módulos
-              adicionales sin rediseño completo.
-            </p>
+            <h3>Módulos [Pendiente]</h3>
+            <p>Secciones opcionales para crecer luego con contenido o eliminar si la cliente no lo requiere.</p>
             <ul class="agenda-flow">
-              <li>Perfiles médicos adicionales</li>
-              <li>Nuevas especialidades pediátricas</li>
-              <li>Más flujos de atención digital</li>
-              <li>Extensión de recursos educativos</li>
+              <li>[Pendiente] Seguros médicos aceptados</li>
+              <li>[Pendiente] Tour de instalaciones</li>
+              <li>[Pendiente] Protocolos de urgencias leves</li>
+              <li>[Pendiente] Descarga de formularios</li>
             </ul>
-            <a class="btn btn-ghost" href="servicios-pediatricos.html">Explorar arquitectura de servicios</a>
+            <a class="btn btn-ghost" href="servicios-pediatricos.html">Ver arquitectura de servicios</a>
           </article>
         </div>
       </section>
 
-      <section class="section" aria-labelledby="resources-title">
+      <section class="review-section section-spacing" aria-labelledby="testimonials-title">
         <div class="shell">
-          <header class="section-head reveal">
-            <span class="eyebrow">Recursos para padres</span>
-            <h2 id="resources-title">Contenido educativo para el cuidado diario</h2>
-            <p>
-              Material práctico para mejorar decisiones en casa y apoyar la prevención infantil con información clara.
-            </p>
-          </header>
-          <div id="resources-home-grid" class="grid-3"></div>
+          <div class="review-wrap reveal">
+            <div class="review-title-wrap">
+              <h2 id="testimonials-title">Comfort and trust for every family</h2>
+              <p class="review-description">
+                Opiniones de padres y tutores sobre la experiencia pediátrica en Dr. Katherine C Pediatrics.
+              </p>
+              <a class="btn btn-primary" href="blog.html">Read more reviews [Pendiente]</a>
+            </div>
+
+            <div class="review-content">
+              <div id="testimonial-slider"></div>
+              <div class="testimonial-controls" aria-label="Controles de testimonios">
+                <button id="testimonial-prev" type="button" aria-label="Testimonio anterior">&#8592;</button>
+                <button id="testimonial-next" type="button" aria-label="Siguiente testimonio">&#8594;</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="section alt" aria-labelledby="testimonials-title">
+      <section class="stats-section" aria-labelledby="impact-title">
         <div class="shell">
-          <header class="section-head reveal">
-            <span class="eyebrow">Testimonios</span>
-            <h2 id="testimonials-title">Reseñas de familias atendidas</h2>
-            <p>
-              Historias que reflejan cercanía médica, confianza y continuidad en el cuidado pediátrico.
-            </p>
-          </header>
+          <h2 id="impact-title" class="sr-only">Impacto</h2>
+          <div id="social-proof-grid" class="w-layout-grid grid-stats-item"></div>
+        </div>
+      </section>
 
-          <div class="testimonial-wrap reveal">
-            <div id="testimonial-slider"></div>
-            <div class="testimonial-controls" aria-label="Controles de testimonios">
-              <button id="testimonial-prev" type="button" aria-label="Testimonio anterior">&#8592;</button>
-              <button id="testimonial-next" type="button" aria-label="Siguiente testimonio">&#8594;</button>
+      <section class="case-study-section section-spacing" aria-labelledby="resources-title">
+        <div class="shell">
+          <div class="case-study-section-title-wrap reveal">
+            <div class="case-study-section-title">
+              <div class="section-title-badge">
+                <span class="pre-title">Recursos para padres</span>
+              </div>
+              <h2 id="resources-title">Educación pediátrica práctica</h2>
+            </div>
+            <div class="case-study-button">
+              <a class="button-link" href="recursos-para-padres.html">View all resources</a>
             </div>
           </div>
+          <div id="resources-home-grid" class="grid-3"></div>
         </div>
       </section>
 
@@ -240,28 +262,29 @@
         <div class="shell">
           <header class="section-head reveal">
             <span class="eyebrow">Blog médico</span>
-            <h2 id="blog-home-title">Consejos pediátricos con enfoque preventivo</h2>
-            <p>
-              Publicaciones educativas para fortalecer hábitos saludables y orientar a padres en temas frecuentes de
-              salud infantil.
-            </p>
+            <h2 id="blog-home-title">Consejos clínicos para padres y tutores</h2>
           </header>
           <div id="blog-home-grid" class="grid-3"></div>
         </div>
       </section>
 
-      <section class="section">
+      <section class="cta-section section-spacing-bottom">
         <div class="shell">
-          <article class="cta-banner reveal">
-            <h2>Agenda una consulta pediátrica con Dr. Katherine Cedano</h2>
-            <p>
-              Recibe atención médica especializada para tu hijo con un enfoque humano, preventivo y profesional.
-            </p>
-            <div class="cta-actions">
-              <a class="btn btn-primary" href="agenda-tu-cita.html">Agendar cita</a>
-              <a class="btn btn-secondary" href="contacto.html">Contactar consultorio</a>
+          <div class="w-layout-grid cta-wrap reveal">
+            <div class="cta-title-wrap">
+              <h2 class="cta-title">Schedule a visit with our pediatric experts</h2>
+              <p>
+                Agenda una consulta pediátrica con Dr. Katherine Cedano y recibe un plan de atención profesional para
+                tu hijo.
+              </p>
+              <div class="cta-actions">
+                <a class="btn btn-primary" href="agenda-tu-cita.html">Schedule an appointment</a>
+                <a class="btn btn-secondary" href="contacto.html">Contact us</a>
+              </div>
+              <div class="cta-detail">Rated 4.9/5 [Pendiente] · Same-day appointments [Pendiente]</div>
             </div>
-          </article>
+            <img src="assets/img/isotipo.png" loading="lazy" alt="Isotipo" class="cta-image" />
+          </div>
         </div>
       </section>
     </main>

@@ -82,12 +82,24 @@
         return "<li>" + bullet + "</li>";
       })
       .join("");
+    var badges = item.bullets
+      .slice(0, 3)
+      .map(function (bullet) {
+        return '<div class="service-badge">' + bullet + "</div>";
+      })
+      .join("");
     return (
-      '<article class="service-card reveal">' +
-      '<h3>' + item.title + '</h3>' +
-      '<p>' + item.summary + '</p>' +
-      (compact ? "" : '<ul class="service-list">' + bullets + "</ul>") +
+      '<article class="service-card service-item reveal">' +
+      '<div class="service-image-wrap">' +
+      '<img class="service-image" src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo servicio pediátrico" loading="lazy" />' +
+      '<div class="service-hover-wrap"><span class="service-hover-icon">+</span></div>' +
+      "</div>" +
+      '<div class="service-info">' +
+      '<h3 class="service-title">' + item.title + '</h3>' +
+      '<p class="service-description">' + item.summary + "</p>" +
+      (compact ? '<div class="service-list-wrap">' + badges + "</div>" : '<ul class="service-list">' + bullets + "</ul>") +
       '<a class="text-link" href="' + localUrl(item.detailHref) + '">Ver detalle</a>' +
+      "</div>" +
       '</article>'
     );
   }
