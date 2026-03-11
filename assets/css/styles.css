@@ -1209,6 +1209,10 @@ ul {
   transition: transform var(--transition);
 }
 
+.footer-cmlayer-link span:last-child {
+  margin-left: -0.36rem;
+}
+
 .footer-cmlayer-link:hover .footer-cmlayer-logo,
 .footer-cmlayer-link:focus-visible .footer-cmlayer-logo {
   transform: scale(1.05);
