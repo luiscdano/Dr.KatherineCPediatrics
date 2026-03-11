@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contacto | Dr. Katherine C Pediatrics</title>
+    <meta
+      name="description"
+      content="Contacta el consultorio Dr. Katherine C Pediatrics para información, orientación y agendamiento de citas."
+    />
+    <link rel="canonical" href="https://drkatherinecpediatrics.com/contacto.html" />
+    <meta name="theme-color" content="#8BA18A" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+  </head>
+  <body data-page="contact">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="page-hero">
+        <div class="shell page-hero-wrap reveal">
+          <span class="eyebrow">Contacto</span>
+          <h1>Estamos aquí para ayudarte</h1>
+          <p>
+            Envía tu consulta y el equipo del consultorio te responderá con orientación sobre citas, servicios y
+            atención pediátrica.
+          </p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="shell agenda-grid">
+          <article class="rich-content reveal">
+            <h2>Canales de contacto</h2>
+            <ul>
+              <li>Teléfono: <a href="tel:+18495646212">(849) 564-6212</a></li>
+              <li>WhatsApp: <a href="https://wa.me/18495646212" target="_blank" rel="noopener noreferrer">(849) 564-6212</a></li>
+              <li>Correo: <a href="mailto:contacto@drkatherinecpediatrics.com">contacto@drkatherinecpediatrics.com</a></li>
+              <li>Ubicación: Edificio Centur, Blvd. 1ro. de Noviembre 407, Punta Cana 23000</li>
+              <li><a href="https://www.google.com/maps/place/Dr.+Katherine+C+Pediatrics/@18.5562371,-68.3720021,675m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8ea893caa7bee903:0x831a449cad5c581c!8m2!3d18.5562371!4d-68.3720021!16s%2Fg%2F11y_x34tpp?entry=ttu&g_ep=EgoyMDI2MDMwOS4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer">Ver en Google Maps</a></li>
+              <li><a href="https://www.instagram.com/drkatherinecpediatrics/" target="_blank" rel="noopener noreferrer">Instagram oficial</a></li>
+            </ul>
+
+            <h3>Horario de atención</h3>
+            <ul>
+              <li>Lunes a Viernes: 8:00 a.m. - 5:30 p.m.</li>
+              <li>Sábados: 8:00 a.m. - 1:00 p.m.</li>
+            </ul>
+
+            <div class="form-actions">
+              <a class="btn btn-primary" href="/agenda-tu-cita.html">Ir a agenda</a>
+              <a class="btn btn-secondary" href="https://wa.me/18495646212" target="_blank" rel="noopener noreferrer"
+                >Escribir por WhatsApp</a
+              >
+            </div>
+          </article>
+
+          <article class="agenda-card reveal">
+            <h3>Formulario de contacto</h3>
+            <p>Comparte tu mensaje y te responderemos lo antes posible.</p>
+
+            <form id="contact-form" class="form-grid" novalidate>
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="contact-name">Nombre completo</label>
+                  <input id="contact-name" name="name" type="text" required />
+                </div>
+                <div class="form-field">
+                  <label for="contact-phone">Teléfono</label>
+                  <input id="contact-phone" name="phone" type="tel" required />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label for="contact-email">Correo electrónico</label>
+                <input id="contact-email" name="email" type="email" required />
+              </div>
+
+              <div class="form-field">
+                <label for="contact-topic">Tema</label>
+                <select id="contact-topic" name="topic">
+                  <option value="agenda">Agendamiento</option>
+                  <option value="servicios">Servicios pediátricos</option>
+                  <option value="seguimiento">Seguimiento de paciente</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="contact-message">Mensaje</label>
+                <textarea id="contact-message" name="message" required></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enviar mensaje</button>
+              </div>
+            </form>
+
+            <p id="contact-confirmation" class="confirmation" aria-live="polite"></p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="/assets/js/content-data.js" defer></script>
+    <script src="/assets/js/layout.js" defer></script>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

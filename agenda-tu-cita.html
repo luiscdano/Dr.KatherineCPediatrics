@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agenda Tu Cita | Dr. Katherine C Pediatrics</title>
+    <meta
+      name="description"
+      content="Reserva tu consulta pediátrica online con selección de fecha, horario y formulario de paciente."
+    />
+    <link rel="canonical" href="https://drkatherinecpediatrics.com/agenda-tu-cita.html" />
+    <meta name="theme-color" content="#8BA18A" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+  </head>
+  <body data-page="agenda">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="page-hero">
+        <div class="shell page-hero-wrap reveal">
+          <span class="eyebrow">Agenda médica</span>
+          <h1>Agenda tu cita pediátrica en línea</h1>
+          <p>
+            Flujo digital de agendamiento con selección de fecha, horario, formulario de datos y confirmación.
+            Integración preparada para AgendaTuCita.
+          </p>
+          <div class="metric-grid">
+            <article class="metric">
+              <strong>Paso 1</strong>
+              <span>Elige fecha</span>
+            </article>
+            <article class="metric">
+              <strong>Paso 2</strong>
+              <span>Selecciona horario</span>
+            </article>
+            <article class="metric">
+              <strong>Paso 3</strong>
+              <span>Completa datos y confirma</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="agenda-module">
+        <div class="shell agenda-grid">
+          <article class="agenda-card reveal">
+            <h3>Disponibilidad</h3>
+            <p>Selecciona una fecha disponible y luego el horario que mejor se ajuste a tu familia.</p>
+
+            <div class="selector-wrap">
+              <h4>Fechas disponibles</h4>
+              <div id="agenda-date-list" class="button-list"></div>
+            </div>
+
+            <div class="selector-wrap">
+              <h4>Horarios disponibles</h4>
+              <div id="agenda-slot-list" class="button-list"></div>
+            </div>
+
+            <p id="agenda-summary" class="summary-chip">Seleccionado: Sin fecha a las Sin horario</p>
+          </article>
+
+          <article class="agenda-card reveal">
+            <h3>Datos del paciente</h3>
+            <p>Completa el formulario para enviar la solicitud de cita al consultorio.</p>
+
+            <form id="appointment-form" class="form-grid" novalidate>
+              <input type="hidden" id="selected-date" name="selectedDate" />
+              <input type="hidden" id="selected-time" name="selectedTime" />
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="patient-name">Nombre del paciente</label>
+                  <input id="patient-name" name="patientName" type="text" required />
+                </div>
+                <div class="form-field">
+                  <label for="patient-age">Edad</label>
+                  <input id="patient-age" name="patientAge" type="text" required />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="parent-name">Nombre del tutor</label>
+                  <input id="parent-name" name="parentName" type="text" required />
+                </div>
+                <div class="form-field">
+                  <label for="parent-phone">Teléfono</label>
+                  <input id="parent-phone" name="parentPhone" type="tel" required />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label for="appointment-reason">Motivo de consulta</label>
+                <textarea id="appointment-reason" name="reason" placeholder="Describe brevemente la consulta"></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enviar solicitud</button>
+                <a
+                  id="open-agendatucita"
+                  class="btn btn-secondary"
+                  href="https://agendatucita.com/drkatherinecpediatrics"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Abrir AgendaTuCita</a
+                >
+              </div>
+            </form>
+
+            <p id="appointment-confirmation" class="confirmation" aria-live="polite"></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section alt" aria-labelledby="faq-title">
+        <div class="shell">
+          <header class="section-head reveal">
+            <span class="eyebrow">Preguntas frecuentes</span>
+            <h2 id="faq-title">Información sobre citas y consultas</h2>
+          </header>
+          <div id="faq-list" class="faq-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="/assets/js/content-data.js" defer></script>
+    <script src="/assets/js/layout.js" defer></script>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

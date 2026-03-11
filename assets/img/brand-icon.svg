@@ -1,0 +1,11 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Isotipo Dr. Katherine C Pediatrics</title>
+  <desc id="desc">Isotipo de estetoscopio en tonos verdes.</desc>
+  <rect width="120" height="120" rx="24" fill="#F6F8F4"/>
+  <path d="M30 30V50C30 66.5685 43.4315 80 60 80C76.5685 80 90 66.5685 90 50V30" stroke="#7C9579" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="30" cy="30" r="10" fill="#7C9579"/>
+  <circle cx="90" cy="30" r="10" fill="#7C9579"/>
+  <path d="M60 80V95C60 102.732 66.268 109 74 109H80" stroke="#7C9579" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="88" cy="109" r="8" stroke="#A9B89A" stroke-width="5" fill="#F6F8F4"/>
+  <circle cx="60" cy="80" r="6" fill="#A9B89A"/>
+</svg>
