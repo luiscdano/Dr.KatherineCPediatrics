@@ -99,13 +99,13 @@
       "  </div>" +
       '  <div class="shell footer-bottom">' +
       '    <p>© <span id="current-year"></span> ' + data.siteName + '. Todos los derechos reservados.</p>' +
-      '    <a class="powered-by" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="Powered by isótopo CmLayer">' +
+      '    <div class="powered-by">' +
       '      <span>Powered by</span>' +
-      '      <span class="plus" aria-hidden="true">+</span>' +
-      '      <span class="cmlayer-isotype" aria-hidden="true"></span>' +
-      '      <span class="plus" aria-hidden="true">+</span>' +
-      '      <span>CmLayer</span>' +
-      '    </a>' +
+      '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="Ir a CmLayer">' +
+      '        <img class="footer-cmlayer-logo" src="' + localUrl("/assets/img/B01.png") + '" alt="Isotipo B01 de CmLayer" width="54" height="54" loading="lazy" />' +
+      '        <span>CmLayer</span>' +
+      "      </a>" +
+      "    </div>" +
       "  </div>" +
       "</footer>";
   }
