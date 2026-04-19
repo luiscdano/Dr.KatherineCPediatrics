@@ -19,9 +19,30 @@
       .join("");
   }
 
+  function legalLinksTemplate() {
+    if (!Array.isArray(data.legalLinks) || !data.legalLinks.length) {
+      return "";
+    }
+    return (
+      '<div class="footer-legal">' +
+      "<h3>Legal</h3>" +
+      '<ul class="footer-legal-list">' +
+      data.legalLinks
+        .map(function (item) {
+          return '<li><a href="' + localUrl(item.href) + '">' + item.label + "</a></li>";
+        })
+        .join("") +
+      "</ul>" +
+      "</div>"
+    );
+  }
+
   if (headerHost) {
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
+      '  <div class="site-notice" role="status">' +
+      '    <p>' + data.clinic.emergencyNotice + "</p>" +
+      "  </div>" +
       '  <div class="shell">' +
       '    <a class="brand" href="' + localUrl("/index.html") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
       '      <img src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
@@ -64,6 +85,7 @@
         })
         .join("") +
       "      </ul>" +
+      legalLinksTemplate() +
       "    </section>" +
       '    <section class="footer-hours">' +
       '      <h3>Horarios</h3>' +
@@ -79,6 +101,7 @@
       "  </div>" +
       '  <div class="shell footer-bottom">' +
       '    <p>© <span id="current-year"></span> ' + data.siteName + '. Todos los derechos reservados.</p>' +
+      '    <p class="footer-disclaimer">Este sitio ofrece información general y no sustituye una evaluación médica presencial.</p>' +
       '    <div class="powered-by">' +
       '      <span>Powered by</span>' +
       '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="Ir a CmLayer">' +

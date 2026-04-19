@@ -12,6 +12,7 @@ window.DR_KATHERINE_DATA = {
     address: "Edificio Centur, Blvd. 1ro. de Noviembre 407, Punta Cana 23000",
     mapsUrl: "https://www.google.com/maps/place/Dr.+Katherine+C+Pediatrics/@18.5562371,-68.3720021,675m/data=!3m2!1e3!4b1!4m6!3m5!1s0x8ea893caa7bee903:0x831a449cad5c581c!8m2!3d18.5562371!4d-68.3720021!16s%2Fg%2F11y_x34tpp?entry=ttu&g_ep=EgoyMDI2MDMwOS4wIKXMDSoASAFQAw%3D%3D",
     instagramUrl: "https://www.instagram.com/drkatherinecpediatrics/",
+    emergencyNotice: "Si tu hijo presenta signos de alarma o una emergencia médica, acude al centro de urgencias más cercano o llama al 9-1-1.",
     officeHours: [
       "Lunes a Viernes: 8:00 a.m. - 5:30 p.m.",
       "Sábados: 8:00 a.m. - 1:00 p.m."
@@ -26,21 +27,25 @@ window.DR_KATHERINE_DATA = {
     { key: "blog", label: "Blog", href: "/blog.html" },
     { key: "contact", label: "Contacto", href: "/contacto.html" }
   ],
+  legalLinks: [
+    { label: "Política de privacidad", href: "/politica-de-privacidad.html" },
+    { label: "Términos y condiciones", href: "/terminos-y-condiciones.html" }
+  ],
   socialProof: [
     {
-      value: "10+",
-      label: "Años acompañando familias",
-      detail: "Atención pediátrica orientada a prevención y seguimiento continuo."
+      value: "Consulta integral",
+      label: "Evaluación pediátrica por etapa",
+      detail: "Atención orientada a prevención, diagnóstico temprano y seguimiento clínico."
     },
     {
-      value: "98%",
-      label: "Satisfacción de familias",
-      detail: "Cercanía médica, lenguaje claro y planes de cuidado personalizados."
+      value: "Plan personalizado",
+      label: "Indicaciones claras para casa",
+      detail: "Explicaciones prácticas para que padres y tutores actúen con seguridad."
     },
     {
-      value: "24h",
-      label: "Confirmación digital",
-      detail: "Respuestas rápidas para solicitudes de agenda y consultas informativas."
+      value: "Agenda digital",
+      label: "Solicitud en línea",
+      detail: "Flujo de pre-agendamiento con confirmación por canales oficiales del consultorio."
     }
   ],
   advantages: [

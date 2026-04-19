@@ -7,16 +7,14 @@ const targets = [
   "assets/js/content-data.js",
   "assets/js/layout.js",
   "assets/js/main.js",
-  "assets/js/utils.js",
-  "index.html",
-  "404.html",
-  "agenda-tu-cita.html",
-  "blog.html",
-  "contacto.html",
-  "recursos-para-padres.html",
-  "servicios-pediatricos.html",
-  "sobre-la-doctora.html"
+  "assets/js/utils.js"
 ];
+
+for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+  if (entry.isFile() && entry.name.endsWith(".html")) {
+    targets.push(entry.name);
+  }
+}
 
 for (const dir of ["blog", "recursos", "servicios"]) {
   const fullDir = path.join(root, dir);

@@ -5,17 +5,10 @@ const root = process.cwd();
 
 function listHtmlFiles() {
   const files = [];
-  for (const rel of [
-    "index.html",
-    "404.html",
-    "agenda-tu-cita.html",
-    "blog.html",
-    "contacto.html",
-    "recursos-para-padres.html",
-    "servicios-pediatricos.html",
-    "sobre-la-doctora.html"
-  ]) {
-    files.push(path.join(root, rel));
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".html")) {
+      files.push(path.join(root, entry.name));
+    }
   }
 
   for (const dir of ["blog", "recursos", "servicios"]) {

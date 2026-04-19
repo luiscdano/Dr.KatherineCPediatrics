@@ -11,6 +11,8 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 - `recursos-para-padres.html`
 - `blog.html`
 - `contacto.html`
+- `politica-de-privacidad.html`
+- `terminos-y-condiciones.html`
 - `servicios/` - páginas de detalle por servicio
 - `recursos/` - recursos educativos
 - `blog/` - artículos
@@ -61,6 +63,16 @@ La funcionalidad de agendamiento está implementada dentro del propio sitio:
 - Validación y procesamiento en `assets/js/main.js`
 - Registro local de solicitudes en el navegador (localStorage)
 - Envío opcional del resumen por WhatsApp al consultorio
+- Consentimiento de privacidad obligatorio en formularios críticos
+- Validaciones de entrada reforzadas (teléfono, longitud mínima, anti-spam)
+
+## Señales de operación real
+
+- Aviso de emergencia visible en todo el sitio (header sticky)
+- Páginas legales versionadas:
+  - `politica-de-privacidad.html`
+  - `terminos-y-condiciones.html`
+- Disclaimer médico en footer y links legales persistentes
 
 ## Deploy automático (GitHub Pages)
 

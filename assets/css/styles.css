@@ -50,6 +50,15 @@ a {
   color: inherit;
 }
 
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(166, 154, 115, 0.95);
+  outline-offset: 2px;
+}
+
 h1,
 h2,
 h3,
@@ -99,6 +108,21 @@ ul {
   backdrop-filter: blur(16px);
   background: rgba(248, 246, 238, 0.88);
   border-bottom: 1px solid rgba(63, 82, 62, 0.08);
+}
+
+.site-notice {
+  background: rgba(63, 82, 62, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.site-notice p {
+  width: var(--container);
+  margin: 0 auto;
+  padding: 0.48rem 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
 }
 
 .site-header .shell {
@@ -1076,9 +1100,52 @@ ul {
   color: var(--primary-900);
 }
 
+.form-field input:invalid,
+.form-field textarea:invalid,
+.form-field select:invalid {
+  border-color: rgba(143, 41, 41, 0.45);
+}
+
 .form-field textarea {
   min-height: 110px;
   resize: vertical;
+}
+
+.consent-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--primary-700);
+}
+
+.consent-box input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.16rem;
+}
+
+.consent-box a {
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.form-note {
+  border-radius: 10px;
+  border: 1px dashed rgba(63, 82, 62, 0.3);
+  background: rgba(248, 246, 238, 0.95);
+  padding: 0.6rem 0.72rem;
+  font-size: 0.88rem;
+  color: var(--primary-700);
+}
+
+.honeypot-field {
+  position: absolute !important;
+  left: -10000px !important;
+  top: auto !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
 }
 
 .confirmation {
@@ -1092,6 +1159,12 @@ ul {
 
 .confirmation.is-visible {
   display: block;
+}
+
+.confirmation.is-error {
+  border-color: rgba(143, 41, 41, 0.48);
+  background: rgba(200, 88, 88, 0.16);
+  color: #661d1d;
 }
 
 .is-hidden {
@@ -1211,20 +1284,40 @@ ul {
 .footer-main p,
 .footer-links li,
 .footer-hours li,
+.footer-legal-list li,
 .footer-bottom p {
   color: rgba(255, 255, 255, 0.84);
 }
 
 .footer-contact-list a,
 .footer-links a,
-.footer-hours a {
+.footer-hours a,
+.footer-legal-list a {
   text-decoration: none;
 }
 
 .footer-contact-list a:hover,
 .footer-links a:hover,
-.footer-hours a:hover {
+.footer-hours a:hover,
+.footer-legal-list a:hover {
   color: #fff;
+}
+
+.footer-legal {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.footer-legal h3 {
+  color: #fff;
+  font-size: 0.96rem;
+}
+
+.footer-legal-list {
+  list-style: none;
+  display: grid;
+  gap: 0.26rem;
 }
 
 .footer-bottom {
@@ -1236,6 +1329,11 @@ ul {
   align-items: center;
   gap: 0.8rem;
   flex-wrap: wrap;
+}
+
+.footer-disclaimer {
+  max-width: 540px;
+  font-size: 0.84rem;
 }
 
 .powered-by {
@@ -1370,6 +1468,12 @@ ul {
 }
 
 @media (max-width: 640px) {
+  .site-notice p {
+    font-size: 0.78rem;
+    padding: 0.44rem 0;
+    text-align: left;
+  }
+
   .brand-copy strong {
     font-size: 0.98rem;
   }

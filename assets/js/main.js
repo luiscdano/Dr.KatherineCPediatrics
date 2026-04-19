@@ -13,6 +13,23 @@
     }
   }
 
+  function normalizeText(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isValidPhone(value) {
+    return /^[0-9+()\-\s]{7,20}$/.test(normalizeText(value));
+  }
+
+  function setStatusMessage(node, text, isError) {
+    if (!node) {
+      return;
+    }
+    node.textContent = text || "";
+    node.classList.toggle("is-visible", Boolean(text));
+    node.classList.toggle("is-error", Boolean(text) && Boolean(isError));
+  }
+
   function iconSVG(kind) {
     if (kind === "heart") {
       return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 56c-1.3 0-2.5-.5-3.5-1.3C15.7 43.7 8 36.8 8 25.8 8 16.5 15.4 9 24.6 9c4.8 0 9.3 2.1 12.4 5.8C40 11.1 44.6 9 49.4 9 58.6 9 66 16.5 66 25.8c0 11-7.7 17.9-20.5 28.9-1 .8-2.2 1.3-3.5 1.3h-10z" transform="translate(-5 -1)"></path></svg>';
@@ -237,6 +254,7 @@
     var selectedTimeInput = document.getElementById("selected-time");
     var summary = document.getElementById("agenda-summary");
     var form = document.getElementById("appointment-form");
+    var confirmation = document.getElementById("appointment-confirmation");
     var clearFormBtn = document.getElementById("clear-appointment-form");
     var whatsappLink = document.getElementById("appointment-whatsapp-link");
     var historyHost = document.getElementById("appointment-history");
@@ -361,11 +379,7 @@
     }
 
     function resetAppointmentFeedback() {
-      var confirmation = document.getElementById("appointment-confirmation");
-      if (confirmation) {
-        confirmation.textContent = "";
-        confirmation.classList.remove("is-visible");
-      }
+      setStatusMessage(confirmation, "", false);
       if (whatsappLink) {
         whatsappLink.classList.add("is-hidden");
         whatsappLink.setAttribute("href", "#");
@@ -593,29 +607,56 @@
         event.preventDefault();
         if (!form.checkValidity()) {
           form.reportValidity();
+          setStatusMessage(confirmation, "Completa los campos obligatorios para continuar.", true);
+          return;
+        }
+        var formData = new FormData(form);
+        if (normalizeText(formData.get("companyWebsite"))) {
+          setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
           return;
         }
         if (!selectedDate || !selectedTime) {
-          alert("Selecciona fecha y horario antes de enviar.");
+          setStatusMessage(confirmation, "Selecciona fecha y horario antes de enviar.", true);
           return;
         }
 
-        var formData = new FormData(form);
+        var patientName = normalizeText(formData.get("patientName"));
+        var patientAge = normalizeText(formData.get("patientAge"));
+        var parentName = normalizeText(formData.get("parentName"));
+        var parentPhone = normalizeText(formData.get("parentPhone"));
+        var reason = normalizeText(formData.get("reason"));
+        var ageNumber = Number(patientAge);
+
+        if (!isValidPhone(parentPhone)) {
+          setStatusMessage(confirmation, "Ingresa un teléfono válido para confirmar la cita.", true);
+          return;
+        }
+
+        if (!Number.isFinite(ageNumber) || ageNumber < 0 || ageNumber > 18) {
+          setStatusMessage(confirmation, "La edad del paciente debe estar entre 0 y 18 años.", true);
+          return;
+        }
+
+        if (reason.length < 8) {
+          setStatusMessage(confirmation, "Describe el motivo de consulta con más detalle (mínimo 8 caracteres).", true);
+          return;
+        }
+
         var appointment = {
           id: String(Date.now()) + "-" + String(Math.floor(Math.random() * 100000)),
           date: selectedDateInput ? selectedDateInput.value : "",
           time: selectedTimeInput ? selectedTimeInput.value : "",
-          patientName: String(formData.get("patientName") || "").trim(),
-          patientAge: String(formData.get("patientAge") || "").trim(),
-          parentName: String(formData.get("parentName") || "").trim(),
-          parentPhone: String(formData.get("parentPhone") || "").trim(),
-          reason: String(formData.get("reason") || "").trim(),
+          patientName: patientName,
+          patientAge: String(ageNumber),
+          parentName: parentName,
+          parentPhone: parentPhone,
+          reason: reason,
           createdAt: new Date().toISOString()
         };
 
         var appointments = readAppointments();
         if (hasConflict(appointments, appointment.date, appointment.time)) {
-          alert("Ese horario ya está ocupado para la fecha seleccionada. Elige otro.");
+          setStatusMessage(confirmation, "Ese horario ya está ocupado para la fecha seleccionada. Elige otro.", true);
           paintSlots();
           updateSummary();
           return;
@@ -624,16 +665,15 @@
         writeAppointments(appointments);
         renderAppointmentHistory();
 
-        var confirmation = document.getElementById("appointment-confirmation");
-        if (confirmation) {
-          confirmation.textContent =
-            "Solicitud guardada para el " +
+        setStatusMessage(
+          confirmation,
+          "Solicitud guardada para el " +
             appointment.date +
             " a las " +
             appointment.time +
-            ". Usa el botón de WhatsApp para enviarla al consultorio.";
-          confirmation.classList.add("is-visible");
-        }
+            ". Usa el botón de WhatsApp para enviarla al consultorio.",
+          false
+        );
 
         if (whatsappLink) {
           lastSharedAppointmentId = appointment.id;
@@ -666,15 +706,32 @@
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
+        setStatusMessage(message, "Completa los campos requeridos para enviar tu consulta.", true);
         return;
       }
 
       var formData = new FormData(form);
-      var name = String(formData.get("name") || "").trim();
-      var phone = String(formData.get("phone") || "").trim();
-      var email = String(formData.get("email") || "").trim();
-      var topic = String(formData.get("topic") || "").trim();
-      var note = String(formData.get("message") || "").trim();
+      if (normalizeText(formData.get("companyName"))) {
+        setStatusMessage(message, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        return;
+      }
+
+      var name = normalizeText(formData.get("name"));
+      var phone = normalizeText(formData.get("phone"));
+      var email = normalizeText(formData.get("email"));
+      var topic = normalizeText(formData.get("topic"));
+      var note = normalizeText(formData.get("message"));
+
+      if (!isValidPhone(phone)) {
+        setStatusMessage(message, "Ingresa un teléfono válido para poder responderte.", true);
+        return;
+      }
+
+      if (note.length < 10) {
+        setStatusMessage(message, "El mensaje debe tener al menos 10 caracteres.", true);
+        return;
+      }
+
       var subject = "Consulta web - " + (topic || "general");
       var body =
         "Nombre: " +
@@ -690,12 +747,12 @@
 
       if (data.clinic && data.clinic.email) {
         window.location.href = "mailto:" + data.clinic.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      } else {
+        setStatusMessage(message, "No se encontró un correo de destino configurado. Intenta por WhatsApp.", true);
+        return;
       }
 
-      if (message) {
-        message.textContent = "Se abrió tu aplicación de correo para completar el envío del mensaje.";
-        message.classList.add("is-visible");
-      }
+      setStatusMessage(message, "Se abrió tu aplicación de correo para completar el envío del mensaje.", false);
       form.reset();
     });
   }

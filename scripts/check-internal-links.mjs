@@ -2,20 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const htmlGlobs = [
-  "index.html",
-  "404.html",
-  "agenda-tu-cita.html",
-  "blog.html",
-  "contacto.html",
-  "recursos-para-padres.html",
-  "servicios-pediatricos.html",
-  "sobre-la-doctora.html"
-];
 const subDirs = ["blog", "recursos", "servicios"];
 
 function listHtmlFiles() {
-  const files = htmlGlobs.map((file) => path.join(root, file));
+  const files = [];
+  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+    if (entry.isFile() && entry.name.endsWith(".html")) {
+      files.push(path.join(root, entry.name));
+    }
+  }
+
   for (const dir of subDirs) {
     const dirPath = path.join(root, dir);
     if (!fs.existsSync(dirPath)) {

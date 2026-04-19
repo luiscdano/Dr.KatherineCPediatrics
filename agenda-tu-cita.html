@@ -31,6 +31,10 @@
             Flujo digital de agendamiento dentro del consultorio, con selección de fecha, horario y envío de la
             solicitud desde esta misma plataforma.
           </p>
+          <p class="form-note">
+            Importante: si se trata de una emergencia médica pediátrica, acude de inmediato a urgencias o llama al
+            9-1-1.
+          </p>
           <div class="metric-grid">
             <article class="metric">
               <strong>Paso 1</strong>
@@ -69,16 +73,27 @@
 
           <article class="agenda-card reveal">
             <h3>Datos del paciente</h3>
-            <p>Completa el formulario para guardar la solicitud de cita dentro del sistema del consultorio.</p>
+            <p>Completa el formulario para registrar la solicitud y enviarla por canal oficial del consultorio.</p>
 
             <form id="appointment-form" class="form-grid">
               <input type="hidden" id="selected-date" name="selectedDate" />
               <input type="hidden" id="selected-time" name="selectedTime" />
+              <div class="form-field honeypot-field" aria-hidden="true">
+                <label for="appointment-company">Empresa</label>
+                <input
+                  id="appointment-company"
+                  name="companyWebsite"
+                  type="text"
+                  tabindex="-1"
+                  autocomplete="off"
+                  inputmode="url"
+                />
+              </div>
 
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="patient-name">Nombre del paciente</label>
-                  <input id="patient-name" name="patientName" type="text" maxlength="80" required />
+                  <input id="patient-name" name="patientName" type="text" minlength="3" maxlength="80" required />
                 </div>
                 <div class="form-field">
                   <label for="patient-age">Edad</label>
@@ -99,7 +114,7 @@
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="parent-name">Nombre del tutor</label>
-                  <input id="parent-name" name="parentName" type="text" maxlength="80" required />
+                  <input id="parent-name" name="parentName" type="text" minlength="3" maxlength="80" required />
                 </div>
                 <div class="form-field">
                   <label for="parent-phone">Teléfono</label>
@@ -127,6 +142,19 @@
                 ></textarea>
               </div>
 
+              <div class="consent-box">
+                <input id="appointment-consent" name="privacyConsent" type="checkbox" required />
+                <label for="appointment-consent">
+                  Acepto la <a href="politica-de-privacidad.html">Política de privacidad</a> y autorizo el tratamiento
+                  de datos para gestionar esta solicitud de cita.
+                </label>
+              </div>
+
+              <p class="form-note">
+                La cita queda como solicitud inicial. La confirmación definitiva se realiza por WhatsApp o llamada del
+                consultorio.
+              </p>
+
               <div class="form-actions">
                 <button class="btn btn-primary" type="submit">Guardar solicitud</button>
                 <button class="btn btn-secondary" id="clear-appointment-form" type="button">Limpiar formulario</button>
@@ -147,9 +175,9 @@
             </div>
 
             <div class="selector-wrap">
-              <h4>Solicitudes guardadas localmente</h4>
+              <h4>Borradores guardados en este dispositivo</h4>
               <div id="appointment-history" class="appointment-history"></div>
-              <button class="btn btn-ghost" id="clear-appointment-history" type="button">Limpiar historial local</button>
+              <button class="btn btn-ghost" id="clear-appointment-history" type="button">Limpiar borradores</button>
             </div>
           </article>
         </div>
