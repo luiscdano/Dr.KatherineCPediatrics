@@ -31,8 +31,10 @@ for (const dir of ["blog", "recursos", "servicios"]) {
 const rules = [
   { regex: /\[Pendiente\]/i, message: "Texto provisional [Pendiente]" },
   { regex: /AgendaTuCita/i, message: "Referencia al sistema externo AgendaTuCita" },
-  { regex: /agendatucita\.com/i, message: "URL externa de AgendaTuCita" }
+  { regex: /agendatucita\.com/i, message: "URL externa de AgendaTuCita" },
+  { regex: /agenda-tu-cita\.html/i, message: "Ruta legacy agenda-tu-cita.html" }
 ];
+const forbiddenFiles = ["agenda-tu-cita.html"];
 
 const violations = [];
 
@@ -52,6 +54,16 @@ for (const relPath of targets) {
   }
 }
 
+for (const relPath of forbiddenFiles) {
+  const filePath = path.join(root, relPath);
+  if (fs.existsSync(filePath)) {
+    violations.push({
+      file: relPath,
+      message: "Archivo legacy no permitido en el repositorio"
+    });
+  }
+}
+
 if (violations.length) {
   console.error("Se detectaron contenidos no permitidos:");
   for (const issue of violations) {
@@ -60,4 +72,4 @@ if (violations.length) {
   process.exit(1);
 }
 
-console.log("Contenido validado sin placeholders ni dependencias externas.");
+console.log("Contenido validado sin placeholders, dependencias externas ni rutas legacy.");

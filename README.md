@@ -1,13 +1,13 @@
 # Dr. Katherine C Pediatrics
 
-Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura modular y enfoque de conversión (agenda de citas), inspirado en la estructura de Paedia y adaptado a la identidad visual de la marca.
+Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura modular y enfoque de conversión (solicitud de citas), inspirado en la estructura de Paedia y adaptado a la identidad visual de la marca.
 
 ## Estructura principal
 
 - `index.html` - Home
 - `sobre-la-doctora.html`
 - `servicios-pediatricos.html`
-- `agenda-tu-cita.html`
+- `citas.html`
 - `recursos-para-padres.html`
 - `blog.html`
 - `contacto.html`
@@ -25,7 +25,7 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
   - utilidades compartidas de rutas (`assets/js/utils.js`)
   - layout compartido (header/footer)
   - render de contenido modular
-  - interacciones (menú móvil, testimonios, agenda y formularios)
+  - interacciones (menú móvil, testimonios, citas y formularios)
 - API backend en Node.js/Express para:
   - persistencia de solicitudes de cita
   - recepción de mensajes de contacto
@@ -88,11 +88,11 @@ Incluye:
 - metadatos SEO base por página
 - coherencia de dominio (`CNAME`, `robots.txt`, `sitemap.xml`, `canonical`)
 
-## Agenda integrada en el proyecto
+## Citas integradas en el proyecto
 
-La funcionalidad de agendamiento está implementada dentro del propio sitio y conectada a backend:
+La funcionalidad de citas está implementada dentro del propio sitio y conectada a backend:
 
-- Selección de fecha y horario en `agenda-tu-cita.html`
+- Selección de fecha y horario en `citas.html`
 - Validación de cliente en `assets/js/main.js` y validación de servidor en `server/validation.mjs`
 - Persistencia centralizada en API (`POST /api/v1/appointments`)
 - Consulta de horarios ocupados por fecha (`GET /api/v1/appointments/taken`)

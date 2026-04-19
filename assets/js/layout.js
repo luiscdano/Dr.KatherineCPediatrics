@@ -56,7 +56,7 @@
       '      <span class="sr-only">Abrir menú</span>' +
       '    </button>' +
       '    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">' + navTemplate() + "</nav>" +
-      '    <a class="btn btn-primary btn-top-cta" href="' + localUrl("/agenda-tu-cita.html") + '">Agendar cita</a>' +
+      '    <a class="btn btn-primary btn-top-cta" href="' + localUrl("/citas.html") + '">Agendar cita</a>' +
       "  </div>" +
       "</header>";
   }
@@ -96,7 +96,7 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary" href="' + localUrl("/agenda-tu-cita.html") + '">Agenda en línea</a>' +
+      '      <a class="btn btn-secondary" href="' + localUrl("/citas.html") + '">Citas en línea</a>' +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +

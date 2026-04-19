@@ -26,7 +26,7 @@ window.DR_KATHERINE_DATA = {
     { key: "home", label: "Inicio", href: "/index.html" },
     { key: "about", label: "Sobre la doctora", href: "/sobre-la-doctora.html" },
     { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos.html" },
-    { key: "agenda", label: "Agenda tu cita", href: "/agenda-tu-cita.html" },
+    { key: "citas", label: "Citas", href: "/citas.html" },
     { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres.html" },
     { key: "blog", label: "Blog", href: "/blog.html" },
     { key: "contact", label: "Contacto", href: "/contacto.html" }
@@ -47,9 +47,9 @@ window.DR_KATHERINE_DATA = {
       detail: "Explicaciones prácticas para que padres y tutores actúen con seguridad."
     },
     {
-      value: "Agenda digital",
+      value: "Citas en línea",
       label: "Solicitud en línea",
-      detail: "Flujo de pre-agendamiento con confirmación por canales oficiales del consultorio."
+      detail: "Flujo de solicitud de cita con confirmación por canales oficiales del consultorio."
     }
   ],
   advantages: [
@@ -208,7 +208,7 @@ window.DR_KATHERINE_DATA = {
   ],
   faqs: [
     {
-      question: "¿Cómo funciona la agenda digital?",
+      question: "¿Cómo funciona la solicitud de cita en línea?",
       answer: "Seleccionas fecha, eliges horario disponible, completas los datos del paciente y recibes confirmación automática."
     },
     {
