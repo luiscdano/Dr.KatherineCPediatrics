@@ -1020,6 +1020,13 @@ ul {
   cursor: pointer;
 }
 
+.date-btn:disabled,
+.slot-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  background: rgba(182, 172, 133, 0.25);
+}
+
 .date-btn.is-active,
 .slot-btn.is-active {
   background: var(--primary-900);
@@ -1085,6 +1092,65 @@ ul {
 
 .confirmation.is-visible {
   display: block;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.appointment-history {
+  border-radius: 10px;
+  border: 1px dashed rgba(63, 82, 62, 0.32);
+  background: rgba(248, 246, 238, 0.7);
+  padding: 0.7rem 0.8rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.appointment-history p {
+  color: var(--primary-700);
+}
+
+.appointment-history ul {
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+}
+
+.appointment-history li {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 0.55rem 0.65rem;
+  color: var(--primary-700);
+  font-size: 0.92rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.appointment-history strong {
+  color: var(--primary-900);
+}
+
+.appointment-history small {
+  color: var(--primary-700);
+}
+
+.appointment-history-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.appointment-remove-btn {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary-900);
+  padding: 0.3rem 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .faq-list {

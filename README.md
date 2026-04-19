@@ -20,6 +20,7 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 - HTML semántico
 - CSS responsive (sin framework)
 - JavaScript vanilla para:
+  - utilidades compartidas de rutas (`assets/js/utils.js`)
   - layout compartido (header/footer)
   - render de contenido modular
   - interacciones (menú móvil, testimonios, agenda y formularios)
@@ -36,13 +37,29 @@ python3 -m http.server 8080
 
 - `http://localhost:8080`
 
-## Integración AgendaTuCita
+## Validaciones de calidad
 
-La URL base del módulo está en:
+Ejecuta los checks locales antes de subir cambios:
 
-- `assets/js/content-data.js` -> `clinic.agendaUrl`
+```bash
+npm run validate
+```
 
-Reemplaza ese valor por el endpoint o enlace final de AgendaTuCita para el consultorio.
+Incluye:
+
+- sintaxis JavaScript
+- enlaces internos en HTML
+- guardas de contenido (sin placeholders ni dependencias externas)
+- metadatos SEO base por página
+
+## Agenda integrada en el proyecto
+
+La funcionalidad de agendamiento está implementada dentro del propio sitio:
+
+- Selección de fecha y horario en `agenda-tu-cita.html`
+- Validación y procesamiento en `assets/js/main.js`
+- Registro local de solicitudes en el navegador (localStorage)
+- Envío opcional del resumen por WhatsApp al consultorio
 
 ## Deploy automático (GitHub Pages)
 
@@ -56,8 +73,8 @@ Publica automáticamente en GitHub Pages cada `push` a `main`.
 
 1. En el repositorio, entra a `Settings` -> `Pages`.
 2. En `Build and deployment`, selecciona `Source: GitHub Actions`.
-3. Verifica que el archivo `CNAME` esté en la raíz con `drkatherinecpediatrics.com`.
-4. En tu proveedor DNS, apunta el dominio a GitHub Pages:
+3. Si usarás dominio personalizado, agrega un archivo `CNAME` en la raíz con `drkatherinecpediatrics.com`.
+4. En tu proveedor DNS, apunta el dominio a GitHub Pages (cuando hagas el cambio de dominio):
    - `A` para apex (`drkatherinecpediatrics.com`) a `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
    - `CNAME` para `www` hacia `<tu-usuario>.github.io`
 5. Haz push a `main` y revisa la ejecución en la pestaña `Actions`.

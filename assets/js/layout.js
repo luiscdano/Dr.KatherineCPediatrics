@@ -1,29 +1,9 @@
 (function () {
   var data = window.DR_KATHERINE_DATA;
+  var utils = window.DR_KATHERINE_UTILS || {};
+  var localUrl = typeof utils.localUrl === "function" ? utils.localUrl : function (path) { return path; };
   if (!data) {
     return;
-  }
-
-  function getBasePath() {
-    var host = window.location.hostname || "";
-    var pathname = window.location.pathname || "/";
-    if (host.endsWith("github.io")) {
-      var segments = pathname.split("/").filter(Boolean);
-      if (segments.length > 0) {
-        return "/" + segments[0];
-      }
-    }
-    return "";
-  }
-
-  function localUrl(path) {
-    if (typeof path !== "string") {
-      return path;
-    }
-    if (!path.startsWith("/")) {
-      return path;
-    }
-    return getBasePath() + path;
   }
 
   var page = document.body.getAttribute("data-page") || "";
@@ -47,7 +27,7 @@
       '      <img src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
       '      <span class="brand-copy">' +
       '        <strong>' + data.clinic.name + '</strong>' +
-      '        <small>Pediatrics</small>' +
+      '        <small>Pediatría</small>' +
       '      </span>' +
       '    </a>' +
       '    <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">' +
@@ -94,7 +74,7 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary" href="' + localUrl("/agenda-tu-cita.html") + '">Agenda en linea</a>' +
+      '      <a class="btn btn-secondary" href="' + localUrl("/agenda-tu-cita.html") + '">Agenda en línea</a>' +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +

@@ -28,8 +28,8 @@
           <span class="eyebrow">Agenda médica</span>
           <h1>Agenda tu cita pediátrica en línea</h1>
           <p>
-            Flujo digital de agendamiento con selección de fecha, horario, formulario de datos y confirmación.
-            Integración preparada para AgendaTuCita.
+            Flujo digital de agendamiento dentro del consultorio, con selección de fecha, horario y envío de la
+            solicitud desde esta misma plataforma.
           </p>
           <div class="metric-grid">
             <article class="metric">
@@ -69,53 +69,88 @@
 
           <article class="agenda-card reveal">
             <h3>Datos del paciente</h3>
-            <p>Completa el formulario para enviar la solicitud de cita al consultorio.</p>
+            <p>Completa el formulario para guardar la solicitud de cita dentro del sistema del consultorio.</p>
 
-            <form id="appointment-form" class="form-grid" novalidate>
+            <form id="appointment-form" class="form-grid">
               <input type="hidden" id="selected-date" name="selectedDate" />
               <input type="hidden" id="selected-time" name="selectedTime" />
 
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="patient-name">Nombre del paciente</label>
-                  <input id="patient-name" name="patientName" type="text" required />
+                  <input id="patient-name" name="patientName" type="text" maxlength="80" required />
                 </div>
                 <div class="form-field">
                   <label for="patient-age">Edad</label>
-                  <input id="patient-age" name="patientAge" type="text" required />
+                  <input
+                    id="patient-age"
+                    name="patientAge"
+                    type="number"
+                    min="0"
+                    max="18"
+                    step="1"
+                    inputmode="numeric"
+                    placeholder="Ej: 4"
+                    required
+                  />
                 </div>
               </div>
 
               <div class="form-row-2">
                 <div class="form-field">
                   <label for="parent-name">Nombre del tutor</label>
-                  <input id="parent-name" name="parentName" type="text" required />
+                  <input id="parent-name" name="parentName" type="text" maxlength="80" required />
                 </div>
                 <div class="form-field">
                   <label for="parent-phone">Teléfono</label>
-                  <input id="parent-phone" name="parentPhone" type="tel" required />
+                  <input
+                    id="parent-phone"
+                    name="parentPhone"
+                    type="tel"
+                    inputmode="tel"
+                    pattern="[0-9+()\\-\\s]{7,20}"
+                    placeholder="Ej: 849-564-6212"
+                    required
+                  />
                 </div>
               </div>
 
               <div class="form-field">
                 <label for="appointment-reason">Motivo de consulta</label>
-                <textarea id="appointment-reason" name="reason" placeholder="Describe brevemente la consulta"></textarea>
+                <textarea
+                  id="appointment-reason"
+                  name="reason"
+                  minlength="8"
+                  maxlength="500"
+                  placeholder="Describe brevemente la consulta"
+                  required
+                ></textarea>
               </div>
 
               <div class="form-actions">
-                <button class="btn btn-primary" type="submit">Enviar solicitud</button>
-                <a
-                  id="open-agendatucita"
-                  class="btn btn-secondary"
-                  href="https://agendatucita.com/drkatherinecpediatrics"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Abrir AgendaTuCita</a
-                >
+                <button class="btn btn-primary" type="submit">Guardar solicitud</button>
+                <button class="btn btn-secondary" id="clear-appointment-form" type="button">Limpiar formulario</button>
               </div>
             </form>
 
             <p id="appointment-confirmation" class="confirmation" aria-live="polite"></p>
+
+            <div class="form-actions">
+              <a
+                id="appointment-whatsapp-link"
+                class="btn btn-ghost is-hidden"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Enviar resumen por WhatsApp</a
+              >
+            </div>
+
+            <div class="selector-wrap">
+              <h4>Solicitudes guardadas localmente</h4>
+              <div id="appointment-history" class="appointment-history"></div>
+              <button class="btn btn-ghost" id="clear-appointment-history" type="button">Limpiar historial local</button>
+            </div>
           </article>
         </div>
       </section>
@@ -134,6 +169,7 @@
     <div id="site-footer"></div>
 
     <script src="assets/js/content-data.js" defer></script>
+    <script src="assets/js/utils.js" defer></script>
     <script src="assets/js/layout.js" defer></script>
     <script src="assets/js/main.js" defer></script>
   </body>

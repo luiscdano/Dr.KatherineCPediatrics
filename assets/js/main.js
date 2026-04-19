@@ -1,29 +1,9 @@
 (function () {
   var data = window.DR_KATHERINE_DATA;
+  var utils = window.DR_KATHERINE_UTILS || {};
+  var localUrl = typeof utils.localUrl === "function" ? utils.localUrl : function (path) { return path; };
   if (!data) {
     return;
-  }
-
-  function getBasePath() {
-    var host = window.location.hostname || "";
-    var pathname = window.location.pathname || "/";
-    if (host.endsWith("github.io")) {
-      var segments = pathname.split("/").filter(Boolean);
-      if (segments.length > 0) {
-        return "/" + segments[0];
-      }
-    }
-    return "";
-  }
-
-  function localUrl(path) {
-    if (typeof path !== "string") {
-      return path;
-    }
-    if (!path.startsWith("/")) {
-      return path;
-    }
-    return getBasePath() + path;
   }
 
   function setHTML(id, html) {
@@ -257,17 +237,200 @@
     var selectedTimeInput = document.getElementById("selected-time");
     var summary = document.getElementById("agenda-summary");
     var form = document.getElementById("appointment-form");
-    var openAgenda = document.getElementById("open-agendatucita");
-
-    if (openAgenda) {
-      openAgenda.setAttribute("href", data.clinic.agendaUrl);
-    }
+    var clearFormBtn = document.getElementById("clear-appointment-form");
+    var whatsappLink = document.getElementById("appointment-whatsapp-link");
+    var historyHost = document.getElementById("appointment-history");
+    var clearHistoryBtn = document.getElementById("clear-appointment-history");
+    var storageKey = "dr_katherine_appointments";
+    var memoryAppointments = [];
 
     var times = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "15:00", "15:30", "16:00", "16:30"];
 
     var today = new Date();
     var selectedDate = null;
     var selectedTime = null;
+    var storageEnabled = canUseStorage();
+    var lastSharedAppointmentId = "";
+
+    function canUseStorage() {
+      try {
+        var probe = "__drk_probe";
+        window.localStorage.setItem(probe, "1");
+        window.localStorage.removeItem(probe);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function normalizeAppointment(item, index) {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+      var date = String(item.date || "").trim();
+      var time = String(item.time || "").trim();
+      if (!date || !time) {
+        return null;
+      }
+      return {
+        id: String(item.id || date + "-" + time + "-" + index),
+        date: date,
+        time: time,
+        patientName: String(item.patientName || "Paciente").trim() || "Paciente",
+        patientAge: String(item.patientAge || "").trim(),
+        parentName: String(item.parentName || "Tutor").trim() || "Tutor",
+        parentPhone: String(item.parentPhone || "").trim(),
+        reason: String(item.reason || "").trim(),
+        createdAt: String(item.createdAt || new Date().toISOString())
+      };
+    }
+
+    function readAppointments() {
+      var parsed = [];
+
+      if (storageEnabled) {
+        try {
+          var raw = window.localStorage.getItem(storageKey);
+          if (raw) {
+            parsed = JSON.parse(raw);
+          }
+        } catch (error) {
+          storageEnabled = false;
+          parsed = memoryAppointments.slice();
+        }
+      } else {
+        parsed = memoryAppointments.slice();
+      }
+
+      if (!Array.isArray(parsed)) {
+        parsed = [];
+      }
+
+      var normalized = parsed
+        .map(function (item, index) {
+          return normalizeAppointment(item, index);
+        })
+        .filter(function (item) {
+          return Boolean(item);
+        });
+
+      if (!storageEnabled) {
+        memoryAppointments = normalized.slice();
+      }
+
+      return normalized;
+    }
+
+    function writeAppointments(appointments) {
+      if (storageEnabled) {
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify(appointments));
+          return;
+        } catch (error) {
+          storageEnabled = false;
+        }
+      }
+      memoryAppointments = appointments.slice();
+    }
+
+    function clearStorageAppointments() {
+      if (storageEnabled) {
+        try {
+          window.localStorage.removeItem(storageKey);
+          return;
+        } catch (error) {
+          storageEnabled = false;
+        }
+      }
+      memoryAppointments = [];
+    }
+
+    function getTakenTimesByDate(dateValue, appointments) {
+      return appointments.reduce(function (acc, item) {
+        if (item.date === dateValue) {
+          acc[item.time] = true;
+        }
+        return acc;
+      }, {});
+    }
+
+    function hasConflict(appointments, dateValue, timeValue) {
+      return appointments.some(function (item) {
+        return item.date === dateValue && item.time === timeValue;
+      });
+    }
+
+    function resetAppointmentFeedback() {
+      var confirmation = document.getElementById("appointment-confirmation");
+      if (confirmation) {
+        confirmation.textContent = "";
+        confirmation.classList.remove("is-visible");
+      }
+      if (whatsappLink) {
+        whatsappLink.classList.add("is-hidden");
+        whatsappLink.setAttribute("href", "#");
+      }
+      lastSharedAppointmentId = "";
+    }
+
+    function buildWhatsAppLink(appointment) {
+      var header = "Solicitud de cita pediátrica";
+      var lines = [
+        "Fecha: " + appointment.date,
+        "Hora: " + appointment.time,
+        "Paciente: " + appointment.patientName + " (" + appointment.patientAge + ")",
+        "Tutor: " + appointment.parentName,
+        "Teléfono: " + appointment.parentPhone
+      ];
+      if (appointment.reason) {
+        lines.push("Motivo: " + appointment.reason);
+      }
+      var text = header + "\n\n" + lines.join("\n");
+      return data.clinic.whatsappHref + "?text=" + encodeURIComponent(text);
+    }
+
+    function renderAppointmentHistory() {
+      if (!historyHost) {
+        return;
+      }
+      historyHost.innerHTML = "";
+
+      var appointments = readAppointments();
+      if (!appointments.length) {
+        var empty = document.createElement("p");
+        empty.textContent = "Aún no hay solicitudes guardadas.";
+        historyHost.appendChild(empty);
+        return;
+      }
+
+      var list = document.createElement("ul");
+      appointments.slice(0, 10).forEach(function (item) {
+        var row = document.createElement("li");
+        row.setAttribute("data-id", item.id);
+
+        var headline = document.createElement("strong");
+        headline.textContent = item.date + " | " + item.time + " | " + item.patientName;
+
+        var details = document.createElement("small");
+        details.textContent = "Tutor: " + item.parentName + " | Tel: " + item.parentPhone;
+
+        var actions = document.createElement("div");
+        actions.className = "appointment-history-actions";
+
+        var removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "appointment-remove-btn";
+        removeBtn.setAttribute("data-id", item.id);
+        removeBtn.textContent = "Eliminar";
+
+        actions.appendChild(removeBtn);
+        row.appendChild(headline);
+        row.appendChild(details);
+        row.appendChild(actions);
+        list.appendChild(row);
+      });
+      historyHost.appendChild(list);
+    }
 
     function formatDateLabel(date) {
       return date.toLocaleDateString("es-DO", {
@@ -278,7 +441,10 @@
     }
 
     function formatDateValue(date) {
-      return date.toISOString().slice(0, 10);
+      var year = String(date.getFullYear());
+      var month = String(date.getMonth() + 1).padStart(2, "0");
+      var day = String(date.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + day;
     }
 
     function updateSummary() {
@@ -294,14 +460,28 @@
       if (!slotWrap) {
         return;
       }
+      var appointments = readAppointments();
+      var dateValue = selectedDateInput ? selectedDateInput.value : "";
+      var takenTimes = dateValue ? getTakenTimesByDate(dateValue, appointments) : {};
+
+      if (selectedTime && takenTimes[selectedTime]) {
+        selectedTime = null;
+        if (selectedTimeInput) {
+          selectedTimeInput.value = "";
+        }
+      }
+
       slotWrap.innerHTML = times
         .map(function (time) {
           var active = selectedTime === time ? " is-active" : "";
-          return '<button class="slot-btn' + active + '" data-time="' + time + '" type="button">' + time + "</button>";
+          var isTaken = Boolean(takenTimes[time]);
+          var disabled = isTaken ? " disabled" : "";
+          var label = isTaken ? time + " • ocupado" : time;
+          return '<button class="slot-btn' + active + '" data-time="' + time + '" type="button"' + disabled + ">" + label + "</button>";
         })
         .join("");
 
-      var buttons = slotWrap.querySelectorAll("button");
+      var buttons = slotWrap.querySelectorAll("button:not([disabled])");
       buttons.forEach(function (btn) {
         btn.addEventListener("click", function () {
           selectedTime = btn.getAttribute("data-time");
@@ -341,6 +521,12 @@
           if (selectedDateInput) {
             selectedDateInput.value = btn.getAttribute("data-date");
           }
+          selectedTime = null;
+          if (selectedTimeInput) {
+            selectedTimeInput.value = "";
+          }
+          resetAppointmentFeedback();
+          paintSlots();
           updateSummary();
         });
       });
@@ -351,24 +537,108 @@
     }
 
     paintSlots();
+    renderAppointmentHistory();
+
+    if (historyHost) {
+      historyHost.addEventListener("click", function (event) {
+        var target = event.target;
+        if (!target || !target.classList || !target.classList.contains("appointment-remove-btn")) {
+          return;
+        }
+        var removeId = target.getAttribute("data-id");
+        if (!removeId) {
+          return;
+        }
+        var filtered = readAppointments().filter(function (item) {
+          return item.id !== removeId;
+        });
+        writeAppointments(filtered);
+        if (removeId === lastSharedAppointmentId) {
+          resetAppointmentFeedback();
+        }
+        renderAppointmentHistory();
+        paintSlots();
+        updateSummary();
+      });
+    }
+
+    if (clearFormBtn && form) {
+      clearFormBtn.addEventListener("click", function () {
+        form.reset();
+        selectedTime = null;
+        if (selectedDate && selectedDateInput) {
+          selectedDateInput.value = formatDateValue(selectedDate);
+        }
+        if (selectedTimeInput) {
+          selectedTimeInput.value = "";
+        }
+        resetAppointmentFeedback();
+        paintSlots();
+        updateSummary();
+      });
+    }
+
+    if (clearHistoryBtn) {
+      clearHistoryBtn.addEventListener("click", function () {
+        clearStorageAppointments();
+        resetAppointmentFeedback();
+        renderAppointmentHistory();
+        paintSlots();
+        updateSummary();
+      });
+    }
 
     if (form) {
       form.addEventListener("submit", function (event) {
         event.preventDefault();
+        if (!form.checkValidity()) {
+          form.reportValidity();
+          return;
+        }
         if (!selectedDate || !selectedTime) {
           alert("Selecciona fecha y horario antes de enviar.");
           return;
         }
 
+        var formData = new FormData(form);
+        var appointment = {
+          id: String(Date.now()) + "-" + String(Math.floor(Math.random() * 100000)),
+          date: selectedDateInput ? selectedDateInput.value : "",
+          time: selectedTimeInput ? selectedTimeInput.value : "",
+          patientName: String(formData.get("patientName") || "").trim(),
+          patientAge: String(formData.get("patientAge") || "").trim(),
+          parentName: String(formData.get("parentName") || "").trim(),
+          parentPhone: String(formData.get("parentPhone") || "").trim(),
+          reason: String(formData.get("reason") || "").trim(),
+          createdAt: new Date().toISOString()
+        };
+
+        var appointments = readAppointments();
+        if (hasConflict(appointments, appointment.date, appointment.time)) {
+          alert("Ese horario ya está ocupado para la fecha seleccionada. Elige otro.");
+          paintSlots();
+          updateSummary();
+          return;
+        }
+        appointments.unshift(appointment);
+        writeAppointments(appointments);
+        renderAppointmentHistory();
+
         var confirmation = document.getElementById("appointment-confirmation");
         if (confirmation) {
-          confirmation.innerHTML =
-            "Solicitud enviada. Fecha: <strong>" +
-            selectedDateInput.value +
-            "</strong> | Hora: <strong>" +
-            selectedTimeInput.value +
-            "</strong>.\nTe contactaremos para confirmar disponibilidad final.";
+          confirmation.textContent =
+            "Solicitud guardada para el " +
+            appointment.date +
+            " a las " +
+            appointment.time +
+            ". Usa el botón de WhatsApp para enviarla al consultorio.";
           confirmation.classList.add("is-visible");
+        }
+
+        if (whatsappLink) {
+          lastSharedAppointmentId = appointment.id;
+          whatsappLink.setAttribute("href", buildWhatsAppLink(appointment));
+          whatsappLink.classList.remove("is-hidden");
         }
 
         form.reset();
@@ -394,8 +664,36 @@
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      var formData = new FormData(form);
+      var name = String(formData.get("name") || "").trim();
+      var phone = String(formData.get("phone") || "").trim();
+      var email = String(formData.get("email") || "").trim();
+      var topic = String(formData.get("topic") || "").trim();
+      var note = String(formData.get("message") || "").trim();
+      var subject = "Consulta web - " + (topic || "general");
+      var body =
+        "Nombre: " +
+        name +
+        "\nTeléfono: " +
+        phone +
+        "\nCorreo: " +
+        email +
+        "\nTema: " +
+        topic +
+        "\n\nMensaje:\n" +
+        note;
+
+      if (data.clinic && data.clinic.email) {
+        window.location.href = "mailto:" + data.clinic.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+      }
+
       if (message) {
-        message.textContent = "Gracias. Tu mensaje fue enviado correctamente. Te responderemos en breve.";
+        message.textContent = "Se abrió tu aplicación de correo para completar el envío del mensaje.";
         message.classList.add("is-visible");
       }
       form.reset();
@@ -404,7 +702,14 @@
 
   function setupReveal() {
     var items = document.querySelectorAll(".reveal");
-    if (!items.length || !("IntersectionObserver" in window)) {
+    if (!items.length) {
+      return;
+    }
+
+    if (!("IntersectionObserver" in window)) {
+      items.forEach(function (item) {
+        item.classList.add("is-visible");
+      });
       return;
     }
 

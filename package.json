@@ -1,0 +1,13 @@
+{
+  "name": "dr-katherine-c-pediatrics-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sitio web estatico de Dr. Katherine C Pediatrics",
+  "scripts": {
+    "check:js": "node scripts/check-js-syntax.mjs",
+    "check:links": "node scripts/check-internal-links.mjs",
+    "check:content": "node scripts/check-content-guards.mjs",
+    "check:seo": "node scripts/check-seo-tags.mjs",
+    "validate": "npm run check:js && npm run check:links && npm run check:content && npm run check:seo"
+  }
+}

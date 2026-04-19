@@ -15,8 +15,7 @@ window.DR_KATHERINE_DATA = {
     officeHours: [
       "Lunes a Viernes: 8:00 a.m. - 5:30 p.m.",
       "Sábados: 8:00 a.m. - 1:00 p.m."
-    ],
-    agendaUrl: "https://agendatucita.com/drkatherinecpediatrics"
+    ]
   },
   nav: [
     { key: "home", label: "Inicio", href: "/index.html" },
@@ -130,15 +129,15 @@ window.DR_KATHERINE_DATA = {
   futureTeam: [
     {
       role: "Pediatría del desarrollo",
-      status: "Próxima integración"
+      status: "Integración planificada"
     },
     {
       role: "Nutrición pediátrica",
-      status: "Próxima integración"
+      status: "Integración planificada"
     },
     {
       role: "Psicología infantil",
-      status: "Próxima integración"
+      status: "Integración planificada"
     }
   ],
   resources: [
