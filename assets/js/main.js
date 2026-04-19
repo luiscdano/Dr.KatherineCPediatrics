@@ -30,6 +30,97 @@
     node.classList.toggle("is-error", Boolean(text) && Boolean(isError));
   }
 
+  var host = window.location.hostname || "";
+  var apiConfig = data.api || {};
+  var localHost = host === "localhost" || host === "127.0.0.1";
+  var runtimeApiBase = normalizeText(window.DR_KATHERINE_API_BASE);
+  var configuredApiBase = runtimeApiBase || (localHost ? "http://localhost:8787" : normalizeText(apiConfig.baseUrl));
+  var apiBaseUrl = configuredApiBase ? configuredApiBase.replace(/\/+$/, "") : "";
+  var apiTimeoutMs = Number(apiConfig.timeoutMs || 10000);
+
+  if (!Number.isFinite(apiTimeoutMs) || apiTimeoutMs < 1000) {
+    apiTimeoutMs = 10000;
+  }
+
+  function hasApiBase() {
+    return Boolean(apiBaseUrl);
+  }
+
+  function buildApiUrl(path) {
+    if (typeof path !== "string") {
+      return "";
+    }
+    if (/^https?:\/\//i.test(path)) {
+      return path;
+    }
+    var cleanPath = path.startsWith("/") ? path : "/" + path;
+    return (apiBaseUrl || "") + cleanPath;
+  }
+
+  async function apiRequest(path, options) {
+    var url = buildApiUrl(path);
+    if (!url) {
+      throw new Error("No se configuró una URL válida de API.");
+    }
+
+    var controller = new AbortController();
+    var timeout = window.setTimeout(function () {
+      controller.abort();
+    }, apiTimeoutMs);
+
+    var settings = Object.assign(
+      {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        },
+        signal: controller.signal
+      },
+      options || {}
+    );
+
+    settings.headers = Object.assign(
+      {
+        Accept: "application/json"
+      },
+      settings.headers || {}
+    );
+
+    var response;
+    try {
+      response = await fetch(url, settings);
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        throw new Error("La solicitud tardó demasiado. Intenta nuevamente.");
+      }
+      throw new Error("No fue posible conectar con el servidor.");
+    } finally {
+      window.clearTimeout(timeout);
+    }
+
+    var responseText = await response.text();
+    var payload = null;
+    if (responseText) {
+      try {
+        payload = JSON.parse(responseText);
+      } catch (error) {
+        payload = null;
+      }
+    }
+
+    if (!response.ok) {
+      var message =
+        (payload && (payload.error || payload.message)) ||
+        "El servidor devolvió un error al procesar la solicitud.";
+      var requestError = new Error(message);
+      requestError.status = response.status;
+      requestError.payload = payload;
+      throw requestError;
+    }
+
+    return payload || {};
+  }
+
   function iconSVG(kind) {
     if (kind === "heart") {
       return '<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 56c-1.3 0-2.5-.5-3.5-1.3C15.7 43.7 8 36.8 8 25.8 8 16.5 15.4 9 24.6 9c4.8 0 9.3 2.1 12.4 5.8C40 11.1 44.6 9 49.4 9 58.6 9 66 16.5 66 25.8c0 11-7.7 17.9-20.5 28.9-1 .8-2.2 1.3-3.5 1.3h-10z" transform="translate(-5 -1)"></path></svg>';
@@ -261,6 +352,8 @@
     var clearHistoryBtn = document.getElementById("clear-appointment-history");
     var storageKey = "dr_katherine_appointments";
     var memoryAppointments = [];
+    var remoteTakenTimesCache = {};
+    var slotsRequestNonce = 0;
 
     var times = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "15:00", "15:30", "16:00", "16:30"];
 
@@ -299,6 +392,8 @@
         parentName: String(item.parentName || "Tutor").trim() || "Tutor",
         parentPhone: String(item.parentPhone || "").trim(),
         reason: String(item.reason || "").trim(),
+        status: String(item.status || "draft").trim() || "draft",
+        source: String(item.source || "website").trim() || "website",
         createdAt: String(item.createdAt || new Date().toISOString())
       };
     }
@@ -365,7 +460,7 @@
 
     function getTakenTimesByDate(dateValue, appointments) {
       return appointments.reduce(function (acc, item) {
-        if (item.date === dateValue) {
+        if (item.date === dateValue && item.status !== "draft" && item.status !== "cancelled") {
           acc[item.time] = true;
         }
         return acc;
@@ -374,7 +469,7 @@
 
     function hasConflict(appointments, dateValue, timeValue) {
       return appointments.some(function (item) {
-        return item.date === dateValue && item.time === timeValue;
+        return item.date === dateValue && item.time === timeValue && item.status !== "draft" && item.status !== "cancelled";
       });
     }
 
@@ -412,7 +507,7 @@
       var appointments = readAppointments();
       if (!appointments.length) {
         var empty = document.createElement("p");
-        empty.textContent = "Aún no hay solicitudes guardadas.";
+        empty.textContent = "Aún no hay solicitudes recientes en este dispositivo.";
         historyHost.appendChild(empty);
         return;
       }
@@ -426,7 +521,8 @@
         headline.textContent = item.date + " | " + item.time + " | " + item.patientName;
 
         var details = document.createElement("small");
-        details.textContent = "Tutor: " + item.parentName + " | Tel: " + item.parentPhone;
+        var statusLabel = item.status === "draft" ? "Borrador local" : "Pendiente de confirmación";
+        details.textContent = "Tutor: " + item.parentName + " | Tel: " + item.parentPhone + " | Estado: " + statusLabel;
 
         var actions = document.createElement("div");
         actions.className = "appointment-history-actions";
@@ -461,6 +557,32 @@
       return year + "-" + month + "-" + day;
     }
 
+    async function fetchRemoteTakenTimes(dateValue) {
+      if (!hasApiBase() || !dateValue) {
+        return {};
+      }
+
+      if (remoteTakenTimesCache[dateValue]) {
+        return remoteTakenTimesCache[dateValue];
+      }
+
+      try {
+        var payload = await apiRequest("/api/v1/appointments/taken?date=" + encodeURIComponent(dateValue));
+        var timesTaken = (payload && payload.data && Array.isArray(payload.data.timesTaken)) ? payload.data.timesTaken : [];
+        var parsed = timesTaken.reduce(function (acc, slot) {
+          var normalized = normalizeText(slot);
+          if (normalized) {
+            acc[normalized] = true;
+          }
+          return acc;
+        }, {});
+        remoteTakenTimesCache[dateValue] = parsed;
+        return parsed;
+      } catch (error) {
+        return {};
+      }
+    }
+
     function updateSummary() {
       if (!summary) {
         return;
@@ -470,13 +592,10 @@
       summary.textContent = "Seleccionado: " + datePart + " a las " + timePart;
     }
 
-    function paintSlots() {
+    function renderSlotsFromTakenTimes(takenTimes) {
       if (!slotWrap) {
         return;
       }
-      var appointments = readAppointments();
-      var dateValue = selectedDateInput ? selectedDateInput.value : "";
-      var takenTimes = dateValue ? getTakenTimesByDate(dateValue, appointments) : {};
 
       if (selectedTime && takenTimes[selectedTime]) {
         selectedTime = null;
@@ -505,6 +624,31 @@
           paintSlots();
           updateSummary();
         });
+      });
+    }
+
+    function paintSlots() {
+      if (!slotWrap) {
+        return;
+      }
+
+      var appointments = readAppointments();
+      var dateValue = selectedDateInput ? selectedDateInput.value : "";
+      var localTakenTimes = dateValue ? getTakenTimesByDate(dateValue, appointments) : {};
+      var requestNonce = slotsRequestNonce += 1;
+
+      renderSlotsFromTakenTimes(localTakenTimes);
+
+      if (!dateValue || !hasApiBase()) {
+        return;
+      }
+
+      fetchRemoteTakenTimes(dateValue).then(function (remoteTakenTimes) {
+        if (requestNonce !== slotsRequestNonce) {
+          return;
+        }
+        var mergedTakenTimes = Object.assign({}, remoteTakenTimes, localTakenTimes);
+        renderSlotsFromTakenTimes(mergedTakenTimes);
       });
     }
 
@@ -603,7 +747,7 @@
     }
 
     if (form) {
-      form.addEventListener("submit", function (event) {
+      form.addEventListener("submit", async function (event) {
         event.preventDefault();
         if (!form.checkValidity()) {
           form.reportValidity();
@@ -651,6 +795,8 @@
           parentName: parentName,
           parentPhone: parentPhone,
           reason: reason,
+          status: "draft",
+          source: "website",
           createdAt: new Date().toISOString()
         };
 
@@ -661,19 +807,87 @@
           updateSummary();
           return;
         }
+
+        var savedInBackend = false;
+        if (hasApiBase()) {
+          try {
+            var response = await apiRequest("/api/v1/appointments", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                date: appointment.date,
+                time: appointment.time,
+                patientName: appointment.patientName,
+                patientAge: Number(appointment.patientAge),
+                parentName: appointment.parentName,
+                parentPhone: appointment.parentPhone,
+                reason: appointment.reason,
+                privacyConsent: true,
+                companyWebsite: normalizeText(formData.get("companyWebsite"))
+              })
+            });
+
+            var persistedId =
+              response &&
+              response.data &&
+              response.data.appointment &&
+              normalizeText(response.data.appointment.id);
+            if (persistedId) {
+              appointment.id = persistedId;
+            }
+            appointment.status = "pending";
+            remoteTakenTimesCache[appointment.date] = Object.assign({}, remoteTakenTimesCache[appointment.date] || {}, {
+              [appointment.time]: true
+            });
+            savedInBackend = true;
+          } catch (error) {
+            if (error && error.status === 409) {
+              remoteTakenTimesCache[appointment.date] = null;
+              setStatusMessage(
+                confirmation,
+                "Ese horario acaba de ocuparse. Elige otro horario disponible para continuar.",
+                true
+              );
+              paintSlots();
+              updateSummary();
+              return;
+            }
+            setStatusMessage(
+              confirmation,
+              "No se pudo enviar la solicitud al servidor. Puedes reintentar o contactar por WhatsApp.",
+              true
+            );
+            return;
+          }
+        }
+
+        if (!savedInBackend) {
+          appointment.status = "draft";
+        }
+
         appointments.unshift(appointment);
         writeAppointments(appointments);
         renderAppointmentHistory();
 
-        setStatusMessage(
-          confirmation,
-          "Solicitud guardada para el " +
-            appointment.date +
-            " a las " +
-            appointment.time +
-            ". Usa el botón de WhatsApp para enviarla al consultorio.",
-          false
-        );
+        if (savedInBackend) {
+          setStatusMessage(
+            confirmation,
+            "Solicitud enviada para el " +
+              appointment.date +
+              " a las " +
+              appointment.time +
+              ". Te confirmaremos por WhatsApp o llamada del consultorio.",
+            false
+          );
+        } else {
+          setStatusMessage(
+            confirmation,
+            "Solicitud guardada localmente en este dispositivo. Configura la API para enviarla al consultorio.",
+            true
+          );
+        }
 
         if (whatsappLink) {
           lastSharedAppointmentId = appointment.id;
@@ -702,7 +916,7 @@
     }
     var message = document.getElementById("contact-confirmation");
 
-    form.addEventListener("submit", function (event) {
+    form.addEventListener("submit", async function (event) {
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
@@ -732,6 +946,37 @@
         return;
       }
 
+      if (hasApiBase()) {
+        try {
+          await apiRequest("/api/v1/contact-messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              name: name,
+              phone: phone,
+              email: email,
+              topic: topic || "otro",
+              message: note,
+              privacyConsent: true,
+              companyName: normalizeText(formData.get("companyName"))
+            })
+          });
+
+          setStatusMessage(message, "Mensaje enviado correctamente. Te responderemos en el horario de atención.", false);
+          form.reset();
+          return;
+        } catch (error) {
+          setStatusMessage(
+            message,
+            "No se pudo enviar tu mensaje al servidor. Intenta nuevamente o contáctanos por WhatsApp.",
+            true
+          );
+          return;
+        }
+      }
+
       var subject = "Consulta web - " + (topic || "general");
       var body =
         "Nombre: " +
@@ -745,13 +990,12 @@
         "\n\nMensaje:\n" +
         note;
 
-      if (data.clinic && data.clinic.email) {
-        window.location.href = "mailto:" + data.clinic.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      } else {
+      if (!data.clinic || !data.clinic.email) {
         setStatusMessage(message, "No se encontró un correo de destino configurado. Intenta por WhatsApp.", true);
         return;
       }
 
+      window.location.href = "mailto:" + data.clinic.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       setStatusMessage(message, "Se abrió tu aplicación de correo para completar el envío del mensaje.", false);
       form.reset();
     });

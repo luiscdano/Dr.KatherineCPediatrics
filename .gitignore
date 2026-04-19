@@ -18,3 +18,5 @@ build/
 tmp/
 
 .vscode/
+
+server/data/submissions.json

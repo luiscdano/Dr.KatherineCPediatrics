@@ -26,18 +26,51 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
   - layout compartido (header/footer)
   - render de contenido modular
   - interacciones (menú móvil, testimonios, agenda y formularios)
+- API backend en Node.js/Express para:
+  - persistencia de solicitudes de cita
+  - recepción de mensajes de contacto
+  - consulta de disponibilidad por fecha
 
 ## Configuración rápida
 
-1. Servir el proyecto estático:
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Levantar API local:
+
+```bash
+cp .env.example .env
+npm run dev:api
+```
+
+3. Servir el frontend estático:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-2. Abrir en navegador:
+4. Abrir en navegador:
 
 - `http://localhost:8080`
+
+## Backend API (producción real)
+
+- Entrada principal: `server/index.mjs`
+- Persistencia JSON local (entorno dev): `server/data/submissions.json`
+- Endpoints públicos:
+  - `GET /api/v1/health`
+  - `GET /api/v1/appointments/taken?date=YYYY-MM-DD`
+  - `POST /api/v1/appointments`
+  - `POST /api/v1/contact-messages`
+- Endpoints admin (requieren `x-admin-key`):
+  - `GET /api/v1/admin/appointments`
+  - `PATCH /api/v1/admin/appointments/:id/status`
+  - `GET /api/v1/admin/contact-messages`
+- Contrato detallado: `API.md`
+- Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
 
 ## Validaciones de calidad
 
@@ -57,11 +90,12 @@ Incluye:
 
 ## Agenda integrada en el proyecto
 
-La funcionalidad de agendamiento está implementada dentro del propio sitio:
+La funcionalidad de agendamiento está implementada dentro del propio sitio y conectada a backend:
 
 - Selección de fecha y horario en `agenda-tu-cita.html`
-- Validación y procesamiento en `assets/js/main.js`
-- Registro local de solicitudes en el navegador (localStorage)
+- Validación de cliente en `assets/js/main.js` y validación de servidor en `server/validation.mjs`
+- Persistencia centralizada en API (`POST /api/v1/appointments`)
+- Consulta de horarios ocupados por fecha (`GET /api/v1/appointments/taken`)
 - Envío opcional del resumen por WhatsApp al consultorio
 - Consentimiento de privacidad obligatorio en formularios críticos
 - Validaciones de entrada reforzadas (teléfono, longitud mínima, anti-spam)

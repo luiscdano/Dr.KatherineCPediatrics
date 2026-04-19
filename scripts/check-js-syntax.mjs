@@ -3,7 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const jsRoot = path.join(root, "assets", "js");
+const sourceRoots = [
+  path.join(root, "assets", "js"),
+  path.join(root, "scripts"),
+  path.join(root, "server")
+];
 
 function listJsFiles(dir) {
   const files = [];
@@ -13,19 +17,20 @@ function listJsFiles(dir) {
       files.push(...listJsFiles(fullPath));
       continue;
     }
-    if (entry.isFile() && entry.name.endsWith(".js")) {
+    if (entry.isFile() && (entry.name.endsWith(".js") || entry.name.endsWith(".mjs"))) {
       files.push(fullPath);
     }
   }
   return files;
 }
 
-if (!fs.existsSync(jsRoot)) {
-  console.error("No se encontro assets/js para validar sintaxis.");
+const existingRoots = sourceRoots.filter((dir) => fs.existsSync(dir));
+if (!existingRoots.length) {
+  console.error("No se encontraron carpetas de codigo JavaScript para validar sintaxis.");
   process.exit(1);
 }
 
-const jsFiles = listJsFiles(jsRoot);
+const jsFiles = existingRoots.flatMap((dir) => listJsFiles(dir));
 const failures = [];
 
 for (const file of jsFiles) {

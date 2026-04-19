@@ -4,11 +4,19 @@
   "private": true,
   "description": "Sitio web estatico de Dr. Katherine C Pediatrics",
   "scripts": {
+    "start:api": "node server/index.mjs",
+    "dev:api": "node --watch server/index.mjs",
     "check:js": "node scripts/check-js-syntax.mjs",
     "check:links": "node scripts/check-internal-links.mjs",
     "check:content": "node scripts/check-content-guards.mjs",
     "check:seo": "node scripts/check-seo-tags.mjs",
     "check:domain": "node scripts/check-domain-config.mjs",
     "validate": "npm run check:js && npm run check:links && npm run check:content && npm run check:seo && npm run check:domain"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0"
   }
 }

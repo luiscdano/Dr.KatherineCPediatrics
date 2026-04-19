@@ -1,6 +1,10 @@
 window.DR_KATHERINE_DATA = {
   siteName: "Dr. Katherine C Pediatrics",
   domain: "https://drkatherinecpediatrics.com",
+  api: {
+    baseUrl: "https://api.drkatherinecpediatrics.com",
+    timeoutMs: 10000
+  },
   clinic: {
     name: "Dr. Katherine Cedano",
     specialty: "Pediatría",
