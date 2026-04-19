@@ -7,6 +7,7 @@ function listHtmlFiles() {
   const files = [];
   for (const rel of [
     "index.html",
+    "404.html",
     "agenda-tu-cita.html",
     "blog.html",
     "contacto.html",

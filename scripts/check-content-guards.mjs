@@ -9,6 +9,7 @@ const targets = [
   "assets/js/main.js",
   "assets/js/utils.js",
   "index.html",
+  "404.html",
   "agenda-tu-cita.html",
   "blog.html",
   "contacto.html",

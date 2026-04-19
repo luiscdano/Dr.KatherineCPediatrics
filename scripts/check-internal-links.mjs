@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const htmlGlobs = [
   "index.html",
+  "404.html",
   "agenda-tu-cita.html",
   "blog.html",
   "contacto.html",

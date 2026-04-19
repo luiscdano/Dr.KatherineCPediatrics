@@ -51,6 +51,7 @@ Incluye:
 - enlaces internos en HTML
 - guardas de contenido (sin placeholders ni dependencias externas)
 - metadatos SEO base por página
+- coherencia de dominio (`CNAME`, `robots.txt`, `sitemap.xml`, `canonical`)
 
 ## Agenda integrada en el proyecto
 
@@ -63,21 +64,24 @@ La funcionalidad de agendamiento está implementada dentro del propio sitio:
 
 ## Deploy automático (GitHub Pages)
 
-Se agregó workflow en:
+Se agregaron workflows en:
 
 - `.github/workflows/deploy-pages.yml`
+- `.github/workflows/quality-checks.yml`
 
-Publica automáticamente en GitHub Pages cada `push` a `main`.
+El deploy publica automáticamente en GitHub Pages cada `push` a `main`, pero solo si `npm run validate` pasa.
 
 ### Configuración inicial en GitHub (una sola vez)
 
 1. En el repositorio, entra a `Settings` -> `Pages`.
 2. En `Build and deployment`, selecciona `Source: GitHub Actions`.
-3. Si usarás dominio personalizado, agrega un archivo `CNAME` en la raíz con `drkatherinecpediatrics.com`.
+3. El archivo `CNAME` ya está versionado con `drkatherinecpediatrics.com`. Si cambias de dominio, actualiza ese archivo.
 4. En tu proveedor DNS, apunta el dominio a GitHub Pages (cuando hagas el cambio de dominio):
    - `A` para apex (`drkatherinecpediatrics.com`) a `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
    - `CNAME` para `www` hacia `<tu-usuario>.github.io`
 5. Haz push a `main` y revisa la ejecución en la pestaña `Actions`.
+
+Guía operativa completa: `DEPLOYMENT.md`.
 
 ## Datos reales cargados
 
