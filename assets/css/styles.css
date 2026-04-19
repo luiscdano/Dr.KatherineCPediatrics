@@ -128,7 +128,7 @@ ul {
 .site-header .shell {
   min-height: 94px;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
 }
@@ -136,17 +136,17 @@ ul {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.72rem;
   text-decoration: none;
 }
 
-.brand > img {
-  width: 56px;
+.brand-logo {
+  width: auto;
   height: 56px;
-  border-radius: 14px;
-  object-fit: cover;
-  background: #fff;
-  border: 1px solid rgba(63, 82, 62, 0.1);
+  max-width: min(46vw, 260px);
+  border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  border: 0;
 }
 
 .brand-copy {
@@ -403,7 +403,7 @@ ul {
   width: 46px;
   height: 46px;
   border-radius: 999px;
-  object-fit: cover;
+  object-fit: contain;
   border: 2px solid #fff;
   box-shadow: 0 7px 15px rgba(45, 62, 44, 0.15);
 }
@@ -482,7 +482,7 @@ ul {
 }
 
 .about-image {
-  width: min(340px, 85%);
+  width: min(250px, 85%);
   height: auto;
   filter: drop-shadow(0 12px 28px rgba(45, 62, 44, 0.2));
 }
@@ -708,7 +708,7 @@ ul {
 }
 
 .profile-visual img {
-  width: min(340px, 82%);
+  width: min(250px, 82%);
   height: auto;
 }
 
@@ -929,7 +929,7 @@ ul {
 }
 
 .cta-image {
-  width: min(290px, 100%);
+  width: min(240px, 100%);
   justify-self: end;
   filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.24));
 }

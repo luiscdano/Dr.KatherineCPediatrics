@@ -11,7 +11,14 @@
   var footerHost = document.getElementById("site-footer");
 
   function navTemplate() {
-    return data.nav
+    var orderedHeaderKeys = ["about", "services", "resources", "citas", "contact"];
+    return orderedHeaderKeys
+      .map(function (key) {
+        return data.nav.find(function (item) {
+          return item.key === key;
+        });
+      })
+      .filter(Boolean)
       .map(function (item) {
         var activeClass = item.key === page ? " is-active" : "";
         return '<a class="site-nav-link' + activeClass + '" href="' + localUrl(item.href) + '">' + item.label + "</a>";
@@ -40,23 +47,15 @@
   if (headerHost) {
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
-      '  <div class="site-notice" role="status">' +
-      '    <p>' + data.clinic.emergencyNotice + "</p>" +
-      "  </div>" +
       '  <div class="shell">' +
       '    <a class="brand" href="' + localUrl("/index.html") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
-      '      <img src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo ' + data.siteName + '" width="58" height="58" loading="eager" />' +
-      '      <span class="brand-copy">' +
-      '        <strong>' + data.clinic.name + '</strong>' +
-      '        <small>Pediatría</small>' +
-      '      </span>' +
+      '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png") + '" alt="Logo ' + data.siteName + '" width="149" height="56" loading="eager" />' +
       '    </a>' +
       '    <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">' +
       '      <span></span><span></span><span></span>' +
       '      <span class="sr-only">Abrir menú</span>' +
       '    </button>' +
       '    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">' + navTemplate() + "</nav>" +
-      '    <a class="btn btn-primary btn-top-cta" href="' + localUrl("/citas.html") + '">Agendar cita</a>' +
       "  </div>" +
       "</header>";
   }
