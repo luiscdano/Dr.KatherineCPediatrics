@@ -141,8 +141,8 @@ ul {
 
 .brand-logo {
   width: auto;
-  height: 56px;
-  max-width: min(46vw, 260px);
+  height: 72px;
+  max-width: min(62vw, 380px);
   border-radius: 0;
   object-fit: contain;
   background: transparent;
@@ -1468,6 +1468,11 @@ ul {
 }
 
 @media (max-width: 640px) {
+  .brand-logo {
+    height: 56px;
+    max-width: min(74vw, 320px);
+  }
+
   .site-notice p {
     font-size: 0.78rem;
     padding: 0.44rem 0;
