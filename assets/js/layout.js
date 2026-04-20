@@ -49,7 +49,7 @@
       '<header class="site-header" id="inicio">' +
       '  <div class="shell">' +
       '    <a class="brand" href="' + localUrl("/index.html") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
-      '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png") + '" alt="Logo ' + data.siteName + '" width="149" height="56" loading="eager" />' +
+      '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png") + '" alt="Logo ' + data.siteName + '" width="1536" height="1024" loading="eager" />' +
       '    </a>' +
       '    <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">' +
       '      <span></span><span></span><span></span>' +
