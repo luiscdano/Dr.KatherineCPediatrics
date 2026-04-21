@@ -11,6 +11,8 @@
   var attrSourceMap = new WeakMap();
   var pending = false;
   var applying = false;
+  var externalDictRaw = window.DR_KATHERINE_I18N_DICT || {};
+  var externalDict = {};
 
   var PHRASE_MAP = [
     ["Sobre la doctora", "About the doctor"],
@@ -382,6 +384,18 @@
     }
   }
 
+  function normalizeDictionaryKey(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  Object.keys(externalDictRaw).forEach(function (key) {
+    var normalizedKey = normalizeDictionaryKey(key);
+    if (!normalizedKey) {
+      return;
+    }
+    externalDict[normalizedKey] = String(externalDictRaw[key] || "");
+  });
+
   function normalizeLanguage(value) {
     var lang = String(value || "").trim().toLowerCase();
     if (!SUPPORTED_LANGS[lang]) {
@@ -447,6 +461,14 @@
 
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())) {
       return text;
+    }
+
+    var leading = (text.match(/^\s*/) || [""])[0];
+    var trailing = (text.match(/\s*$/) || [""])[0];
+    var core = text.trim();
+    var exactMatch = externalDict[normalizeDictionaryKey(core)];
+    if (exactMatch) {
+      return leading + exactMatch + trailing;
     }
 
     var out = text;

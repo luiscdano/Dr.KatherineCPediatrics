@@ -106,8 +106,10 @@ ul {
   top: 0;
   z-index: 80;
   backdrop-filter: blur(16px);
-  background: rgba(248, 246, 238, 0.88);
-  border-bottom: 1px solid rgba(63, 82, 62, 0.08);
+  background: transparent;
+  border-bottom: 0;
+  padding-top: 0.12rem;
+  padding-bottom: 0.08rem;
 }
 
 .site-notice {
@@ -129,9 +131,15 @@ ul {
   min-height: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto auto auto;
   align-items: center;
   gap: 0.55rem;
+  width: fit-content;
+  max-width: min(98vw, 1680px);
+  border: 1px solid rgba(63, 82, 62, 0.08);
+  border-radius: 18px;
+  background: rgba(248, 246, 238, 0.88);
+  padding-inline: 0.34rem;
 }
 
 .brand {
@@ -1740,7 +1748,7 @@ ul {
   }
 
   .site-header .shell {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto auto auto;
   }
 
   .btn-top-cta {
@@ -1831,6 +1839,9 @@ ul {
     min-height: 0;
     padding: 0;
     position: relative;
+    width: min(98vw, 1680px);
+    max-width: min(98vw, 1680px);
+    border-radius: 14px;
   }
 
   .header-actions {
@@ -1935,6 +1946,18 @@ ul {
   .brand-logo {
     height: 125px;
     max-width: min(74vw, 320px);
+  }
+
+  .site-header {
+    padding-top: 0.05rem;
+    padding-bottom: 0.05rem;
+  }
+
+  .site-header .shell {
+    width: 96vw;
+    max-width: 96vw;
+    border-radius: 12px;
+    padding-inline: 0.2rem;
   }
 
   .lang-toggle {

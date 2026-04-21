@@ -23,17 +23,21 @@
     var lang = currentLang();
     var enClass = lang === "en" ? " is-active" : "";
     var esClass = lang === "es" ? " is-active" : "";
+    var toggleLabel = lang === "es" ? "Cambiar idioma" : "Change language";
+    var menuLabel = lang === "es" ? "Selector de idioma" : "Language selector";
+    var englishLabel = lang === "es" ? "Inglés" : "English";
+    var spanishLabel = lang === "es" ? "Español" : "Spanish";
     return (
       '<div class="lang-switcher" id="lang-switcher" data-no-translate="true">' +
-      '  <button class="lang-toggle" id="lang-toggle" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="Change language">' +
+      '  <button class="lang-toggle" id="lang-toggle" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label="' + toggleLabel + '">' +
       '    <span class="lang-icon" aria-hidden="true">' +
       '      <svg viewBox="0 0 24 24" role="img" focusable="false"><path d="M12 2a10 10 0 1 0 10 10A10.01 10.01 0 0 0 12 2zm6.93 9h-3.1a15.7 15.7 0 0 0-1.2-5 8.04 8.04 0 0 1 4.3 5zM12 4.08A13.83 13.83 0 0 1 13.92 11h-3.84A13.83 13.83 0 0 1 12 4.08zM9.37 6a15.7 15.7 0 0 0-1.2 5h-3.1a8.04 8.04 0 0 1 4.3-5zM5.07 13h3.1a15.7 15.7 0 0 0 1.2 5 8.04 8.04 0 0 1-4.3-5zM12 19.92A13.83 13.83 0 0 1 10.08 13h3.84A13.83 13.83 0 0 1 12 19.92zM14.63 18a15.7 15.7 0 0 0 1.2-5h3.1a8.04 8.04 0 0 1-4.3 5z"></path></svg>' +
       "    </span>" +
       '    <span class="lang-current" id="lang-current">' + (lang === "es" ? "ES" : "EN") + "</span>" +
       "  </button>" +
-      '  <div class="lang-menu" id="lang-menu" role="menu" aria-label="Language selector">' +
-      '    <button class="lang-option' + enClass + '" data-lang="en" type="button" role="menuitem">Inglés</button>' +
-      '    <button class="lang-option' + esClass + '" data-lang="es" type="button" role="menuitem">Español</button>' +
+      '  <div class="lang-menu" id="lang-menu" role="menu" aria-label="' + menuLabel + '">' +
+      '    <button class="lang-option' + enClass + '" data-lang="en" type="button" role="menuitem">' + englishLabel + "</button>" +
+      '    <button class="lang-option' + esClass + '" data-lang="es" type="button" role="menuitem">' + spanishLabel + "</button>" +
       "  </div>" +
       "</div>"
     );
@@ -164,13 +168,26 @@
 
   function syncLanguageUI(lang) {
     var current = document.getElementById("lang-current");
+    var langMenu = document.getElementById("lang-menu");
     if (current) {
       current.textContent = lang === "es" ? "ES" : "EN";
+    }
+    if (langToggle) {
+      langToggle.setAttribute("aria-label", lang === "es" ? "Cambiar idioma" : "Change language");
+    }
+    if (langMenu) {
+      langMenu.setAttribute("aria-label", lang === "es" ? "Selector de idioma" : "Language selector");
     }
     var options = document.querySelectorAll(".lang-option");
     options.forEach(function (option) {
       var optionLang = option.getAttribute("data-lang");
       option.classList.toggle("is-active", optionLang === lang);
+      if (optionLang === "en") {
+        option.textContent = lang === "es" ? "Inglés" : "English";
+      }
+      if (optionLang === "es") {
+        option.textContent = lang === "es" ? "Español" : "Spanish";
+      }
     });
   }
 
