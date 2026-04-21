@@ -571,8 +571,10 @@ ul {
   grid-column: 2;
   grid-row: 2;
   align-self: center;
+  justify-self: end;
   display: grid;
   justify-items: center;
+  width: fit-content;
   padding: 0 clamp(0.1rem, 0.6vw, 0.4rem) clamp(0.1rem, 0.5vw, 0.4rem);
   position: relative;
 }
@@ -596,11 +598,13 @@ ul {
 
 .coming-cert-mark {
   position: absolute;
-  right: clamp(-0.02rem, 0.8vw, 0.34rem);
-  bottom: clamp(-0.22rem, 0.45vw, 0.06rem);
-  width: clamp(52px, 5.2vw, 84px);
+  right: clamp(-1rem, -0.7vw, -0.35rem);
+  bottom: clamp(-1rem, -0.7vw, -0.35rem);
+  width: clamp(56px, 5.4vw, 88px);
   opacity: 0.82;
   filter: saturate(0.75) contrast(1.08);
+  z-index: 3;
+  pointer-events: none;
 }
 
 .hero-wrap {
@@ -1726,7 +1730,9 @@ ul {
   .coming-hero-visual {
     grid-column: 1;
     grid-row: 3;
+    justify-self: start;
     justify-items: start;
+    width: fit-content;
     padding: 0.2rem 0 0;
   }
 
@@ -1950,8 +1956,8 @@ ul {
 
   .coming-cert-mark {
     width: clamp(44px, 14vw, 62px);
-    right: 0;
-    bottom: -0.2rem;
+    right: -0.45rem;
+    bottom: -0.45rem;
   }
 
   .brand-logo {
