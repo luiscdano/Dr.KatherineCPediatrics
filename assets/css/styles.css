@@ -152,7 +152,7 @@ ul {
 
 .brand-logo {
   width: auto;
-  height: 105px;
+  height: 95px;
   max-width: min(66vw, 620px);
   border-radius: 0;
   object-fit: contain;
@@ -1778,7 +1778,8 @@ ul {
 
 @media (max-width: 920px) {
   .brand-logo {
-    height: 88px;
+    width: auto;
+    height: 95px;
     max-width: min(70vw, 520px);
   }
 
@@ -1877,6 +1878,13 @@ ul {
   .grid-about-feature,
   .form-row-2 {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .brand-logo {
+    width: auto;
+    height: 78px;
   }
 }
 
@@ -2016,5 +2024,12 @@ ul {
 
   .powered-by {
     align-self: flex-end;
+  }
+}
+
+@media (max-width: 540px) {
+  .brand-logo {
+    width: auto;
+    height: 68px;
   }
 }
