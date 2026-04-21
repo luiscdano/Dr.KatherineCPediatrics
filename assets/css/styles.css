@@ -108,8 +108,8 @@ ul {
   backdrop-filter: blur(16px);
   background: transparent;
   border-bottom: 0;
-  padding-top: 0.06rem;
-  padding-bottom: 0.04rem;
+  padding-top: 0.04rem;
+  padding-bottom: 0.03rem;
 }
 
 .site-notice {
@@ -134,12 +134,12 @@ ul {
   grid-template-columns: auto auto auto;
   align-items: center;
   gap: 0.42rem;
-  width: fit-content;
-  max-width: min(98vw, 1680px);
+  width: 100%;
+  max-width: 100%;
   border: 1px solid rgba(63, 82, 62, 0.08);
-  border-radius: 16px;
+  border-radius: 0;
   background: rgba(248, 246, 238, 0.88);
-  padding-block: 0.04rem;
+  padding-block: 0.02rem;
   padding-inline: 0.26rem;
 }
 
@@ -152,7 +152,7 @@ ul {
 
 .brand-logo {
   width: auto;
-  height: 124px;
+  height: 105px;
   max-width: min(66vw, 620px);
   border-radius: 0;
   object-fit: contain;
@@ -1778,7 +1778,7 @@ ul {
 
 @media (max-width: 920px) {
   .brand-logo {
-    height: 104px;
+    height: 88px;
     max-width: min(70vw, 520px);
   }
 
@@ -1841,9 +1841,9 @@ ul {
     min-height: 0;
     padding: 0;
     position: relative;
-    width: fit-content;
-    max-width: 96vw;
-    border-radius: 14px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
     padding-inline: 0.24rem;
   }
 
@@ -1947,19 +1947,19 @@ ul {
   }
 
   .brand-logo {
-    height: 92px;
+    height: 78px;
     max-width: min(68vw, 280px);
   }
 
   .site-header {
-    padding-top: 0.05rem;
-    padding-bottom: 0.05rem;
+    padding-top: 0.03rem;
+    padding-bottom: 0.03rem;
   }
 
   .site-header .shell {
-    width: fit-content;
-    max-width: 96vw;
-    border-radius: 12px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
     padding-inline: 0.2rem;
   }
 
