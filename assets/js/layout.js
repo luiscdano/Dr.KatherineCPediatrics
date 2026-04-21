@@ -3,7 +3,7 @@
   var utils = window.DR_KATHERINE_UTILS || {};
   var localUrl = typeof utils.localUrl === "function" ? utils.localUrl : function (path) { return path; };
   var i18n = window.DR_KATHERINE_I18N || null;
-  var brandAssetVersion = "20260420-02";
+  var brandAssetVersion = "20260420-03";
   if (!data) {
     return;
   }

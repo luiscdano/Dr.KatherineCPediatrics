@@ -13,6 +13,8 @@
   var applying = false;
   var externalDictRaw = window.DR_KATHERINE_I18N_DICT || {};
   var externalDict = {};
+  var reverseExternalDict = {};
+  var reverseWordMap = {};
 
   var PHRASE_MAP = [
     ["Sobre la doctora", "About the doctor"],
@@ -31,10 +33,18 @@
     ["Todos los derechos reservados.", "All rights reserved."],
     ["Este sitio ofrece información general y no sustituye una evaluación médica presencial.", "This site provides general information and does not replace an in-person medical evaluation."],
     ["Powered by", "Powered by"],
-    ["Nurturing happy, healthy beginnings.", "Nurturing happy, healthy beginnings."],
-    ["Pediatric Clinic", "Pediatric Clinic"],
+    ["Cultivando inicios felices y saludables.", "Nurturing happy, healthy beginnings."],
+    ["Clínica pediátrica", "Pediatric Clinic"],
     ["Punta Cana Village", "Punta Cana Village"],
-    ["American Board Certified Pediatrician", "American Board Certified Pediatrician"],
+    ["Pediatra certificada por American Board", "American Board Certified Pediatrician"],
+    ["Próximamente", "Coming Soon"],
+    ["Paso 1", "Step 1"],
+    ["Paso 2", "Step 2"],
+    ["Paso 3", "Step 3"],
+    ["Fechas disponibles", "Available dates"],
+    ["Horarios disponibles", "Available time slots"],
+    ["Preguntas frecuentes", "Frequently asked questions"],
+    ["Información sobre citas y consultas", "Appointment and consultation information"],
     ["Estamos trabajando en la versión completa del sitio. Muy pronto todos los módulos estarán habilitados.", "We are working on the full version of the site. Very soon all modules will be enabled."],
     ["Nuevo consultorio en Punta Cana Village", "New clinic in Punta Cana Village"],
     ["Conocer a la doctora", "Meet the doctor"],
@@ -393,7 +403,33 @@
     if (!normalizedKey) {
       return;
     }
-    externalDict[normalizedKey] = String(externalDictRaw[key] || "");
+    externalDict[normalizedKey] = String(externalDictRaw[key] || "").trim();
+  });
+
+  Object.keys(externalDict).forEach(function (key) {
+    var englishValue = normalizeDictionaryKey(externalDict[key]);
+    if (!englishValue) {
+      return;
+    }
+    if (englishValue.toLowerCase() === key.toLowerCase()) {
+      return;
+    }
+    if (!reverseExternalDict[englishValue]) {
+      reverseExternalDict[englishValue] = key;
+    }
+  });
+
+  Object.keys(WORD_MAP).forEach(function (spanishWord) {
+    var englishWord = String(WORD_MAP[spanishWord] || "").trim().toLowerCase();
+    if (!englishWord || englishWord.indexOf(" ") !== -1) {
+      return;
+    }
+    if (!/^[a-z]+$/i.test(englishWord)) {
+      return;
+    }
+    if (!reverseWordMap[englishWord]) {
+      reverseWordMap[englishWord] = spanishWord;
+    }
   });
 
   function normalizeLanguage(value) {
@@ -405,16 +441,6 @@
   }
 
   var currentLang = normalizeLanguage(getStoredLang() || DEFAULT_LANG);
-
-  function isLikelySpanish(text) {
-    if (!text) {
-      return false;
-    }
-    if (/[áéíóúñ¿¡]/i.test(text)) {
-      return true;
-    }
-    return /\b(el|la|los|las|de|del|para|con|sin|cita|consulta|servicio|recursos|blog|contacto|doctora)\b/i.test(text);
-  }
 
   function escapeRegex(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -497,6 +523,78 @@
     return out;
   }
 
+  function translateEnglishWordToken(token) {
+    var key = token.toLowerCase();
+    var mapped = reverseWordMap[key];
+    if (!mapped) {
+      return token;
+    }
+    return preserveCase(token, mapped);
+  }
+
+  function translateEnglishToSpanish(text) {
+    if (typeof text !== "string") {
+      return text;
+    }
+
+    if (!text.trim()) {
+      return text;
+    }
+
+    if (/^[\d\s().+\-/:|]+$/.test(text)) {
+      return text;
+    }
+
+    if (/https?:\/\//i.test(text) || /^mailto:/i.test(text) || /^tel:/i.test(text)) {
+      return text;
+    }
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())) {
+      return text;
+    }
+
+    var leading = (text.match(/^\s*/) || [""])[0];
+    var trailing = (text.match(/\s*$/) || [""])[0];
+    var core = text.trim();
+    var normalizedCore = normalizeDictionaryKey(core);
+    var exactMatch = reverseExternalDict[normalizedCore];
+    if (exactMatch) {
+      return leading + exactMatch + trailing;
+    }
+
+    var out = text;
+
+    PHRASE_MAP.forEach(function (pair) {
+      var source = pair[1];
+      var target = pair[0];
+      if (!source || source === target) {
+        return;
+      }
+      var re = new RegExp(escapeRegex(source), "g");
+      out = out.replace(re, target);
+    });
+
+    out = out.replace(/[A-Za-z]+/g, function (token) {
+      return translateEnglishWordToken(token);
+    });
+
+    out = out
+      .replace(/\bde de\b/gi, "de")
+      .replace(/\bel el\b/gi, "el")
+      .replace(/\bla la\b/gi, "la")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1");
+
+    return out;
+  }
+
+  function translateForLanguage(text, lang) {
+    if (lang === "en") {
+      return translateSpanishToEnglish(text);
+    }
+    return translateEnglishToSpanish(text);
+  }
+
   function getCurrentLanguage() {
     return currentLang;
   }
@@ -567,7 +665,12 @@
     }
 
     var sourceValue = bag[attrName];
-    var targetValue = currentLang === "en" ? translateSpanishToEnglish(sourceValue) : sourceValue;
+    var translatedSource = translateForLanguage(sourceValue, currentLang);
+    if (!applying && currentValue !== sourceValue && currentValue !== translatedSource) {
+      bag[attrName] = currentValue;
+      sourceValue = currentValue;
+    }
+    var targetValue = translateForLanguage(sourceValue, currentLang);
 
     if (currentValue !== targetValue) {
       node.setAttribute(attrName, targetValue);
@@ -591,16 +694,16 @@
 
     if (!textSourceMap.has(node)) {
       textSourceMap.set(node, raw);
-    } else if (currentLang === "en") {
+    } else {
       var sourceCandidate = textSourceMap.get(node);
-      var translatedCandidate = translateSpanishToEnglish(sourceCandidate);
-      if (raw !== translatedCandidate && raw !== sourceCandidate && isLikelySpanish(raw)) {
+      var translatedCandidate = translateForLanguage(sourceCandidate, currentLang);
+      if (!applying && raw !== translatedCandidate && raw !== sourceCandidate) {
         textSourceMap.set(node, raw);
       }
     }
 
     var source = textSourceMap.get(node);
-    var target = currentLang === "en" ? translateSpanishToEnglish(source) : source;
+    var target = translateForLanguage(source, currentLang);
 
     if (node.textContent !== target) {
       node.textContent = target;
@@ -667,9 +770,7 @@
       if (!titleBag.documentTitle) {
         titleBag.documentTitle = document.title;
       }
-      document.title = currentLang === "en"
-        ? translateSpanishToEnglish(titleBag.documentTitle)
-        : titleBag.documentTitle;
+      document.title = translateForLanguage(titleBag.documentTitle, currentLang);
     }
 
     document.documentElement.setAttribute("lang", currentLang);
@@ -718,9 +819,6 @@
   }
 
   var observer = new MutationObserver(function (mutations) {
-    if (currentLang !== "en") {
-      return;
-    }
     var roots = [];
     mutations.forEach(function (mutation) {
       if (mutation.type === "characterData" && mutation.target) {
@@ -762,7 +860,9 @@
     getLanguage: getCurrentLanguage,
     setLanguage: setLanguage,
     onLanguageChange: onLanguageChange,
-    translateText: translateSpanishToEnglish,
+    translateText: function (text, targetLang) {
+      return translateForLanguage(text, normalizeLanguage(targetLang || currentLang));
+    },
     refresh: function () {
       scheduleApply(document.body || document.documentElement);
     }
