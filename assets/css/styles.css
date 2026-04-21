@@ -2044,6 +2044,7 @@ ul {
   }
 
   .header-actions {
-    justify-self: start;
+    justify-self: end;
+    margin-right: clamp(2rem, 4.8vw, 6.5rem);
   }
 }
