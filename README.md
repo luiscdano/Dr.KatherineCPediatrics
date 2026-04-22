@@ -107,6 +107,7 @@ python3 -m http.server 8080
 - Contrato detallado: `API.md`
 - Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
 - Docker API + DB: `docker-compose.api.yml`
+- Checklist de activación final con cliente: `CHECKLIST_CLIENTE_WHATSAPP.md`
 
 ## Validaciones de calidad
 
