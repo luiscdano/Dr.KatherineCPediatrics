@@ -1,6 +1,6 @@
-(function () {
+  (function () {
   var STORAGE_KEY = "dr_katherine_lang";
-  var DEFAULT_LANG = "en";
+  var DEFAULT_LANG = "es";
   var SUPPORTED_LANGS = {
     en: true,
     es: true
@@ -13,8 +13,14 @@
   var applying = false;
   var externalDictRaw = window.DR_KATHERINE_I18N_DICT || {};
   var externalDict = {};
+  var externalDictLower = {};
   var reverseExternalDict = {};
+  var reverseExternalDictLower = {};
   var reverseWordMap = {};
+  var AMBIGUOUS_ENGLISH_WORDS = {
+    "a": true,
+    "an": true
+  };
 
   var PHRASE_MAP = [
     ["Sobre la doctora", "About the doctor"],
@@ -107,7 +113,7 @@
     ["El servidor devolvió un error al procesar la solicitud.", "The server returned an error while processing the request."],
     ["Navegación principal", "Main navigation"],
     ["Abrir menú", "Open menu"],
-    ["Ir al inicio de", "Go to home of"],
+    ["Ir al inicio de", "Go to homepage of"],
     ["Lenguaje", "Language"],
     ["Idioma", "Language"],
     ["Español", "Spanish"],
@@ -392,12 +398,60 @@
     return String(value || "").replace(/\s+/g, " ").trim();
   }
 
+  function countMatches(text, regex) {
+    var matches = text.match(regex);
+    return matches ? matches.length : 0;
+  }
+
+  function isLikelySpanish(value) {
+    var sample = normalizeDictionaryKey(value).toLowerCase();
+    if (!sample) {
+      return false;
+    }
+
+    if (/[áéíóúñ¿¡]/.test(sample)) {
+      return true;
+    }
+
+    var spanishCount = countMatches(
+      sample,
+      /\b(el|la|los|las|de|del|para|con|y|que|una|un|cada|consultorio|pediatría|pediátrica|citas|contacto|recursos)\b/g
+    );
+    var englishCount = countMatches(
+      sample,
+      /\b(the|and|for|with|to|is|are|of|in|clinic|appointments|contact|resources)\b/g
+    );
+    return spanishCount > 0 && spanishCount >= englishCount;
+  }
+
+  function isLikelyEnglish(value) {
+    var sample = normalizeDictionaryKey(value).toLowerCase();
+    if (!sample) {
+      return false;
+    }
+
+    var englishCount = countMatches(
+      sample,
+      /\b(the|and|for|with|to|is|are|of|in|clinic|appointments|contact|resources|health|care|request)\b/g
+    );
+    var spanishCount = countMatches(
+      sample,
+      /\b(el|la|los|las|de|del|para|con|y|que|una|un|cada|consultorio|pediatría|pediátrica|citas|contacto|recursos)\b/g
+    );
+    return englishCount > 0 && englishCount > spanishCount;
+  }
+
   Object.keys(externalDictRaw).forEach(function (key) {
     var normalizedKey = normalizeDictionaryKey(key);
     if (!normalizedKey) {
       return;
     }
-    externalDict[normalizedKey] = String(externalDictRaw[key] || "").trim();
+    var value = String(externalDictRaw[key] || "").trim();
+    externalDict[normalizedKey] = value;
+    var loweredKey = normalizedKey.toLowerCase();
+    if (!externalDictLower[loweredKey]) {
+      externalDictLower[loweredKey] = value;
+    }
   });
 
   Object.keys(externalDict).forEach(function (key) {
@@ -411,6 +465,10 @@
     if (!reverseExternalDict[englishValue]) {
       reverseExternalDict[englishValue] = key;
     }
+    var loweredEnglishValue = englishValue.toLowerCase();
+    if (!reverseExternalDictLower[loweredEnglishValue]) {
+      reverseExternalDictLower[loweredEnglishValue] = key;
+    }
   });
 
   Object.keys(WORD_MAP).forEach(function (spanishWord) {
@@ -419,6 +477,9 @@
       return;
     }
     if (!/^[a-z]+$/i.test(englishWord)) {
+      return;
+    }
+    if (AMBIGUOUS_ENGLISH_WORDS[englishWord]) {
       return;
     }
     if (!reverseWordMap[englishWord]) {
@@ -494,7 +555,8 @@
     var leading = (text.match(/^\s*/) || [""])[0];
     var trailing = (text.match(/\s*$/) || [""])[0];
     var core = text.trim();
-    var exactMatch = externalDict[normalizeDictionaryKey(core)];
+    var normalizedCore = normalizeDictionaryKey(core);
+    var exactMatch = externalDict[normalizedCore] || externalDictLower[normalizedCore.toLowerCase()];
     if (exactMatch) {
       return leading + exactMatch + trailing;
     }
@@ -527,6 +589,9 @@
 
   function translateEnglishWordToken(token) {
     var key = token.toLowerCase();
+    if (key === "a") {
+      return preserveCase(token, "a");
+    }
     var mapped = reverseWordMap[key];
     if (!mapped) {
       return token;
@@ -559,9 +624,13 @@
     var trailing = (text.match(/\s*$/) || [""])[0];
     var core = text.trim();
     var normalizedCore = normalizeDictionaryKey(core);
-    var exactMatch = reverseExternalDict[normalizedCore];
+    var exactMatch = reverseExternalDict[normalizedCore] || reverseExternalDictLower[normalizedCore.toLowerCase()];
     if (exactMatch) {
       return leading + exactMatch + trailing;
+    }
+
+    if (isLikelySpanish(core) && !isLikelyEnglish(core)) {
+      return text;
     }
 
     var out = text;
@@ -576,7 +645,7 @@
       out = out.replace(re, target);
     });
 
-    out = out.replace(/[A-Za-z]+/g, function (token) {
+    out = out.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function (token) {
       return translateEnglishWordToken(token);
     });
 
