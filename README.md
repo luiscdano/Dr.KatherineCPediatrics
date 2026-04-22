@@ -10,13 +10,11 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 - `servicios-pediatricos/index.html`
 - `citas/index.html`
 - `recursos-para-padres/index.html`
-- `blog.html`
 - `contacto/index.html`
 - `politica-de-privacidad.html`
 - `terminos-y-condiciones.html`
 - `servicios/` - páginas de detalle por servicio
 - `recursos/` - recursos educativos
-- `blog/` - artículos
 
 ## Stack
 

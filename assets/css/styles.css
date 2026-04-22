@@ -835,8 +835,7 @@ ul {
 .footer-hours li,
 .panel li,
 .service-card p,
-.resource-card p,
-.blog-card p {
+.resource-card p {
   color: var(--primary-700);
 }
 
@@ -900,7 +899,6 @@ ul {
 
 .service-card,
 .resource-card,
-.blog-card,
 .stat-card,
 .future-team-card {
   border-radius: var(--radius-lg);
@@ -968,7 +966,6 @@ ul {
 
 .service-card h3,
 .resource-card h3,
-.blog-card h3,
 .future-team-card h3,
 .stat-card h3 {
   font-size: 1.24rem;
@@ -1192,8 +1189,7 @@ ul {
   padding-bottom: 0.2rem;
 }
 
-.resource-card,
-.blog-card {
+.resource-card {
   display: grid;
   gap: 0.58rem;
 }
@@ -1206,15 +1202,6 @@ ul {
   border: 1px solid rgba(166, 154, 115, 0.44);
   padding: 0.22rem 0.52rem;
   font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.blog-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.4rem;
-  font-size: 0.82rem;
-  color: var(--green-600);
   font-weight: 700;
 }
 

@@ -28,7 +28,6 @@ window.DR_KATHERINE_DATA = {
     { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos/" },
     { key: "citas", label: "Citas", href: "/citas/" },
     { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres/" },
-    { key: "blog", label: "Blog", href: "/blog.html" },
     { key: "contact", label: "Contacto", href: "/contacto/" }
   ],
   legalLinks: [
@@ -181,29 +180,6 @@ window.DR_KATHERINE_DATA = {
     {
       quote: "El plan de prevención y vacunas nos ayudó a organizarnos mejor y evitar urgencias innecesarias.",
       author: "Familia Santos"
-    }
-  ],
-  blogPosts: [
-    {
-      title: "Cómo manejar la fiebre infantil sin pánico",
-      excerpt: "Estrategias sencillas para evaluar síntomas en casa y actuar con criterio.",
-      href: "/blog/manejo-fiebre-infantil.html",
-      category: "Guía para padres",
-      readTime: "5 min"
-    },
-    {
-      title: "Calendario de vacunación 2026: lo esencial",
-      excerpt: "Puntos clave para mantener la protección inmunológica en cada etapa.",
-      href: "/blog/calendario-vacunacion-2026.html",
-      category: "Vacunación",
-      readTime: "6 min"
-    },
-    {
-      title: "Alimentación saludable en preescolares",
-      excerpt: "Hábitos prácticos para mejorar nutrición, energía y crecimiento.",
-      href: "/blog/alimentacion-saludable-ninos.html",
-      category: "Nutrición",
-      readTime: "4 min"
     }
   ],
   faqs: [

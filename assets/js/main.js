@@ -264,24 +264,6 @@
     setHTML("resources-page-grid", html);
   }
 
-  function renderBlog() {
-    var html = data.blogPosts
-      .map(function (post) {
-        return (
-          '<article class="blog-card reveal">' +
-          '<div class="blog-meta"><span>' + post.category + '</span><span>' + post.readTime + '</span></div>' +
-          '<h3>' + post.title + '</h3>' +
-          '<p>' + post.excerpt + '</p>' +
-          '<a class="text-link" href="' + localUrl(post.href) + '">Leer artículo</a>' +
-          '</article>'
-        );
-      })
-      .join("");
-
-    setHTML("blog-home-grid", html);
-    setHTML("blog-page-grid", html);
-  }
-
   function renderTestimonials() {
     var slider = document.getElementById("testimonial-slider");
     if (!slider) {
@@ -1039,7 +1021,6 @@
   renderServices();
   renderDoctorInfo();
   renderResources();
-  renderBlog();
   renderTestimonials();
   renderFaqs();
   setupAgendaModule();

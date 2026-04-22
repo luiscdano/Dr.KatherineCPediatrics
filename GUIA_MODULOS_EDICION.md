@@ -11,7 +11,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Datos del consultorio: `clinic`
   - Navegación: `nav`
   - Enlaces legales: `legalLinks`
-  - Bloques dinámicos: `socialProof`, `advantages`, `services`, `doctorProfile`, `futureTeam`, `resources`, `testimonials`, `blogPosts`, `faqs`
+  - Bloques dinámicos: `socialProof`, `advantages`, `services`, `doctorProfile`, `futureTeam`, `resources`, `testimonials`, `faqs`
 - Impacto: cambiar aquí actualiza múltiples módulos sin tocar cada HTML.
 
 ### 1.2 Header + Footer globales
@@ -26,7 +26,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
 ### 1.3 Renderizado de módulos dinámicos y formularios
 - Archivo: `assets/js/main.js`
 - Contiene funciones de render:
-  - `renderSocialProof`, `renderAdvantages`, `renderServices`, `renderDoctorInfo`, `renderResources`, `renderBlog`, `renderTestimonials`, `renderFaqs`
+  - `renderSocialProof`, `renderAdvantages`, `renderServices`, `renderDoctorInfo`, `renderResources`, `renderTestimonials`, `renderFaqs`
 - Contiene lógica de formularios:
   - Citas: `setupAgendaModule`
   - Contacto: `setupContactForm`
@@ -46,11 +46,10 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Estadísticas dinámicas (`social-proof-grid`)
   - Bloque Instagram (cards estáticas)
   - Recursos home dinámico (`resources-home-grid`)
-  - Blog home dinámico (`blog-home-grid`)
   - CTA final
 - Editar aquí:
   - Textos y estructura específicos del home: `inicio/index.html`
-  - Cards dinámicas (servicios, recursos, blog, ventajas, testimonios): `assets/js/content-data.js`
+  - Cards dinámicas (servicios, recursos, ventajas, testimonios): `assets/js/content-data.js`
   - Lógica de slider/testimonios: `assets/js/main.js`
 
 ## 2.2 Sobre la doctora
@@ -100,17 +99,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Texto estructural: `recursos-para-padres/index.html`
   - Cards de recursos: `assets/js/content-data.js` (`resources`)
 
-## 2.6 Blog (landing)
-- Archivo: `blog.html`
-- Secciones:
-  - Hero
-  - Grid dinámico de posts (`blog-page-grid`)
-  - CTA
-- Editar aquí:
-  - Texto estructural: `blog.html`
-  - Cards de posts: `assets/js/content-data.js` (`blogPosts`)
-
-## 2.7 Contacto
+## 2.6 Contacto
 - Archivo: `contacto/index.html`
 - Secciones:
   - Hero
@@ -122,7 +111,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Labels, temas del select y copy del formulario: `contacto/index.html`
   - Validación/envío a API o fallback mailto: `assets/js/main.js` (`setupContactForm`)
 
-## 2.8 404 y legales
+## 2.7 404 y legales
 - Archivos:
   - `404.html`
   - `politica-de-privacidad.html`
@@ -145,12 +134,6 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
 - `recursos/alimentacion-por-etapas.html`
 - Contienen hero + contenido guía + CTA.
 
-### Blog detalle
-- `blog/manejo-fiebre-infantil.html`
-- `blog/calendario-vacunacion-2026.html`
-- `blog/alimentacion-saludable-ninos.html`
-- Contienen hero + contenido artículo + CTA.
-
 ## 3) Dónde editar según el tipo de cambio
 
 - Cambiar teléfono, WhatsApp, email, dirección, Instagram, horarios:
@@ -164,9 +147,6 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
 
 - Cambiar cards de recursos en home y landing de recursos:
   - `assets/js/content-data.js` -> `resources`
-
-- Cambiar cards de blog en home y landing de blog:
-  - `assets/js/content-data.js` -> `blogPosts`
 
 - Cambiar testimonios:
   - `assets/js/content-data.js` -> `testimonials`
