@@ -35,13 +35,13 @@ Usa este checklist cuando el cliente entregue credenciales de Meta.
 En raiz del proyecto:
 
 ```bash
-docker compose -f docker-compose.api.yml up -d
+npm run up:all
 ```
 
-En `whatsapp-backend/`:
+Para apagar todo:
 
 ```bash
-docker compose up -d
+npm run down:all
 ```
 
 ## 4) Configuracion en Meta Developers
@@ -63,4 +63,4 @@ Luego abrir:
 
 - `http://localhost:8080/admin/`
 
-e ingresar `x-admin-key` para validar que el dashboard muestra KPIs y series.
+e iniciar sesión con `ADMIN_DASHBOARD_PASSWORD` para validar que el dashboard muestra KPIs y series.

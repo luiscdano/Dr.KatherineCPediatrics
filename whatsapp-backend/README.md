@@ -70,7 +70,7 @@ curl http://localhost:3000/health
 ```bash
 cd whatsapp-backend
 cp .env.example .env
-docker compose up --build -d
+docker compose -f docker-compose.yml -f docker-compose.override.local.yml up --build -d
 ```
 
 El `docker-compose` levanta:
@@ -79,6 +79,8 @@ El `docker-compose` levanta:
 - `db` (Postgres 16)
 
 Y ejecuta migraciones automáticamente antes de iniciar la app.
+
+Nota: `docker-compose.override.local.yml` expone Postgres en host `55433` para evitar conflicto con la base de datos del backend principal.
 
 ## Endpoints
 

@@ -54,6 +54,12 @@ cp .env.example .env
 docker compose -f docker-compose.api.yml up --build -d
 ```
 
+Alternativa para levantar API principal + backend WhatsApp + frontend estático con un solo comando:
+
+```bash
+npm run up:all
+```
+
 4. (Opcional) Migrar datos legacy desde JSON hacia PostgreSQL:
 
 ```bash
@@ -73,8 +79,7 @@ npm run dev:api
 cd whatsapp-backend
 cp .env.example .env
 npm install
-npm run migrate
-npm run dev
+docker compose -f docker-compose.yml -f docker-compose.override.local.yml up --build -d
 cd ..
 ```
 
@@ -100,7 +105,11 @@ python3 -m http.server 8080
   - `GET /api/v1/appointments/taken?date=YYYY-MM-DD`
   - `POST /api/v1/appointments`
   - `POST /api/v1/contact-messages`
-- Endpoints admin (requieren `x-admin-key`):
+- Endpoints de autenticación admin:
+  - `POST /api/v1/admin/auth/login`
+  - `GET /api/v1/admin/auth/me`
+  - `POST /api/v1/admin/auth/logout`
+- Endpoints admin (requieren `Authorization: Bearer <token>` o `x-admin-key` legado):
   - `GET /api/v1/admin/appointments`
   - `PATCH /api/v1/admin/appointments/:id/status`
   - `GET /api/v1/admin/contact-messages`
@@ -110,8 +119,13 @@ python3 -m http.server 8080
 - Contrato detallado: `API.md`
 - Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
 - Docker API + DB: `docker-compose.api.yml`
+- Docker WhatsApp local override (puerto DB host 55433): `whatsapp-backend/docker-compose.override.local.yml`
 - Checklist de activación final con cliente: `CHECKLIST_CLIENTE_WHATSAPP.md`
-- Dashboard visual admin: `/admin/` (requiere `x-admin-key`)
+- Dashboard visual admin: `/admin/` (login con contraseña admin)
+- Operación unificada:
+  - `npm run up:all`
+  - `npm run down:all`
+  - `npm run logs:all`
 
 ## Validaciones de calidad
 
@@ -166,6 +180,17 @@ En `.env` del proyecto principal:
 - `DATA_FILE=server/data/submissions.json` (solo para `npm run seed:db`)
 
 Con `docker-compose.api.yml`, la API dentro del contenedor usa `DB_HOST=db` y `DB_PORT=5432` de forma interna.
+
+### Variables de acceso admin en `server/`
+
+En `.env` del proyecto principal:
+
+- `ADMIN_DASHBOARD_PASSWORD=<password_segura_para_panel>`
+- `ADMIN_SESSION_SECRET=<secret_largo_para_firmar_jwt>`
+- `ADMIN_SESSION_TTL_MINUTES=480`
+- `ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS=900000`
+- `ADMIN_LOGIN_RATE_LIMIT_MAX=10`
+- `ADMIN_API_KEY=<opcional_para_compatibilidad_legacy_y_fallback_temporal>`
 
 ## Señales de operación real
 

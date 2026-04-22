@@ -1,8 +1,9 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import jwt from "jsonwebtoken";
 import config from "./config.mjs";
 import { closePool, healthCheckDatabase } from "./db/client.mjs";
 import { runMigrations } from "./db/migrator.mjs";
@@ -19,6 +20,7 @@ import { ValidationError, normalizeText, validateAppointmentPayload, validateCon
 
 const app = express();
 const appointmentUpdatableStatuses = new Set(["pending", "confirmed", "completed", "cancelled", "no_show"]);
+const revokedAdminSessions = new Map();
 let server;
 
 app.disable("x-powered-by");
@@ -39,7 +41,7 @@ app.use(
       callback(null, false);
     },
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "x-admin-key"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-admin-key"],
     credentials: false
   })
 );
@@ -69,6 +71,20 @@ app.use(
     }
   })
 );
+
+const adminLoginRateLimiter = rateLimit({
+  windowMs: config.adminLoginRateLimitWindowMs,
+  max: config.adminLoginRateLimitMax,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler(req, res) {
+    res.status(429).json({
+      ok: false,
+      error: "Se alcanzó el límite de intentos de acceso. Intenta nuevamente más tarde.",
+      requestId: req.requestId
+    });
+  }
+});
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
@@ -122,27 +138,113 @@ function csvEscape(value) {
   return text;
 }
 
-function ensureAdminKey(req, res, next) {
-  if (!config.adminApiKey) {
+function secureEqualText(left, right) {
+  const leftBuffer = Buffer.from(String(left ?? ""), "utf8");
+  const rightBuffer = Buffer.from(String(right ?? ""), "utf8");
+
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+
+  return timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function getBearerToken(req) {
+  const authHeader = normalizeText(req.get("authorization"));
+  if (!authHeader) {
+    return "";
+  }
+
+  const [scheme, ...parts] = authHeader.split(" ");
+  if (String(scheme || "").toLowerCase() !== "bearer" || parts.length === 0) {
+    return "";
+  }
+
+  return parts.join(" ").trim();
+}
+
+function cleanupRevokedAdminSessions() {
+  const now = Date.now();
+  for (const [sessionId, expiresAtMs] of revokedAdminSessions.entries()) {
+    if (expiresAtMs <= now) {
+      revokedAdminSessions.delete(sessionId);
+    }
+  }
+}
+
+function ensureAdminAccess(req, res, next) {
+  cleanupRevokedAdminSessions();
+
+  const bearerToken = getBearerToken(req);
+  if (bearerToken) {
+    if (!config.adminSessionSecret) {
+      sendJson(res, 503, {
+        ok: false,
+        error: "ADMIN_SESSION_SECRET no está configurado en el servidor.",
+        requestId: req.requestId
+      });
+      return;
+    }
+
+    try {
+      const tokenPayload = jwt.verify(bearerToken, config.adminSessionSecret, {
+        audience: "dr-katherine-admin",
+        issuer: "dr-katherine-api"
+      });
+
+      if (!tokenPayload || typeof tokenPayload !== "object" || tokenPayload.scope !== "admin:metrics") {
+        throw new Error("invalid token scope");
+      }
+
+      if (tokenPayload.jti && revokedAdminSessions.has(tokenPayload.jti)) {
+        sendJson(res, 401, {
+          ok: false,
+          error: "Sesión inválida o cerrada.",
+          requestId: req.requestId
+        });
+        return;
+      }
+
+      req.adminAuth = {
+        mode: "token",
+        token: bearerToken,
+        payload: tokenPayload
+      };
+      next();
+      return;
+    } catch (error) {
+      sendJson(res, 401, {
+        ok: false,
+        error: "Token de sesión inválido o expirado.",
+        requestId: req.requestId
+      });
+      return;
+    }
+  }
+
+  const providedAdminKey = normalizeText(req.get("x-admin-key"));
+  if (providedAdminKey && config.adminApiKey && secureEqualText(providedAdminKey, config.adminApiKey)) {
+    req.adminAuth = {
+      mode: "api_key"
+    };
+    next();
+    return;
+  }
+
+  if (!config.adminApiKey && !config.adminSessionSecret) {
     sendJson(res, 503, {
       ok: false,
-      error: "ADMIN_API_KEY no está configurado en el servidor.",
+      error: "No hay método de autenticación admin configurado en el servidor.",
       requestId: req.requestId
     });
     return;
   }
 
-  const provided = normalizeText(req.get("x-admin-key"));
-  if (!provided || provided !== config.adminApiKey) {
-    sendJson(res, 401, {
-      ok: false,
-      error: "No autorizado.",
-      requestId: req.requestId
-    });
-    return;
-  }
-
-  next();
+  sendJson(res, 401, {
+    ok: false,
+    error: "No autorizado.",
+    requestId: req.requestId
+  });
 }
 
 app.get("/api/v1/health", async (_req, res, next) => {
@@ -273,7 +375,95 @@ app.post("/api/v1/contact-messages", async (req, res, next) => {
   }
 });
 
-app.get("/api/v1/admin/appointments", ensureAdminKey, async (req, res, next) => {
+app.post("/api/v1/admin/auth/login", adminLoginRateLimiter, async (req, res, next) => {
+  try {
+    if (!config.adminDashboardPassword || !config.adminSessionSecret) {
+      sendJson(res, 503, {
+        ok: false,
+        error: "ADMIN_DASHBOARD_PASSWORD y ADMIN_SESSION_SECRET deben estar configurados.",
+        requestId: req.requestId
+      });
+      return;
+    }
+
+    const password = normalizeText(req.body?.password);
+    if (!password) {
+      throw new ValidationError("Debes enviar la contraseña administrativa.");
+    }
+
+    if (!secureEqualText(password, config.adminDashboardPassword)) {
+      sendJson(res, 401, {
+        ok: false,
+        error: "Credenciales inválidas.",
+        requestId: req.requestId
+      });
+      return;
+    }
+
+    const expiresInSeconds = Math.max(300, Math.round(config.adminSessionTtlMinutes * 60));
+    const token = jwt.sign(
+      {
+        scope: "admin:metrics"
+      },
+      config.adminSessionSecret,
+      {
+        audience: "dr-katherine-admin",
+        issuer: "dr-katherine-api",
+        subject: "admin-dashboard",
+        jwtid: randomUUID(),
+        expiresIn: expiresInSeconds
+      }
+    );
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        tokenType: "Bearer",
+        token,
+        expiresIn: expiresInSeconds
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/auth/me", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const mode = req.adminAuth?.mode || "unknown";
+    const tokenPayload = req.adminAuth?.payload || null;
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        authenticated: true,
+        mode,
+        expiresAt: tokenPayload?.exp ? new Date(tokenPayload.exp * 1000).toISOString() : null
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/v1/admin/auth/logout", ensureAdminAccess, async (req, res, next) => {
+  try {
+    if (req.adminAuth?.mode === "token" && req.adminAuth?.payload?.jti && req.adminAuth?.payload?.exp) {
+      revokedAdminSessions.set(req.adminAuth.payload.jti, req.adminAuth.payload.exp * 1000);
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        loggedOut: true
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/appointments", ensureAdminAccess, async (req, res, next) => {
   try {
     const status = normalizeText(req.query.status);
     const date = normalizeText(req.query.date);
@@ -298,7 +488,7 @@ app.get("/api/v1/admin/appointments", ensureAdminKey, async (req, res, next) => 
   }
 });
 
-app.patch("/api/v1/admin/appointments/:id/status", ensureAdminKey, async (req, res, next) => {
+app.patch("/api/v1/admin/appointments/:id/status", ensureAdminAccess, async (req, res, next) => {
   try {
     const id = normalizeText(req.params.id);
     const status = normalizeText(req.body?.status).toLowerCase();
@@ -327,7 +517,7 @@ app.patch("/api/v1/admin/appointments/:id/status", ensureAdminKey, async (req, r
   }
 });
 
-app.get("/api/v1/admin/contact-messages", ensureAdminKey, async (_req, res, next) => {
+app.get("/api/v1/admin/contact-messages", ensureAdminAccess, async (_req, res, next) => {
   try {
     const messages = await listContactMessages();
     sendJson(res, 200, {
@@ -342,7 +532,7 @@ app.get("/api/v1/admin/contact-messages", ensureAdminKey, async (_req, res, next
   }
 });
 
-app.get("/api/v1/admin/metrics", ensureAdminKey, async (req, res, next) => {
+app.get("/api/v1/admin/metrics", ensureAdminAccess, async (req, res, next) => {
   try {
     const range = parseMetricsRange(req.query || {});
     const metrics = await getDashboardMetrics(range);
@@ -355,7 +545,7 @@ app.get("/api/v1/admin/metrics", ensureAdminKey, async (req, res, next) => {
   }
 });
 
-app.get("/api/v1/admin/metrics/timeseries", ensureAdminKey, async (req, res, next) => {
+app.get("/api/v1/admin/metrics/timeseries", ensureAdminAccess, async (req, res, next) => {
   try {
     const range = parseMetricsRange(req.query || {});
     const series = await getDashboardTimeSeries(range);
@@ -371,7 +561,7 @@ app.get("/api/v1/admin/metrics/timeseries", ensureAdminKey, async (req, res, nex
   }
 });
 
-app.get("/api/v1/admin/metrics/export.csv", ensureAdminKey, async (req, res, next) => {
+app.get("/api/v1/admin/metrics/export.csv", ensureAdminAccess, async (req, res, next) => {
   try {
     const range = parseMetricsRange(req.query || {});
     const series = await getDashboardTimeSeries(range);

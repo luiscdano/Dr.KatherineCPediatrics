@@ -38,12 +38,12 @@
 
       <section class="admin-card admin-auth">
         <h2>Acceso administrativo</h2>
-        <p>Ingresa la llave de administración del API para consultar métricas en tiempo real.</p>
+        <p>Ingresa la contraseña administrativa para abrir una sesión segura del panel.</p>
         <form id="admin-auth-form" class="admin-auth-form">
-          <label for="admin-key-input">x-admin-key</label>
-          <input id="admin-key-input" name="adminKey" type="password" autocomplete="off" required />
-          <button type="submit" class="btn btn-primary">Conectar</button>
-          <button type="button" id="admin-key-clear" class="btn btn-secondary">Limpiar</button>
+          <label for="admin-password-input">Contraseña admin</label>
+          <input id="admin-password-input" name="adminPassword" type="password" autocomplete="current-password" required />
+          <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+          <button type="button" id="admin-auth-logout" class="btn btn-secondary">Cerrar sesión</button>
         </form>
         <p id="admin-auth-status" class="admin-status" aria-live="polite"></p>
       </section>

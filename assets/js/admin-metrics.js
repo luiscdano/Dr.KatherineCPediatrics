@@ -1,18 +1,18 @@
 (function () {
-  var storageKey = "dr_katherine_admin_key";
+  var storageKey = "dr_katherine_admin_token";
   var hostName = String(window.location.hostname || "").toLowerCase();
   var isLocalHost = hostName === "localhost" || hostName === "127.0.0.1";
   var runtimeApiBase = String(window.DR_KATHERINE_API_BASE || "").trim();
   var apiBase = (runtimeApiBase || (isLocalHost ? "http://localhost:8787" : "")).replace(/\/+$/, "");
   var state = {
-    adminKey: "",
+    adminToken: "",
     range: null
   };
 
   var authForm = document.getElementById("admin-auth-form");
   var authStatus = document.getElementById("admin-auth-status");
-  var keyInput = document.getElementById("admin-key-input");
-  var keyClearButton = document.getElementById("admin-key-clear");
+  var passwordInput = document.getElementById("admin-password-input");
+  var logoutButton = document.getElementById("admin-auth-logout");
   var filterForm = document.getElementById("metrics-filter-form");
   var fromInput = document.getElementById("metrics-from");
   var toInput = document.getElementById("metrics-to");
@@ -53,13 +53,13 @@
     authStatus.classList.toggle("is-error", Boolean(isError));
   }
 
-  function getAdminKey() {
-    return String(state.adminKey || "").trim();
+  function getAdminToken() {
+    return String(state.adminToken || "").trim();
   }
 
-  function setAdminKey(value) {
+  function setAdminToken(value) {
     var cleaned = String(value || "").trim();
-    state.adminKey = cleaned;
+    state.adminToken = cleaned;
     if (cleaned) {
       sessionStorage.setItem(storageKey, cleaned);
     } else {
@@ -78,17 +78,90 @@
     return "?from=" + encodeURIComponent(range.from) + "&to=" + encodeURIComponent(range.to);
   }
 
-  async function requestJson(path, options) {
-    var key = getAdminKey();
-    if (!key) {
-      throw new Error("Debes ingresar la llave de administración.");
+  function getAuthorizationHeader() {
+    var token = getAdminToken();
+    if (!token) {
+      throw new Error("Debes iniciar sesión para consultar métricas.");
+    }
+    return "Bearer " + token;
+  }
+
+  async function login(password) {
+    var response = await fetch(withApiBase("/api/v1/admin/auth/login"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        password: password
+      })
+    });
+
+    var payload = await response.json().catch(function () {
+      return null;
+    });
+
+    if (!response.ok || !payload || payload.ok !== true || !payload.data || !payload.data.token) {
+      var message = (payload && payload.error) || "No se pudo iniciar sesión.";
+      throw new Error(message);
     }
 
+    setAdminToken(payload.data.token);
+    return payload.data;
+  }
+
+  async function ensureSession() {
+    var token = getAdminToken();
+    if (!token) {
+      throw new Error("Debes iniciar sesión para consultar métricas.");
+    }
+
+    var response = await fetch(withApiBase("/api/v1/admin/auth/me"), {
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    var payload = await response.json().catch(function () {
+      return null;
+    });
+
+    if (!response.ok || !payload || payload.ok !== true) {
+      setAdminToken("");
+      var message = (payload && payload.error) || "Tu sesión expiró. Inicia sesión nuevamente.";
+      throw new Error(message);
+    }
+
+    return payload.data;
+  }
+
+  async function logout() {
+    var token = getAdminToken();
+    if (!token) {
+      setAuthStatus("No hay sesión activa.");
+      return;
+    }
+
+    await fetch(withApiBase("/api/v1/admin/auth/logout"), {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    }).catch(function () {
+      return null;
+    });
+
+    setAdminToken("");
+    setAuthStatus("Sesión cerrada.");
+  }
+
+  async function requestJson(path, options) {
     var response = await fetch(withApiBase(path), {
       method: (options && options.method) || "GET",
       headers: {
         "Content-Type": "application/json",
-        "x-admin-key": key
+        Authorization: getAuthorizationHeader()
       }
     });
 
@@ -291,6 +364,8 @@
   }
 
   async function loadDashboard() {
+    await ensureSession();
+
     var range = getRangeFromInputs();
     state.range = range;
 
@@ -329,18 +404,14 @@
   }
 
   async function exportCsv() {
-    var key = getAdminKey();
-    if (!key) {
-      setAuthStatus("Debes ingresar la llave de administración para exportar.", true);
-      return;
-    }
+    await ensureSession();
 
     var range = getRangeFromInputs();
     var url = withApiBase("/api/v1/admin/metrics/export.csv" + buildQuery(range));
     var response = await fetch(url, {
       method: "GET",
       headers: {
-        "x-admin-key": key
+        Authorization: getAuthorizationHeader()
       }
     });
 
@@ -363,10 +434,9 @@
   }
 
   function preloadState() {
-    var storedKey = String(sessionStorage.getItem(storageKey) || "").trim();
-    if (storedKey) {
-      setAdminKey(storedKey);
-      keyInput.value = storedKey;
+    var storedToken = String(sessionStorage.getItem(storageKey) || "").trim();
+    if (storedToken) {
+      setAdminToken(storedToken);
     }
 
     var range = defaultRange();
@@ -376,16 +446,28 @@
 
   authForm.addEventListener("submit", function (event) {
     event.preventDefault();
-    setAdminKey(keyInput.value);
-    loadDashboard().catch(function (error) {
-      setAuthStatus(error.message, true);
-    });
+
+    var password = String(passwordInput.value || "").trim();
+    if (!password) {
+      setAuthStatus("Debes ingresar la contraseña administrativa.", true);
+      return;
+    }
+
+    setAuthStatus("Autenticando...");
+    login(password)
+      .then(function () {
+        passwordInput.value = "";
+        return loadDashboard();
+      })
+      .catch(function (error) {
+        setAuthStatus(error.message, true);
+      });
   });
 
-  keyClearButton.addEventListener("click", function () {
-    setAdminKey("");
-    keyInput.value = "";
-    setAuthStatus("Llave removida.");
+  logoutButton.addEventListener("click", function () {
+    logout().catch(function (error) {
+      setAuthStatus(error.message, true);
+    });
   });
 
   filterForm.addEventListener("submit", function (event) {
@@ -406,4 +488,12 @@
   });
 
   preloadState();
+  if (getAdminToken()) {
+    setAuthStatus("Restaurando sesión...");
+    loadDashboard().catch(function (error) {
+      setAuthStatus(error.message, true);
+    });
+  } else {
+    setAuthStatus("Inicia sesión para ver métricas.");
+  }
 })();

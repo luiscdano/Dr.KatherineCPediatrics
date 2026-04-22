@@ -112,7 +112,36 @@ Respuesta exitosa (`201`):
 }
 ```
 
-## Admin (requieren `x-admin-key`)
+## Auth admin
+
+- `POST /api/v1/admin/auth/login`
+- `Content-Type: application/json`
+
+Body:
+
+```json
+{
+  "password": "admin_password"
+}
+```
+
+Respuesta exitosa (`200`):
+
+```json
+{
+  "ok": true,
+  "data": {
+    "tokenType": "Bearer",
+    "token": "jwt_token",
+    "expiresIn": 28800
+  }
+}
+```
+
+- `GET /api/v1/admin/auth/me` (requiere `Authorization: Bearer <token>`)
+- `POST /api/v1/admin/auth/logout` (requiere `Authorization: Bearer <token>`)
+
+## Admin (requieren `Authorization: Bearer <token>` o `x-admin-key` legado)
 
 - `GET /api/v1/admin/appointments`
 - `PATCH /api/v1/admin/appointments/:id/status`

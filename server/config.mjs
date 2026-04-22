@@ -56,6 +56,11 @@ const config = {
   rateLimitWindowMs: toPositiveNumber(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
   rateLimitMax: toPositiveNumber(process.env.RATE_LIMIT_MAX, 60),
   adminApiKey: String(process.env.ADMIN_API_KEY || "").trim(),
+  adminDashboardPassword: String(process.env.ADMIN_DASHBOARD_PASSWORD || process.env.ADMIN_API_KEY || "").trim(),
+  adminSessionSecret: String(process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_API_KEY || "").trim(),
+  adminSessionTtlMinutes: toPositiveNumber(process.env.ADMIN_SESSION_TTL_MINUTES, 480),
+  adminLoginRateLimitWindowMs: toPositiveNumber(process.env.ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS, 900_000),
+  adminLoginRateLimitMax: toPositiveNumber(process.env.ADMIN_LOGIN_RATE_LIMIT_MAX, 10),
   db: {
     host: String(process.env.DB_HOST || "127.0.0.1").trim(),
     port: toPositiveNumber(process.env.DB_PORT, 55432),

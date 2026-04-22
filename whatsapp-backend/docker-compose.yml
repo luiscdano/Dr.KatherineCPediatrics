@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   app:
     build:
@@ -27,8 +25,6 @@ services:
       POSTGRES_PASSWORD: whatsapp
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U whatsapp -d whatsapp"]
       interval: 5s
