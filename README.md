@@ -29,6 +29,10 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
   - persistencia de solicitudes de cita
   - recepción de mensajes de contacto
   - consulta de disponibilidad por fecha
+- servicio dedicado de WhatsApp Business Cloud API en `whatsapp-backend/` para:
+  - webhook de Meta
+  - chatbot básico extensible
+  - envío transaccional interno desde el backend principal
 
 ## Configuración rápida
 
@@ -45,13 +49,24 @@ cp .env.example .env
 npm run dev:api
 ```
 
-3. Servir el frontend estático:
+3. Levantar backend de WhatsApp (opcional, recomendado para automatización):
+
+```bash
+cd whatsapp-backend
+cp .env.example .env
+npm install
+npm run migrate
+npm run dev
+cd ..
+```
+
+4. Servir el frontend estático:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-4. Abrir en navegador:
+5. Abrir en navegador:
 
 - `http://localhost:8080`
 
@@ -96,8 +111,19 @@ La funcionalidad de citas está implementada dentro del propio sitio y conectada
 - Persistencia centralizada en API (`POST /api/v1/appointments`)
 - Consulta de horarios ocupados por fecha (`GET /api/v1/appointments/taken`)
 - Envío opcional del resumen por WhatsApp al consultorio
+- Puente automático al servicio `whatsapp-backend` para notificar citas/mensajes
 - Consentimiento de privacidad obligatorio en formularios críticos
 - Validaciones de entrada reforzadas (teléfono, longitud mínima, anti-spam)
+
+### Variables para automatización WhatsApp en `server/`
+
+En `.env` del proyecto principal:
+
+- `WHATSAPP_AUTOMATION_ENABLED=true`
+- `WHATSAPP_BACKEND_BASE_URL=http://localhost:3000`
+- `WHATSAPP_BACKEND_API_KEY=<internal_api_key_de_whatsapp_backend>`
+- `WHATSAPP_CLINIC_RECIPIENT=<numero_destino_en_formato_whatsapp>`
+- `WHATSAPP_NOTIFY_PARENT_ON_APPOINTMENT=false` (opcional)
 
 ## Señales de operación real
 

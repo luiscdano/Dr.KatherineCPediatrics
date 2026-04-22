@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whatsapp-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: sh -c "npm run migrate && npm run start"
+    volumes:
+      - ./logs:/usr/src/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: whatsapp-db
+    environment:
+      POSTGRES_DB: whatsapp
+      POSTGRES_USER: whatsapp
+      POSTGRES_PASSWORD: whatsapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whatsapp -d whatsapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

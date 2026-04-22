@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import config from "./config.mjs";
 import { readStore, updateStore } from "./store.mjs";
+import { notifyAppointmentCreated, notifyContactMessageCreated } from "./whatsapp-notifier.mjs";
 import { ValidationError, normalizeText, validateAppointmentPayload, validateContactPayload, validateISODate } from "./validation.mjs";
 
 const app = express();
@@ -62,6 +63,15 @@ app.use(
 
 function sendJson(res, statusCode, payload) {
   res.status(statusCode).json(payload);
+}
+
+function runBackgroundTask(taskPromise, label) {
+  taskPromise.catch((error) => {
+    // eslint-disable-next-line no-console
+    console.error(`[api] background task failed (${label})`, {
+      message: error?.message || "unknown error"
+    });
+  });
 }
 
 function ensureAdminKey(req, res, next) {
@@ -166,6 +176,13 @@ app.post("/api/v1/appointments", async (req, res, next) => {
       return store;
     });
 
+    if (createdAppointment) {
+      runBackgroundTask(
+        notifyAppointmentCreated(createdAppointment),
+        `notifyAppointmentCreated requestId=${req.requestId}`
+      );
+    }
+
     sendJson(res, 201, {
       ok: true,
       data: {
@@ -210,6 +227,11 @@ app.post("/api/v1/contact-messages", async (req, res, next) => {
       store.contactMessages.unshift(messageRecord);
       return store;
     });
+
+    runBackgroundTask(
+      notifyContactMessageCreated(messageRecord),
+      `notifyContactMessageCreated requestId=${req.requestId}`
+    );
 
     sendJson(res, 201, {
       ok: true,
