@@ -13,6 +13,7 @@ import {
   updateAppointmentStatus
 } from "./repositories/appointments-repository.mjs";
 import { createContactMessage, listContactMessages } from "./repositories/contact-messages-repository.mjs";
+import { getDashboardMetrics, getDashboardTimeSeries } from "./repositories/metrics-repository.mjs";
 import { notifyAppointmentCreated, notifyContactMessageCreated } from "./whatsapp-notifier.mjs";
 import { ValidationError, normalizeText, validateAppointmentPayload, validateContactPayload, validateISODate } from "./validation.mjs";
 
@@ -80,6 +81,45 @@ function runBackgroundTask(taskPromise, label) {
       message: error?.message || "unknown error"
     });
   });
+}
+
+function toIsoDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function buildDefaultMetricsRange() {
+  const end = new Date();
+  const start = new Date(end);
+  start.setUTCDate(start.getUTCDate() - 29);
+  return {
+    from: toIsoDate(start),
+    to: toIsoDate(end)
+  };
+}
+
+function parseMetricsRange(query) {
+  const defaults = buildDefaultMetricsRange();
+  const from = normalizeText(query.from) || defaults.from;
+  const to = normalizeText(query.to) || defaults.to;
+  const parsedFrom = validateISODate(from, "from");
+  const parsedTo = validateISODate(to, "to");
+
+  if (parsedFrom > parsedTo) {
+    throw new ValidationError("El rango de fechas es inválido: 'from' no puede ser mayor que 'to'.");
+  }
+
+  return {
+    from: parsedFrom,
+    to: parsedTo
+  };
+}
+
+function csvEscape(value) {
+  const text = String(value ?? "");
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, "\"\"")}"`;
+  }
+  return text;
 }
 
 function ensureAdminKey(req, res, next) {
@@ -297,6 +337,63 @@ app.get("/api/v1/admin/contact-messages", ensureAdminKey, async (_req, res, next
         messages
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/metrics", ensureAdminKey, async (req, res, next) => {
+  try {
+    const range = parseMetricsRange(req.query || {});
+    const metrics = await getDashboardMetrics(range);
+    sendJson(res, 200, {
+      ok: true,
+      data: metrics
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/metrics/timeseries", ensureAdminKey, async (req, res, next) => {
+  try {
+    const range = parseMetricsRange(req.query || {});
+    const series = await getDashboardTimeSeries(range);
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        range,
+        series
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/metrics/export.csv", ensureAdminKey, async (req, res, next) => {
+  try {
+    const range = parseMetricsRange(req.query || {});
+    const series = await getDashboardTimeSeries(range);
+    const headers = ["day", "appointments", "contacts", "confirmed", "cancelled", "no_show"];
+    const rows = [headers.join(",")];
+
+    for (const item of series) {
+      rows.push(
+        [
+          csvEscape(item.day),
+          csvEscape(item.appointments),
+          csvEscape(item.contacts),
+          csvEscape(item.confirmed),
+          csvEscape(item.cancelled),
+          csvEscape(item.noShow)
+        ].join(",")
+      );
+    }
+
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="metrics-${range.from}_to_${range.to}.csv"`);
+    res.status(200).send(rows.join("\n"));
   } catch (error) {
     next(error);
   }

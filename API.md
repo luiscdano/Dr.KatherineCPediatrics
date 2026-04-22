@@ -117,6 +117,9 @@ Respuesta exitosa (`201`):
 - `GET /api/v1/admin/appointments`
 - `PATCH /api/v1/admin/appointments/:id/status`
 - `GET /api/v1/admin/contact-messages`
+- `GET /api/v1/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
 Estados permitidos para cita:
 
@@ -125,3 +128,42 @@ Estados permitidos para cita:
 - `completed`
 - `cancelled`
 - `no_show`
+
+### Ejemplo respuesta `GET /api/v1/admin/metrics`
+
+```json
+{
+  "ok": true,
+  "data": {
+    "range": {
+      "from": "2026-03-24",
+      "to": "2026-04-22"
+    },
+    "kpis": {
+      "appointmentsTotal": 42,
+      "contactsTotal": 37,
+      "busySlots": 31,
+      "slotCapacity": 360,
+      "occupancyRate": 8.61,
+      "conversionRate": 113.51,
+      "noShowRate": 4.76,
+      "avgLeadHours": 68.2
+    },
+    "appointmentsByStatus": {
+      "pending": 10,
+      "confirmed": 16,
+      "completed": 12,
+      "cancelled": 2,
+      "no_show": 2
+    },
+    "contactsByTopic": [
+      { "topic": "agenda", "total": 14 },
+      { "topic": "seguimiento", "total": 12 }
+    ],
+    "statusTransitions": [
+      { "status": "confirmed", "total": 18 },
+      { "status": "completed", "total": 9 }
+    ]
+  }
+}
+```

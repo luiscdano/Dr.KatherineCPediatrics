@@ -58,3 +58,9 @@ curl -s http://127.0.0.1:3000/health
 ```
 
 Verificar que ambos devuelven `"ok": true`.
+
+Luego abrir:
+
+- `http://localhost:8080/admin/`
+
+e ingresar `x-admin-key` para validar que el dashboard muestra KPIs y series.

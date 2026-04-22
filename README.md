@@ -104,10 +104,14 @@ python3 -m http.server 8080
   - `GET /api/v1/admin/appointments`
   - `PATCH /api/v1/admin/appointments/:id/status`
   - `GET /api/v1/admin/contact-messages`
+  - `GET /api/v1/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`
+  - `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
+  - `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - Contrato detallado: `API.md`
 - Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
 - Docker API + DB: `docker-compose.api.yml`
 - Checklist de activación final con cliente: `CHECKLIST_CLIENTE_WHATSAPP.md`
+- Dashboard visual admin: `/admin/` (requiere `x-admin-key`)
 
 ## Validaciones de calidad
 

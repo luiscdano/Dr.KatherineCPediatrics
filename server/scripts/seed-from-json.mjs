@@ -58,6 +58,29 @@ async function insertAppointment(item) {
   return result.rows.length > 0;
 }
 
+async function insertInitialStatusHistory(item) {
+  await query(
+    `
+      INSERT INTO appointment_status_history (
+        appointment_id,
+        previous_status,
+        next_status,
+        changed_at,
+        source
+      )
+      VALUES ($1,$2,$3,$4,$5)
+      ON CONFLICT (appointment_id, next_status, changed_at) DO NOTHING
+    `,
+    [
+      item.id,
+      null,
+      item.status || "pending",
+      item.createdAt || new Date().toISOString(),
+      "seed"
+    ]
+  );
+}
+
 async function insertContactMessage(item) {
   const result = await query(
     `
@@ -99,6 +122,7 @@ async function main() {
   for (const appointment of store.appointments) {
     try {
       if (await insertAppointment(appointment)) {
+        await insertInitialStatusHistory(appointment);
         seededAppointments += 1;
       }
     } catch (error) {

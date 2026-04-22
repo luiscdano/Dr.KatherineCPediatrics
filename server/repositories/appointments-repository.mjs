@@ -1,4 +1,4 @@
-import { query } from "../db/client.mjs";
+import { query, withClient } from "../db/client.mjs";
 
 const busyStatuses = ["pending", "confirmed", "completed"];
 
@@ -30,6 +30,28 @@ function isBusySlotConflict(error) {
   return error?.code === "23505" && error?.constraint === "appointments_busy_slot_uniq";
 }
 
+async function insertStatusHistory(client, payload) {
+  await client.query(
+    `
+      INSERT INTO appointment_status_history (
+        appointment_id,
+        previous_status,
+        next_status,
+        changed_at,
+        source
+      ) VALUES ($1,$2,$3,$4,$5)
+      ON CONFLICT (appointment_id, next_status, changed_at) DO NOTHING
+    `,
+    [
+      payload.appointmentId,
+      payload.previousStatus || null,
+      payload.nextStatus,
+      payload.changedAt,
+      payload.source || "system"
+    ]
+  );
+}
+
 export async function listTakenTimesByDate(date) {
   const result = await query(
     `
@@ -46,48 +68,62 @@ export async function listTakenTimesByDate(date) {
 }
 
 export async function createAppointment(input) {
-  try {
-    const result = await query(
-      `
-        INSERT INTO appointments (
-          id,
-          appointment_date,
-          appointment_time,
-          patient_name,
-          patient_age,
-          parent_name,
-          parent_phone,
-          reason,
-          status,
-          source,
-          created_at
-        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
-        RETURNING *
-      `,
-      [
-        input.id,
-        input.date,
-        input.time,
-        input.patientName,
-        input.patientAge,
-        input.parentName,
-        input.parentPhone,
-        input.reason,
-        input.status,
-        input.source,
-        input.createdAt
-      ]
-    );
+  return withClient(async (client) => {
+    await client.query("BEGIN");
+    try {
+      const result = await client.query(
+        `
+          INSERT INTO appointments (
+            id,
+            appointment_date,
+            appointment_time,
+            patient_name,
+            patient_age,
+            parent_name,
+            parent_phone,
+            reason,
+            status,
+            source,
+            created_at
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+          RETURNING *
+        `,
+        [
+          input.id,
+          input.date,
+          input.time,
+          input.patientName,
+          input.patientAge,
+          input.parentName,
+          input.parentPhone,
+          input.reason,
+          input.status,
+          input.source,
+          input.createdAt
+        ]
+      );
 
-    return mapAppointmentRow(result.rows[0]);
-  } catch (error) {
-    if (isBusySlotConflict(error)) {
-      const conflict = new Error("El horario seleccionado ya está ocupado.");
-      conflict.status = 409;
-      throw conflict;
+      const created = mapAppointmentRow(result.rows[0]);
+      await insertStatusHistory(client, {
+        appointmentId: created.id,
+        previousStatus: null,
+        nextStatus: created.status,
+        changedAt: created.createdAt,
+        source: "system"
+      });
+
+      await client.query("COMMIT");
+      return created;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      if (isBusySlotConflict(error)) {
+        const conflict = new Error("El horario seleccionado ya está ocupado.");
+        conflict.status = 409;
+        throw conflict;
+      }
+      throw error;
     }
-    throw error;
-  }
+  });
 }
 
 export async function listAppointments(filters = {}) {
@@ -119,29 +155,60 @@ export async function listAppointments(filters = {}) {
 }
 
 export async function updateAppointmentStatus(id, status) {
-  try {
-    const result = await query(
-      `
-        UPDATE appointments
-        SET status = $2,
-            updated_at = NOW()
-        WHERE id = $1
-        RETURNING *
-      `,
-      [id, status]
-    );
+  return withClient(async (client) => {
+    await client.query("BEGIN");
+    try {
+      const existingResult = await client.query(
+        `
+          SELECT *
+          FROM appointments
+          WHERE id = $1
+          FOR UPDATE
+        `,
+        [id]
+      );
 
-    if (!result.rows.length) {
-      return null;
-    }
+      if (!existingResult.rows.length) {
+        await client.query("ROLLBACK");
+        return null;
+      }
 
-    return mapAppointmentRow(result.rows[0]);
-  } catch (error) {
-    if (isBusySlotConflict(error)) {
-      const conflict = new Error("No se pudo actualizar el estado: el horario ya está ocupado.");
-      conflict.status = 409;
-      throw conflict;
+      const existing = mapAppointmentRow(existingResult.rows[0]);
+      if (existing.status === status) {
+        await client.query("COMMIT");
+        return existing;
+      }
+
+      const updatedResult = await client.query(
+        `
+          UPDATE appointments
+          SET status = $2,
+              updated_at = NOW()
+          WHERE id = $1
+          RETURNING *
+        `,
+        [id, status]
+      );
+      const updated = mapAppointmentRow(updatedResult.rows[0]);
+
+      await insertStatusHistory(client, {
+        appointmentId: updated.id,
+        previousStatus: existing.status,
+        nextStatus: updated.status,
+        changedAt: updated.updatedAt || new Date().toISOString(),
+        source: "admin"
+      });
+
+      await client.query("COMMIT");
+      return updated;
+    } catch (error) {
+      await client.query("ROLLBACK");
+      if (isBusySlotConflict(error)) {
+        const conflict = new Error("No se pudo actualizar el estado: el horario ya está ocupado.");
+        conflict.status = 409;
+        throw conflict;
+      }
+      throw error;
     }
-    throw error;
-  }
+  });
 }

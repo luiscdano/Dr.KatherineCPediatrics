@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Admin | Métricas Dr. Katherine C Pediatrics</title>
+    <meta
+      name="description"
+      content="Panel administrativo de métricas para citas y contacto del consultorio Dr. Katherine C Pediatrics."
+    />
+    <link rel="canonical" href="https://drkatherinecpediatrics.com/admin/" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#8BA18A" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="stylesheet" href="/assets/css/admin.css" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="apple-touch-icon" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="shortcut icon" href="/assets/img/isotipo.png?v=20260420-03" />
+  </head>
+  <body data-page="admin-metrics">
+    <main class="admin-shell">
+      <section class="admin-header">
+        <a class="admin-brand" href="/inicio/" aria-label="Ir al inicio">
+          <img src="/assets/img/drkatherinecpediatrics.png?v=20260420-03" alt="Dr. Katherine C Pediatrics" width="1536" height="1024" />
+        </a>
+        <div class="admin-header-copy">
+          <h1>Panel de métricas</h1>
+          <p>Seguimiento operativo de citas, contacto y desempeño del consultorio.</p>
+        </div>
+      </section>
+
+      <section class="admin-card admin-auth">
+        <h2>Acceso administrativo</h2>
+        <p>Ingresa la llave de administración del API para consultar métricas en tiempo real.</p>
+        <form id="admin-auth-form" class="admin-auth-form">
+          <label for="admin-key-input">x-admin-key</label>
+          <input id="admin-key-input" name="adminKey" type="password" autocomplete="off" required />
+          <button type="submit" class="btn btn-primary">Conectar</button>
+          <button type="button" id="admin-key-clear" class="btn btn-secondary">Limpiar</button>
+        </form>
+        <p id="admin-auth-status" class="admin-status" aria-live="polite"></p>
+      </section>
+
+      <section class="admin-card admin-filters">
+        <h2>Rango de análisis</h2>
+        <form id="metrics-filter-form" class="admin-filter-form">
+          <div class="admin-field">
+            <label for="metrics-from">Desde</label>
+            <input id="metrics-from" name="from" type="date" required />
+          </div>
+          <div class="admin-field">
+            <label for="metrics-to">Hasta</label>
+            <input id="metrics-to" name="to" type="date" required />
+          </div>
+          <button type="submit" class="btn btn-primary">Actualizar</button>
+          <button type="button" id="metrics-export-btn" class="btn btn-ghost">Exportar CSV</button>
+        </form>
+      </section>
+
+      <section class="admin-kpi-grid" id="kpi-grid">
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">Citas totales</p>
+          <strong id="kpi-appointments-total">-</strong>
+        </article>
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">Mensajes de contacto</p>
+          <strong id="kpi-contacts-total">-</strong>
+        </article>
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">Ocupación de agenda</p>
+          <strong id="kpi-occupancy-rate">-</strong>
+        </article>
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">Conversión contacto -> cita</p>
+          <strong id="kpi-conversion-rate">-</strong>
+        </article>
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">No show rate</p>
+          <strong id="kpi-no-show-rate">-</strong>
+        </article>
+        <article class="admin-kpi-card">
+          <p class="admin-kpi-label">Lead promedio (horas)</p>
+          <strong id="kpi-avg-lead-hours">-</strong>
+        </article>
+      </section>
+
+      <section class="admin-grid-2">
+        <article class="admin-card">
+          <h2>Actividad por día</h2>
+          <p>Citas agendadas y mensajes de contacto por fecha.</p>
+          <div id="chart-activity" class="admin-chart" role="img" aria-label="Serie diaria de citas y contacto"></div>
+        </article>
+        <article class="admin-card">
+          <h2>Transiciones de estado</h2>
+          <p>Cambios de estado registrados por día (confirmadas, canceladas, no show).</p>
+          <div id="chart-transitions" class="admin-chart" role="img" aria-label="Serie diaria de transiciones de estado"></div>
+        </article>
+      </section>
+
+      <section class="admin-grid-2">
+        <article class="admin-card">
+          <h2>Distribución de estado actual</h2>
+          <div id="status-distribution" class="admin-distribution"></div>
+        </article>
+        <article class="admin-card">
+          <h2>Mensajes por tema</h2>
+          <div id="topic-distribution" class="admin-distribution"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="/assets/js/admin-metrics.js" defer></script>
+  </body>
+</html>
