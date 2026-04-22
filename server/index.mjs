@@ -4,13 +4,21 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import config from "./config.mjs";
-import { readStore, updateStore } from "./store.mjs";
+import { closePool, healthCheckDatabase } from "./db/client.mjs";
+import { runMigrations } from "./db/migrator.mjs";
+import {
+  createAppointment,
+  listAppointments,
+  listTakenTimesByDate,
+  updateAppointmentStatus
+} from "./repositories/appointments-repository.mjs";
+import { createContactMessage, listContactMessages } from "./repositories/contact-messages-repository.mjs";
 import { notifyAppointmentCreated, notifyContactMessageCreated } from "./whatsapp-notifier.mjs";
 import { ValidationError, normalizeText, validateAppointmentPayload, validateContactPayload, validateISODate } from "./validation.mjs";
 
 const app = express();
-const appointmentBusyStatuses = new Set(["pending", "confirmed", "completed"]);
 const appointmentUpdatableStatuses = new Set(["pending", "confirmed", "completed", "cancelled", "no_show"]);
+let server;
 
 app.disable("x-powered-by");
 
@@ -97,26 +105,29 @@ function ensureAdminKey(req, res, next) {
   next();
 }
 
-app.get("/api/v1/health", (req, res) => {
-  sendJson(res, 200, {
-    ok: true,
-    data: {
-      service: "dr-katherine-api",
-      status: "up",
-      timestamp: new Date().toISOString()
-    }
-  });
+app.get("/api/v1/health", async (_req, res, next) => {
+  try {
+    const database = await healthCheckDatabase();
+    const ok = database.status === "up";
+
+    sendJson(res, ok ? 200 : 503, {
+      ok,
+      data: {
+        service: "dr-katherine-api",
+        status: ok ? "up" : "degraded",
+        database,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.get("/api/v1/appointments/taken", async (req, res, next) => {
   try {
     const date = validateISODate(req.query.date, "date");
-    const store = await readStore();
-    const timesTaken = [...new Set(
-      store.appointments
-        .filter((item) => item.date === date && appointmentBusyStatuses.has(String(item.status || "").trim()))
-        .map((item) => item.time)
-    )];
+    const timesTaken = await listTakenTimesByDate(date);
 
     sendJson(res, 200, {
       ok: true,
@@ -143,45 +154,24 @@ app.post("/api/v1/appointments", async (req, res, next) => {
       return;
     }
 
-    let createdAppointment = null;
-    await updateStore((store) => {
-      const hasConflict = store.appointments.some(
-        (item) =>
-          item.date === payload.date &&
-          item.time === payload.time &&
-          appointmentBusyStatuses.has(String(item.status || "").trim())
-      );
-
-      if (hasConflict) {
-        const conflictError = new Error("El horario seleccionado ya está ocupado.");
-        conflictError.status = 409;
-        throw conflictError;
-      }
-
-      createdAppointment = {
-        id: randomUUID(),
-        date: payload.date,
-        time: payload.time,
-        patientName: payload.patientName,
-        patientAge: payload.patientAge,
-        parentName: payload.parentName,
-        parentPhone: payload.parentPhone,
-        reason: payload.reason,
-        status: "pending",
-        source: "website",
-        createdAt: new Date().toISOString()
-      };
-
-      store.appointments.unshift(createdAppointment);
-      return store;
+    const createdAppointment = await createAppointment({
+      id: randomUUID(),
+      date: payload.date,
+      time: payload.time,
+      patientName: payload.patientName,
+      patientAge: payload.patientAge,
+      parentName: payload.parentName,
+      parentPhone: payload.parentPhone,
+      reason: payload.reason,
+      status: "pending",
+      source: "website",
+      createdAt: new Date().toISOString()
     });
 
-    if (createdAppointment) {
-      runBackgroundTask(
-        notifyAppointmentCreated(createdAppointment),
-        `notifyAppointmentCreated requestId=${req.requestId}`
-      );
-    }
+    runBackgroundTask(
+      notifyAppointmentCreated(createdAppointment),
+      `notifyAppointmentCreated requestId=${req.requestId}`
+    );
 
     sendJson(res, 201, {
       ok: true,
@@ -212,7 +202,7 @@ app.post("/api/v1/contact-messages", async (req, res, next) => {
       return;
     }
 
-    const messageRecord = {
+    const messageRecord = await createContactMessage({
       id: randomUUID(),
       name: payload.name,
       phone: payload.phone,
@@ -221,11 +211,6 @@ app.post("/api/v1/contact-messages", async (req, res, next) => {
       message: payload.message,
       source: "website",
       createdAt: new Date().toISOString()
-    };
-
-    await updateStore((store) => {
-      store.contactMessages.unshift(messageRecord);
-      return store;
     });
 
     runBackgroundTask(
@@ -256,15 +241,9 @@ app.get("/api/v1/admin/appointments", ensureAdminKey, async (req, res, next) => 
       validateISODate(date, "date");
     }
 
-    const store = await readStore();
-    const items = store.appointments.filter((item) => {
-      if (status && String(item.status || "").trim() !== status) {
-        return false;
-      }
-      if (date && item.date !== date) {
-        return false;
-      }
-      return true;
+    const items = await listAppointments({
+      status: status || undefined,
+      date: date || undefined
     });
 
     sendJson(res, 200, {
@@ -290,19 +269,12 @@ app.patch("/api/v1/admin/appointments/:id/status", ensureAdminKey, async (req, r
       throw new ValidationError("status no contiene un valor permitido.");
     }
 
-    let updated = null;
-    await updateStore((store) => {
-      const target = store.appointments.find((item) => item.id === id);
-      if (!target) {
-        const notFoundError = new Error("No se encontró la cita solicitada.");
-        notFoundError.status = 404;
-        throw notFoundError;
-      }
-      target.status = status;
-      target.updatedAt = new Date().toISOString();
-      updated = target;
-      return store;
-    });
+    const updated = await updateAppointmentStatus(id, status);
+    if (!updated) {
+      const notFoundError = new Error("No se encontró la cita solicitada.");
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
 
     sendJson(res, 200, {
       ok: true,
@@ -315,14 +287,14 @@ app.patch("/api/v1/admin/appointments/:id/status", ensureAdminKey, async (req, r
   }
 });
 
-app.get("/api/v1/admin/contact-messages", ensureAdminKey, async (req, res, next) => {
+app.get("/api/v1/admin/contact-messages", ensureAdminKey, async (_req, res, next) => {
   try {
-    const store = await readStore();
+    const messages = await listContactMessages();
     sendJson(res, 200, {
       ok: true,
       data: {
-        count: store.contactMessages.length,
-        messages: store.contactMessages
+        count: messages.length,
+        messages
       }
     });
   } catch (error) {
@@ -355,17 +327,50 @@ app.use((error, req, res, next) => {
   });
 });
 
-readStore()
-  .then(() => {
-    app.listen(config.port, config.host, () => {
-      // eslint-disable-next-line no-console
-      console.log(
-        `[api] running on http://${config.host}:${config.port} | data=${config.dataFile} | cors=${config.corsOrigins.join(",")}`
-      );
-    });
-  })
-  .catch((error) => {
+async function startServer() {
+  if (config.db.runMigrationsOnStart) {
+    const result = await runMigrations();
     // eslint-disable-next-line no-console
-    console.error("[api] failed to initialize data store", error);
-    process.exit(1);
+    console.log(`[api] db migrations complete | total=${result.totalFiles} newlyApplied=${result.newlyApplied}`);
+  }
+
+  const dbStatus = await healthCheckDatabase();
+  if (dbStatus.status !== "up") {
+    throw new Error(`Database unavailable: ${dbStatus.error || "unknown error"}`);
+  }
+
+  await new Promise((resolve) => {
+    server = app.listen(config.port, config.host, resolve);
   });
+
+  // eslint-disable-next-line no-console
+  console.log(
+    `[api] running on http://${config.host}:${config.port} | db=${config.db.host}:${config.db.port}/${config.db.database} | cors=${config.corsOrigins.join(",")}`
+  );
+}
+
+async function shutdown(signal) {
+  // eslint-disable-next-line no-console
+  console.log(`[api] shutdown signal received: ${signal}`);
+
+  if (server) {
+    await new Promise((resolve) => server.close(resolve));
+  }
+  await closePool();
+  process.exit(0);
+}
+
+process.on("SIGINT", () => {
+  shutdown("SIGINT");
+});
+
+process.on("SIGTERM", () => {
+  shutdown("SIGTERM");
+});
+
+startServer().catch(async (error) => {
+  // eslint-disable-next-line no-console
+  console.error("[api] failed to initialize server", error);
+  await closePool();
+  process.exit(1);
+});

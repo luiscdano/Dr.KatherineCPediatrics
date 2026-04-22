@@ -16,6 +16,10 @@ Respuesta:
   "data": {
     "service": "dr-katherine-api",
     "status": "up",
+    "database": {
+      "status": "up",
+      "latencyMs": 3
+    },
     "timestamp": "2026-04-19T02:00:00.000Z"
   }
 }

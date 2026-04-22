@@ -1,3 +1,4 @@
+import "dotenv/config";
 import path from "node:path";
 
 function toPositiveNumber(value, fallback) {
@@ -23,6 +24,18 @@ function toBoolean(value, fallback = false) {
   return fallback;
 }
 
+function toDatabaseSsl(value) {
+  if (value == null || value === "") {
+    return false;
+  }
+
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "yes", "on", "require"].includes(normalized)) {
+    return { rejectUnauthorized: false };
+  }
+  return false;
+}
+
 function parseOrigins(value) {
   if (!value) {
     return ["http://localhost:8080"];
@@ -43,6 +56,15 @@ const config = {
   rateLimitWindowMs: toPositiveNumber(process.env.RATE_LIMIT_WINDOW_MS, 60_000),
   rateLimitMax: toPositiveNumber(process.env.RATE_LIMIT_MAX, 60),
   adminApiKey: String(process.env.ADMIN_API_KEY || "").trim(),
+  db: {
+    host: String(process.env.DB_HOST || "127.0.0.1").trim(),
+    port: toPositiveNumber(process.env.DB_PORT, 55432),
+    database: String(process.env.DB_NAME || "dr_katherine").trim(),
+    user: String(process.env.DB_USER || "postgres").trim(),
+    password: String(process.env.DB_PASSWORD || "").trim(),
+    ssl: toDatabaseSsl(process.env.DB_SSL),
+    runMigrationsOnStart: toBoolean(process.env.DB_RUN_MIGRATIONS_ON_START, true)
+  },
   whatsappAutomation: {
     enabled: toBoolean(process.env.WHATSAPP_AUTOMATION_ENABLED, false),
     backendBaseUrl: String(process.env.WHATSAPP_BACKEND_BASE_URL || "http://localhost:3000").trim().replace(/\/+$/, ""),

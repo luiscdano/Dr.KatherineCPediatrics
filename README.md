@@ -42,14 +42,32 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 npm install
 ```
 
-2. Levantar API local:
+2. Configurar variables del backend:
 
 ```bash
 cp .env.example .env
+```
+
+3. Levantar PostgreSQL + API principal (Docker recomendado):
+
+```bash
+docker compose -f docker-compose.api.yml up --build -d
+```
+
+4. (Opcional) Migrar datos legacy desde JSON hacia PostgreSQL:
+
+```bash
+npm run seed:db
+```
+
+5. Levantar API local sin Docker (si ya tienes Postgres corriendo):
+
+```bash
+npm run migrate:db
 npm run dev:api
 ```
 
-3. Levantar backend de WhatsApp (opcional, recomendado para automatización):
+6. Levantar backend de WhatsApp (opcional, recomendado para automatización):
 
 ```bash
 cd whatsapp-backend
@@ -60,20 +78,23 @@ npm run dev
 cd ..
 ```
 
-4. Servir el frontend estático:
+7. Servir el frontend estático:
 
 ```bash
 python3 -m http.server 8080
 ```
 
-5. Abrir en navegador:
+8. Abrir en navegador:
 
 - `http://localhost:8080`
 
 ## Backend API (producción real)
 
 - Entrada principal: `server/index.mjs`
-- Persistencia JSON local (entorno dev): `server/data/submissions.json`
+- Persistencia principal: PostgreSQL
+- Migraciones SQL versionadas: `server/db/migrations/`
+- Script de migración: `npm run migrate:db`
+- Script de seed legacy JSON -> DB: `npm run seed:db`
 - Endpoints públicos:
   - `GET /api/v1/health`
   - `GET /api/v1/appointments/taken?date=YYYY-MM-DD`
@@ -85,6 +106,7 @@ python3 -m http.server 8080
   - `GET /api/v1/admin/contact-messages`
 - Contrato detallado: `API.md`
 - Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
+- Docker API + DB: `docker-compose.api.yml`
 
 ## Validaciones de calidad
 
@@ -124,6 +146,21 @@ En `.env` del proyecto principal:
 - `WHATSAPP_BACKEND_API_KEY=<internal_api_key_de_whatsapp_backend>`
 - `WHATSAPP_CLINIC_RECIPIENT=<numero_destino_en_formato_whatsapp>`
 - `WHATSAPP_NOTIFY_PARENT_ON_APPOINTMENT=false` (opcional)
+
+### Variables de base de datos en `server/`
+
+En `.env` del proyecto principal:
+
+- `DB_HOST=127.0.0.1`
+- `DB_PORT=55432`
+- `DB_NAME=dr_katherine`
+- `DB_USER=postgres`
+- `DB_PASSWORD=<secreto_fuerte>`
+- `DB_SSL=false`
+- `DB_RUN_MIGRATIONS_ON_START=true`
+- `DATA_FILE=server/data/submissions.json` (solo para `npm run seed:db`)
+
+Con `docker-compose.api.yml`, la API dentro del contenedor usa `DB_HOST=db` y `DB_PORT=5432` de forma interna.
 
 ## Señales de operación real
 
