@@ -599,8 +599,8 @@ ul {
 .coming-hero-visual::after {
   content: "";
   position: absolute;
-  right: clamp(-1rem, -0.7vw, -0.35rem);
-  bottom: clamp(-1rem, -0.7vw, -0.35rem);
+  right: clamp(0.7rem, 1.8vw, 1.35rem);
+  bottom: clamp(0.6rem, 1.6vw, 1.2rem);
   width: clamp(56px, 5.4vw, 88px);
   aspect-ratio: 1 / 1;
   background: url("../img/abp.png") center / contain no-repeat;
