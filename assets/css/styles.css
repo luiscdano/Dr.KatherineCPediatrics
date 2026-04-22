@@ -577,6 +577,7 @@ ul {
   width: fit-content;
   padding: 0 clamp(0.1rem, 0.6vw, 0.4rem) clamp(0.1rem, 0.5vw, 0.4rem);
   position: relative;
+  transform: translate(-5px, -10px);
 }
 
 .coming-doctor-photo {
