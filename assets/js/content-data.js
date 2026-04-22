@@ -23,13 +23,13 @@ window.DR_KATHERINE_DATA = {
     ]
   },
   nav: [
-    { key: "home", label: "Inicio", href: "/index.html" },
-    { key: "about", label: "Sobre la doctora", href: "/sobre-la-doctora.html" },
-    { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos.html" },
-    { key: "citas", label: "Citas", href: "/citas.html" },
-    { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres.html" },
+    { key: "home", label: "Inicio", href: "/inicio/" },
+    { key: "about", label: "Sobre la doctora", href: "/sobre-la-doctora/" },
+    { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos/" },
+    { key: "citas", label: "Citas", href: "/citas/" },
+    { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres/" },
     { key: "blog", label: "Blog", href: "/blog.html" },
-    { key: "contact", label: "Contacto", href: "/contacto.html" }
+    { key: "contact", label: "Contacto", href: "/contacto/" }
   ],
   legalLinks: [
     { label: "Política de privacidad", href: "/politica-de-privacidad.html" },

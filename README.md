@@ -4,13 +4,14 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 
 ## Estructura principal
 
-- `index.html` - Home
-- `sobre-la-doctora.html`
-- `servicios-pediatricos.html`
-- `citas.html`
-- `recursos-para-padres.html`
+- `inicio/index.html` - Home (módulo Inicio)
+- `index.html` - redirección de raíz hacia `/inicio/`
+- `sobre-la-doctora/index.html`
+- `servicios-pediatricos/index.html`
+- `citas/index.html`
+- `recursos-para-padres/index.html`
 - `blog.html`
-- `contacto.html`
+- `contacto/index.html`
 - `politica-de-privacidad.html`
 - `terminos-y-condiciones.html`
 - `servicios/` - páginas de detalle por servicio
@@ -92,7 +93,7 @@ Incluye:
 
 La funcionalidad de citas está implementada dentro del propio sitio y conectada a backend:
 
-- Selección de fecha y horario en `citas.html`
+- Selección de fecha y horario en `citas/index.html`
 - Validación de cliente en `assets/js/main.js` y validación de servidor en `server/validation.mjs`
 - Persistencia centralizada en API (`POST /api/v1/appointments`)
 - Consulta de horarios ocupados por fecha (`GET /api/v1/appointments/taken`)

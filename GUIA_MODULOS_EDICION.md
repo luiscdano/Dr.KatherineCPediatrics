@@ -34,7 +34,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
 ## 2) Módulos por página
 
 ## 2.1 Inicio
-- Archivo: `index.html`
+- Archivo: `inicio/index.html`
 - Secciones:
   - Hero principal (texto + imagen hero)
   - Apertura consultorio (CTA)
@@ -49,12 +49,12 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Blog home dinámico (`blog-home-grid`)
   - CTA final
 - Editar aquí:
-  - Textos y estructura específicos del home: `index.html`
+  - Textos y estructura específicos del home: `inicio/index.html`
   - Cards dinámicas (servicios, recursos, blog, ventajas, testimonios): `assets/js/content-data.js`
   - Lógica de slider/testimonios: `assets/js/main.js`
 
 ## 2.2 Sobre la doctora
-- Archivo: `sobre-la-doctora.html`
+- Archivo: `sobre-la-doctora/index.html`
 - Secciones:
   - Hero de presentación
   - Bloque enfoque clínico
@@ -62,21 +62,21 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Equipo en expansión dinámico (`future-team-grid`)
   - CTA final
 - Editar aquí:
-  - Textos propios de la página: `sobre-la-doctora.html`
+  - Textos propios de la página: `sobre-la-doctora/index.html`
   - Listas de formación/enfoque/equipo: `assets/js/content-data.js`
 
 ## 2.3 Servicios (landing)
-- Archivo: `servicios-pediatricos.html`
+- Archivo: `servicios-pediatricos/index.html`
 - Secciones:
   - Hero
   - Grid dinámico de servicios (`services-grid`)
   - Bloques de apoyo y CTA
 - Editar aquí:
-  - Texto general: `servicios-pediatricos.html`
+  - Texto general: `servicios-pediatricos/index.html`
   - Títulos/resúmenes/bullets/enlaces de servicios: `assets/js/content-data.js`
 
 ## 2.4 Citas
-- Archivo: `citas.html`
+- Archivo: `citas/index.html`
 - Secciones:
   - Hero
   - Módulo agenda (`agenda-module`)
@@ -86,18 +86,18 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Historial local (`appointment-history`)
   - FAQ dinámico (`faq-list`)
 - Editar aquí:
-  - Layout/campos/labels del formulario: `citas.html`
+  - Layout/campos/labels del formulario: `citas/index.html`
   - Reglas de validación y envío: `assets/js/main.js` (`setupAgendaModule`)
   - Preguntas frecuentes: `assets/js/content-data.js` (`faqs`)
 
 ## 2.5 Recursos para padres (landing)
-- Archivo: `recursos-para-padres.html`
+- Archivo: `recursos-para-padres/index.html`
 - Secciones:
   - Hero
   - Grid dinámico de recursos (`resources-page-grid`)
   - CTA
 - Editar aquí:
-  - Texto estructural: `recursos-para-padres.html`
+  - Texto estructural: `recursos-para-padres/index.html`
   - Cards de recursos: `assets/js/content-data.js` (`resources`)
 
 ## 2.6 Blog (landing)
@@ -111,7 +111,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Cards de posts: `assets/js/content-data.js` (`blogPosts`)
 
 ## 2.7 Contacto
-- Archivo: `contacto.html`
+- Archivo: `contacto/index.html`
 - Secciones:
   - Hero
   - Canales de contacto
@@ -119,7 +119,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - Formulario (`contact-form`)
   - Mensaje de confirmación (`contact-confirmation`)
 - Editar aquí:
-  - Labels, temas del select y copy del formulario: `contacto.html`
+  - Labels, temas del select y copy del formulario: `contacto/index.html`
   - Validación/envío a API o fallback mailto: `assets/js/main.js` (`setupContactForm`)
 
 ## 2.8 404 y legales
@@ -175,7 +175,7 @@ Esta guía te dice qué contiene cada módulo, en qué archivo está, y dónde e
   - `assets/js/content-data.js` -> `faqs`
 
 - Cambiar estructura/orden de secciones de una página:
-  - Edita el HTML de esa página (`index.html`, `citas.html`, etc.)
+  - Edita el HTML de esa página (`inicio/index.html`, `citas/index.html`, etc.)
 
 - Cambiar validaciones o flujo de formularios:
   - `assets/js/main.js`

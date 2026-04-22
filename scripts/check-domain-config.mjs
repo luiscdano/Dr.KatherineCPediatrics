@@ -2,36 +2,43 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const ignoredDirs = new Set([".git", "node_modules", ".venv_i18n"]);
 const expectedDomain = "drkatherinecpediatrics.com";
 const expectedBaseUrl = `https://${expectedDomain}`;
 const expectedSitemapUrl = `${expectedBaseUrl}/sitemap.xml`;
 
 function listHtmlFiles() {
   const files = [];
-  const rootEntries = fs.readdirSync(root, { withFileTypes: true });
-  for (const entry of rootEntries) {
-    if (entry.isFile() && entry.name.endsWith(".html")) {
-      files.push(path.join(root, entry.name));
-    }
-  }
 
-  for (const dir of ["blog", "recursos", "servicios"]) {
-    const fullDir = path.join(root, dir);
-    if (!fs.existsSync(fullDir)) {
-      continue;
-    }
-    for (const entry of fs.readdirSync(fullDir, { withFileTypes: true })) {
+  function walk(dirPath) {
+    for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        if (ignoredDirs.has(entry.name)) {
+          continue;
+        }
+        walk(fullPath);
+        continue;
+      }
       if (entry.isFile() && entry.name.endsWith(".html")) {
-        files.push(path.join(fullDir, entry.name));
+        files.push(fullPath);
       }
     }
   }
+
+  walk(root);
   return files;
 }
 
 function normalizePathForUrl(filePath) {
   const rel = path.relative(root, filePath).replace(/\\/g, "/");
-  return rel === "index.html" ? "/" : `/${rel}`;
+  if (rel === "index.html") {
+    return "/";
+  }
+  if (rel.endsWith("/index.html")) {
+    return `/${rel.slice(0, -"/index.html".length)}/`;
+  }
+  return `/${rel}`;
 }
 
 function getCanonicalHref(html) {

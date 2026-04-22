@@ -81,7 +81,7 @@
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
       '  <div class="shell">' +
-      '    <a class="brand" href="' + localUrl("/index.html") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
+      '    <a class="brand" href="' + localUrl("/inicio/") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
       '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="Logo ' + data.siteName + '" width="1536" height="1024" loading="eager" />' +
       '    </a>' +
       '    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">' + navTemplate() + "</nav>" +
@@ -131,7 +131,7 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary" href="' + localUrl("/citas.html") + '">Citas en línea</a>' +
+      '      <a class="btn btn-secondary" href="' + localUrl("/citas/") + '">Citas en línea</a>' +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +

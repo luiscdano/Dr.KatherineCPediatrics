@@ -2,27 +2,28 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const subDirs = ["blog", "recursos", "servicios"];
+const ignoredDirs = new Set([".git", "node_modules", ".venv_i18n"]);
 
 function listHtmlFiles() {
   const files = [];
-  for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-    if (entry.isFile() && entry.name.endsWith(".html")) {
-      files.push(path.join(root, entry.name));
-    }
-  }
 
-  for (const dir of subDirs) {
-    const dirPath = path.join(root, dir);
-    if (!fs.existsSync(dirPath)) {
-      continue;
-    }
+  function walk(dirPath) {
     for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+      const fullPath = path.join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        if (ignoredDirs.has(entry.name)) {
+          continue;
+        }
+        walk(fullPath);
+        continue;
+      }
       if (entry.isFile() && entry.name.endsWith(".html")) {
-        files.push(path.join(dirPath, entry.name));
+        files.push(fullPath);
       }
     }
   }
+
+  walk(root);
   return files;
 }
 

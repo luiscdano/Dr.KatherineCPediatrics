@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
+const ignoredDirs = new Set([".git", "node_modules", ".venv_i18n"]);
 const targets = [
   "README.md",
   "assets/js/content-data.js",
@@ -10,23 +11,23 @@ const targets = [
   "assets/js/utils.js"
 ];
 
-for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
-  if (entry.isFile() && entry.name.endsWith(".html")) {
-    targets.push(entry.name);
-  }
-}
-
-for (const dir of ["blog", "recursos", "servicios"]) {
-  const fullDir = path.join(root, dir);
-  if (!fs.existsSync(fullDir)) {
-    continue;
-  }
-  for (const entry of fs.readdirSync(fullDir, { withFileTypes: true })) {
+function collectHtmlTargets(dirPath) {
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      if (ignoredDirs.has(entry.name)) {
+        continue;
+      }
+      collectHtmlTargets(fullPath);
+      continue;
+    }
     if (entry.isFile() && entry.name.endsWith(".html")) {
-      targets.push(path.join(dir, entry.name));
+      targets.push(path.relative(root, fullPath));
     }
   }
 }
+
+collectHtmlTargets(root);
 
 const rules = [
   { regex: /\[Pendiente\]/i, message: "Texto provisional [Pendiente]" },

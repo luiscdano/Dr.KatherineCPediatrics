@@ -446,6 +446,14 @@
     return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
+  function phraseRegex(source) {
+    var escaped = escapeRegex(source);
+    if (/^[A-Za-z0-9 ]+$/.test(source)) {
+      return new RegExp("\\b" + escaped.replace(/\s+/g, "\\s+") + "\\b", "g");
+    }
+    return new RegExp(escaped, "g");
+  }
+
   function preserveCase(source, target) {
     if (!source) {
       return target;
@@ -505,7 +513,7 @@
       if (!source || source === target) {
         return;
       }
-      var re = new RegExp(escapeRegex(source), "g");
+      var re = phraseRegex(source);
       out = out.replace(re, target);
     });
 
@@ -570,7 +578,7 @@
       if (!source || source === target) {
         return;
       }
-      var re = new RegExp(escapeRegex(source), "g");
+      var re = phraseRegex(source);
       out = out.replace(re, target);
     });
 
