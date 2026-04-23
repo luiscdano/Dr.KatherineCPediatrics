@@ -30,11 +30,11 @@ jobs:
 
       - name: Run health monitor
         env:
-          OPS_HEALTH_URLS: ${{ secrets.OPS_HEALTH_URLS }}
+          OPS_HEALTH_URLS: ${{ vars.OPS_HEALTH_URLS }}
           ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
         run: |
           if [ -z "$OPS_HEALTH_URLS" ]; then
-            echo "OPS_HEALTH_URLS no está configurado en Secrets."
+            echo "OPS_HEALTH_URLS no está configurado en Variables del repositorio."
             echo "Configura OPS_HEALTH_URLS para activar el monitoreo externo."
             exit 0
           fi
