@@ -2,8 +2,11 @@ import process from "node:process";
 
 const DEFAULT_TIMEOUT_MS = Number(process.env.OPS_HEALTH_TIMEOUT_MS || 8000);
 const urls = String(process.env.OPS_HEALTH_URLS || "")
+  .replace(/\r\n/g, "\n")
+  .replace(/\n+/g, ",")
   .split(",")
   .map((item) => item.trim())
+  .map((item) => item.replace(/^['"]+|['"]+$/g, ""))
   .filter(Boolean);
 
 if (!urls.length) {
@@ -21,7 +24,9 @@ function withTimeout(url, timeoutMs) {
 }
 
 async function sendAlert(message, details) {
-  const webhookUrl = String(process.env.ALERT_WEBHOOK_URL || "").trim();
+  const webhookUrl = String(process.env.ALERT_WEBHOOK_URL || "")
+    .trim()
+    .replace(/^['"]+|['"]+$/g, "");
   if (!webhookUrl) {
     return;
   }
