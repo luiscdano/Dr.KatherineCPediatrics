@@ -1,0 +1,93 @@
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: server/Dockerfile
+    container_name: dr-katherine-api-staging
+    env_file:
+      - .env.staging
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: dr_katherine
+      DB_USER: postgres
+      DB_PASSWORD: change_me
+    ports:
+      - "18787:8787"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    container_name: dr-katherine-db-staging
+    environment:
+      POSTGRES_DB: dr_katherine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: change_me
+    volumes:
+      - dr_katherine_postgres_data_staging:/var/lib/postgresql/data
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dr_katherine"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  whatsapp-backend:
+    build:
+      context: ../../whatsapp-backend
+      dockerfile: Dockerfile
+    container_name: whatsapp-backend-staging
+    env_file:
+      - ../../whatsapp-backend/.env
+    environment:
+      DB_PROVIDER: postgres
+      DB_HOST: whatsapp-db
+      DB_PORT: 5432
+      DB_NAME: whatsapp
+      DB_USER: whatsapp
+      DB_PASSWORD: whatsapp
+      DB_SSL: "false"
+    ports:
+      - "13000:3000"
+    depends_on:
+      whatsapp-db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: sh -c "npm run migrate && npm run start"
+    volumes:
+      - ../../whatsapp-backend/logs:/usr/src/app/logs
+
+  whatsapp-db:
+    image: postgres:16-alpine
+    container_name: whatsapp-db-staging
+    environment:
+      POSTGRES_DB: whatsapp
+      POSTGRES_USER: whatsapp
+      POSTGRES_PASSWORD: whatsapp
+    volumes:
+      - whatsapp_postgres_data_staging:/var/lib/postgresql/data
+    ports:
+      - "15433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U whatsapp -d whatsapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  frontend:
+    image: nginx:alpine
+    container_name: dr-katherine-frontend-staging
+    ports:
+      - "18080:80"
+    volumes:
+      - ../..:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+
+volumes:
+  dr_katherine_postgres_data_staging:
+  whatsapp_postgres_data_staging:

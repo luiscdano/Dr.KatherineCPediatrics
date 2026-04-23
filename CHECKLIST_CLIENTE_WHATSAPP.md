@@ -59,6 +59,12 @@ curl -s http://127.0.0.1:3000/health
 
 Verificar que ambos devuelven `"ok": true`.
 
+Verificar observabilidad básica (si `OPS_METRICS_KEY` está configurado):
+
+```bash
+curl -s http://127.0.0.1:8787/api/v1/ops/metrics -H "x-ops-key: <OPS_METRICS_KEY>"
+```
+
 Luego abrir:
 
 - `http://localhost:8080/admin/`

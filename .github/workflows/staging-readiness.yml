@@ -1,0 +1,78 @@
+name: Staging Readiness
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate project
+        run: npm run validate
+
+      - name: Release readiness checks
+        run: npm run release:check
+
+  staging-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: readiness
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare env files
+        run: |
+          cp .env.example .env
+          cp whatsapp-backend/.env.example whatsapp-backend/.env
+
+      - name: Start API stack
+        run: docker compose -f docker-compose.api.yml up --build -d
+
+      - name: Start WhatsApp stack
+        run: docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml up --build -d
+
+      - name: Smoke health checks
+        env:
+          OPS_HEALTH_URLS: http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health
+        run: npm run monitor:health
+
+      - name: Stop stacks
+        if: always()
+        run: |
+          docker compose -f docker-compose.api.yml down -v
+          docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml down -v

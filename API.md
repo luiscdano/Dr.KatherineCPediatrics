@@ -133,13 +133,21 @@ Respuesta exitosa (`200`):
   "data": {
     "tokenType": "Bearer",
     "token": "jwt_token",
-    "expiresIn": 28800
+    "expiresIn": 28800,
+    "csrfToken": "csrf_hex_token"
   }
 }
 ```
 
-- `GET /api/v1/admin/auth/me` (requiere `Authorization: Bearer <token>`)
-- `POST /api/v1/admin/auth/logout` (requiere `Authorization: Bearer <token>`)
+- `GET /api/v1/admin/auth/me`
+- `POST /api/v1/admin/auth/logout`
+
+Notas de seguridad admin:
+
+- El login también abre sesión por cookie `httpOnly` (`drk_admin_session`).
+- El backend entrega cookie CSRF (`drk_admin_csrf`) para validación de mutaciones.
+- Para requests `POST/PATCH` autenticados por cookie, enviar header `x-csrf-token`.
+- Se mantiene compatibilidad con `Authorization: Bearer <token>` y `x-admin-key` legado.
 
 ## Admin (requieren `Authorization: Bearer <token>` o `x-admin-key` legado)
 
@@ -149,6 +157,10 @@ Respuesta exitosa (`200`):
 - `GET /api/v1/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
+
+Para mutaciones (`PATCH /api/v1/admin/appointments/:id/status`), si usas sesión por cookie debes enviar:
+
+- `x-csrf-token: <token>`
 
 Estados permitidos para cita:
 
@@ -193,6 +205,50 @@ Estados permitidos para cita:
       { "status": "confirmed", "total": 18 },
       { "status": "completed", "total": 9 }
     ]
+  }
+}
+```
+
+## Ops
+
+- `GET /api/v1/ops/metrics`
+- Header requerido: `x-ops-key: <OPS_METRICS_KEY>`
+
+Respuesta (`200`):
+
+```json
+{
+  "ok": true,
+  "data": {
+    "service": "dr-katherine-api",
+    "startedAt": "2026-04-23T14:00:00.000Z",
+    "uptimeSeconds": 1234.56,
+    "memory": {
+      "rssMb": 85.21,
+      "heapUsedMb": 27.14,
+      "heapTotalMb": 43.7
+    },
+    "requests": {
+      "total": 302,
+      "byMethod": { "GET": 250, "POST": 42, "PATCH": 10 },
+      "byStatusClass": { "2xx": 290, "4xx": 10, "5xx": 2 },
+      "errors5xx": 2
+    },
+    "admin": {
+      "loginSuccess": 5,
+      "loginFailure": 1,
+      "ipDenied": 0,
+      "csrfDenied": 0
+    },
+    "business": {
+      "appointmentsCreated": 32,
+      "contactsCreated": 18
+    },
+    "alerts": {
+      "sent": 0,
+      "failed": 0
+    },
+    "timestamp": "2026-04-23T14:20:00.000Z"
   }
 }
 ```

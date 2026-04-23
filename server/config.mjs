@@ -47,9 +47,29 @@ function parseOrigins(value) {
     .filter(Boolean);
 }
 
+function parseList(value) {
+  if (!value) {
+    return [];
+  }
+
+  return String(value)
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function toSameSite(value, fallback = "strict") {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["strict", "lax", "none"].includes(normalized)) {
+    return normalized;
+  }
+  return fallback;
+}
+
 const config = {
   host: process.env.HOST || "0.0.0.0",
   port: toPositiveNumber(process.env.PORT, 8787),
+  trustProxy: toBoolean(process.env.TRUST_PROXY, false),
   dataFile: path.resolve(process.cwd(), process.env.DATA_FILE || "server/data/submissions.json"),
   corsOrigins: parseOrigins(process.env.CORS_ORIGIN),
   maxBodySize: process.env.MAX_BODY_SIZE || "100kb",
@@ -61,6 +81,22 @@ const config = {
   adminSessionTtlMinutes: toPositiveNumber(process.env.ADMIN_SESSION_TTL_MINUTES, 480),
   adminLoginRateLimitWindowMs: toPositiveNumber(process.env.ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS, 900_000),
   adminLoginRateLimitMax: toPositiveNumber(process.env.ADMIN_LOGIN_RATE_LIMIT_MAX, 10),
+  adminSessionCookieName: String(process.env.ADMIN_SESSION_COOKIE_NAME || "drk_admin_session").trim(),
+  adminCsrfCookieName: String(process.env.ADMIN_CSRF_COOKIE_NAME || "drk_admin_csrf").trim(),
+  adminCookieSecure: toBoolean(process.env.ADMIN_COOKIE_SECURE, false),
+  adminCookieSameSite: toSameSite(process.env.ADMIN_COOKIE_SAMESITE, "strict"),
+  adminCookieDomain: String(process.env.ADMIN_COOKIE_DOMAIN || "").trim(),
+  adminCookiePath: String(process.env.ADMIN_COOKIE_PATH || "/api/v1/admin").trim(),
+  adminEnforceCsrf: toBoolean(process.env.ADMIN_ENFORCE_CSRF, true),
+  adminAllowedIps: parseList(process.env.ADMIN_ALLOWED_IPS),
+  ops: {
+    metricsEnabled: toBoolean(process.env.OPS_METRICS_ENABLED, true),
+    metricsKey: String(process.env.OPS_METRICS_KEY || "").trim(),
+    alertWebhookUrl: String(process.env.ALERT_WEBHOOK_URL || "").trim(),
+    alertCooldownMs: toPositiveNumber(process.env.ALERT_COOLDOWN_MS, 300_000),
+    logLevel: String(process.env.LOG_LEVEL || "info").trim().toLowerCase(),
+    logDir: String(process.env.LOG_DIR || "server/logs").trim()
+  },
   db: {
     host: String(process.env.DB_HOST || "127.0.0.1").trim(),
     port: toPositiveNumber(process.env.DB_PORT, 55432),

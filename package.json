@@ -11,6 +11,10 @@
     "up:all": "([ -f whatsapp-backend/.env ] || cp whatsapp-backend/.env.example whatsapp-backend/.env) && docker compose -f docker-compose.api.yml up --build -d && docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml up --build -d && (docker rm -f dr-katherine-frontend >/dev/null 2>&1 || true) && docker run -d --name dr-katherine-frontend -p 8080:80 -v \"$PWD\":/usr/share/nginx/html:ro nginx:alpine",
     "down:all": "docker compose -f docker-compose.api.yml down && docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml down && (docker rm -f dr-katherine-frontend >/dev/null 2>&1 || true)",
     "logs:all": "docker compose -f docker-compose.api.yml logs --tail=120 && docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml logs --tail=120 && docker logs --tail=120 dr-katherine-frontend",
+    "staging:up": "([ -f deploy/staging/.env.staging ] || cp deploy/staging/.env.staging.example deploy/staging/.env.staging) && ([ -f whatsapp-backend/.env ] || cp whatsapp-backend/.env.example whatsapp-backend/.env) && docker compose -f deploy/staging/docker-compose.staging.yml --env-file deploy/staging/.env.staging up --build -d",
+    "staging:down": "docker compose -f deploy/staging/docker-compose.staging.yml --env-file deploy/staging/.env.staging down",
+    "monitor:health": "node scripts/ops-health-check.mjs",
+    "release:check": "node scripts/release-readiness-check.mjs",
     "check:js": "node scripts/check-js-syntax.mjs",
     "check:links": "node scripts/check-internal-links.mjs",
     "check:content": "node scripts/check-content-guards.mjs",
@@ -25,6 +29,7 @@
     "express-rate-limit": "^7.5.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "winston": "^3.18.3"
   }
 }

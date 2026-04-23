@@ -1,0 +1,42 @@
+name: Ops Health Monitor
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Skip if OPS_HEALTH_URLS secret is missing
+        if: ${{ secrets.OPS_HEALTH_URLS == '' }}
+        run: |
+          echo "OPS_HEALTH_URLS no está configurado en Secrets."
+          echo "Configura OPS_HEALTH_URLS para activar el monitoreo externo."
+
+      - name: Run health monitor
+        if: ${{ secrets.OPS_HEALTH_URLS != '' }}
+        env:
+          OPS_HEALTH_URLS: ${{ secrets.OPS_HEALTH_URLS }}
+          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
+        run: npm run monitor:health

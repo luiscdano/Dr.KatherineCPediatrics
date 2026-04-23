@@ -1,12 +1,11 @@
 (function () {
-  var storageKey = "dr_katherine_admin_token";
   var hostName = String(window.location.hostname || "").toLowerCase();
   var isLocalHost = hostName === "localhost" || hostName === "127.0.0.1";
   var runtimeApiBase = String(window.DR_KATHERINE_API_BASE || "").trim();
   var apiBase = (runtimeApiBase || (isLocalHost ? "http://localhost:8787" : "")).replace(/\/+$/, "");
   var state = {
-    adminToken: "",
-    range: null
+    range: null,
+    csrfToken: ""
   };
 
   var authForm = document.getElementById("admin-auth-form");
@@ -53,18 +52,52 @@
     authStatus.classList.toggle("is-error", Boolean(isError));
   }
 
-  function getAdminToken() {
-    return String(state.adminToken || "").trim();
+  function parseCookies() {
+    var result = {};
+    var cookieText = String(document.cookie || "");
+    if (!cookieText) {
+      return result;
+    }
+
+    cookieText.split(";").forEach(function (entry) {
+      var separatorIndex = entry.indexOf("=");
+      if (separatorIndex <= 0) {
+        return;
+      }
+      var key = entry.slice(0, separatorIndex).trim();
+      var value = entry.slice(separatorIndex + 1).trim();
+      if (!key) {
+        return;
+      }
+      try {
+        result[key] = decodeURIComponent(value);
+      } catch (_error) {
+        result[key] = value;
+      }
+    });
+
+    return result;
   }
 
-  function setAdminToken(value) {
+  function readCsrfFromCookie() {
+    var cookies = parseCookies();
+    return String(cookies.drk_admin_csrf || "").trim();
+  }
+
+  function setCsrfToken(value) {
     var cleaned = String(value || "").trim();
-    state.adminToken = cleaned;
-    if (cleaned) {
-      sessionStorage.setItem(storageKey, cleaned);
-    } else {
-      sessionStorage.removeItem(storageKey);
+    state.csrfToken = cleaned || readCsrfFromCookie();
+  }
+
+  function getCsrfToken() {
+    var token = String(state.csrfToken || "").trim();
+    if (token) {
+      return token;
     }
+
+    token = readCsrfFromCookie();
+    state.csrfToken = token;
+    return token;
   }
 
   function getRangeFromInputs() {
@@ -78,17 +111,10 @@
     return "?from=" + encodeURIComponent(range.from) + "&to=" + encodeURIComponent(range.to);
   }
 
-  function getAuthorizationHeader() {
-    var token = getAdminToken();
-    if (!token) {
-      throw new Error("Debes iniciar sesión para consultar métricas.");
-    }
-    return "Bearer " + token;
-  }
-
   async function login(password) {
     var response = await fetch(withApiBase("/api/v1/admin/auth/login"), {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json"
       },
@@ -101,26 +127,19 @@
       return null;
     });
 
-    if (!response.ok || !payload || payload.ok !== true || !payload.data || !payload.data.token) {
+    if (!response.ok || !payload || payload.ok !== true) {
       var message = (payload && payload.error) || "No se pudo iniciar sesión.";
       throw new Error(message);
     }
 
-    setAdminToken(payload.data.token);
-    return payload.data;
+    setCsrfToken(payload && payload.data ? payload.data.csrfToken : "");
+    return payload.data || {};
   }
 
   async function ensureSession() {
-    var token = getAdminToken();
-    if (!token) {
-      throw new Error("Debes iniciar sesión para consultar métricas.");
-    }
-
     var response = await fetch(withApiBase("/api/v1/admin/auth/me"), {
       method: "GET",
-      headers: {
-        Authorization: "Bearer " + token
-      }
+      credentials: "include"
     });
 
     var payload = await response.json().catch(function () {
@@ -128,41 +147,51 @@
     });
 
     if (!response.ok || !payload || payload.ok !== true) {
-      setAdminToken("");
+      setCsrfToken("");
       var message = (payload && payload.error) || "Tu sesión expiró. Inicia sesión nuevamente.";
       throw new Error(message);
     }
 
+    setCsrfToken(payload && payload.data ? payload.data.csrfToken : "");
     return payload.data;
   }
 
   async function logout() {
-    var token = getAdminToken();
-    if (!token) {
-      setAuthStatus("No hay sesión activa.");
-      return;
-    }
+    var csrfToken = getCsrfToken();
 
     await fetch(withApiBase("/api/v1/admin/auth/logout"), {
       method: "POST",
-      headers: {
-        Authorization: "Bearer " + token
-      }
+      credentials: "include",
+      headers: csrfToken
+        ? {
+            "x-csrf-token": csrfToken
+          }
+        : {}
     }).catch(function () {
       return null;
     });
 
-    setAdminToken("");
+    setCsrfToken("");
     setAuthStatus("Sesión cerrada.");
   }
 
   async function requestJson(path, options) {
-    var response = await fetch(withApiBase(path), {
-      method: (options && options.method) || "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: getAuthorizationHeader()
+    var method = ((options && options.method) || "GET").toUpperCase();
+    var headers = {
+      "Content-Type": "application/json"
+    };
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+      var csrfToken = getCsrfToken();
+      if (csrfToken) {
+        headers["x-csrf-token"] = csrfToken;
       }
+    }
+
+    var response = await fetch(withApiBase(path), {
+      method: method,
+      credentials: "include",
+      headers: headers
     });
 
     var payload = await response.json().catch(function () {
@@ -410,9 +439,7 @@
     var url = withApiBase("/api/v1/admin/metrics/export.csv" + buildQuery(range));
     var response = await fetch(url, {
       method: "GET",
-      headers: {
-        Authorization: getAuthorizationHeader()
-      }
+      credentials: "include"
     });
 
     if (!response.ok) {
@@ -434,11 +461,6 @@
   }
 
   function preloadState() {
-    var storedToken = String(sessionStorage.getItem(storageKey) || "").trim();
-    if (storedToken) {
-      setAdminToken(storedToken);
-    }
-
     var range = defaultRange();
     fromInput.value = range.from;
     toInput.value = range.to;
@@ -488,12 +510,12 @@
   });
 
   preloadState();
-  if (getAdminToken()) {
-    setAuthStatus("Restaurando sesión...");
-    loadDashboard().catch(function (error) {
-      setAuthStatus(error.message, true);
+  setAuthStatus("Verificando sesión...");
+  ensureSession()
+    .then(function () {
+      return loadDashboard();
+    })
+    .catch(function (_error) {
+      setAuthStatus("Inicia sesión para ver métricas.");
     });
-  } else {
-    setAuthStatus("Inicia sesión para ver métricas.");
-  }
 })();

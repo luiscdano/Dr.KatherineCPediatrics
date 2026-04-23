@@ -109,13 +109,14 @@ python3 -m http.server 8080
   - `POST /api/v1/admin/auth/login`
   - `GET /api/v1/admin/auth/me`
   - `POST /api/v1/admin/auth/logout`
-- Endpoints admin (requieren `Authorization: Bearer <token>` o `x-admin-key` legado):
+- Endpoints admin (sesión por cookie `httpOnly` + CSRF, o `Authorization: Bearer`, o `x-admin-key` legado):
   - `GET /api/v1/admin/appointments`
   - `PATCH /api/v1/admin/appointments/:id/status`
   - `GET /api/v1/admin/contact-messages`
   - `GET /api/v1/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`
   - `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
   - `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
+  - `GET /api/v1/ops/metrics` (requiere `x-ops-key`)
 - Contrato detallado: `API.md`
 - Override opcional de API en navegador (debug): `window.DR_KATHERINE_API_BASE`
 - Docker API + DB: `docker-compose.api.yml`
@@ -126,6 +127,10 @@ python3 -m http.server 8080
   - `npm run up:all`
   - `npm run down:all`
   - `npm run logs:all`
+  - `npm run staging:up`
+  - `npm run staging:down`
+  - `npm run monitor:health`
+  - `npm run release:check`
 
 ## Validaciones de calidad
 
@@ -190,7 +195,38 @@ En `.env` del proyecto principal:
 - `ADMIN_SESSION_TTL_MINUTES=480`
 - `ADMIN_LOGIN_RATE_LIMIT_WINDOW_MS=900000`
 - `ADMIN_LOGIN_RATE_LIMIT_MAX=10`
+- `ADMIN_SESSION_COOKIE_NAME=drk_admin_session`
+- `ADMIN_CSRF_COOKIE_NAME=drk_admin_csrf`
+- `ADMIN_COOKIE_SECURE=true` (en producción)
+- `ADMIN_COOKIE_SAMESITE=strict`
+- `ADMIN_COOKIE_DOMAIN=<opcional>`
+- `ADMIN_COOKIE_PATH=/api/v1/admin`
+- `ADMIN_ENFORCE_CSRF=true`
+- `ADMIN_ALLOWED_IPS=<lista opcional de IP/CIDR>`
 - `ADMIN_API_KEY=<opcional_para_compatibilidad_legacy_y_fallback_temporal>`
+
+### Variables de observabilidad en `server/`
+
+En `.env` del proyecto principal:
+
+- `OPS_METRICS_ENABLED=true`
+- `OPS_METRICS_KEY=<clave_para_endpoint_ops>`
+- `ALERT_WEBHOOK_URL=<webhook_slack_discord_teams_opcional>`
+- `ALERT_COOLDOWN_MS=300000`
+- `OPS_HEALTH_URLS=<urls_para_check_automatico_separadas_por_coma>`
+- `LOG_LEVEL=info`
+- `LOG_DIR=server/logs`
+
+### Flujo recomendado de release
+
+- Checklist técnico: `RELEASE_CHECKLIST.md`
+- Ejecuta antes de publicar:
+
+```bash
+npm run validate
+npm run release:check
+OPS_HEALTH_URLS="http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health" npm run monitor:health
+```
 
 ## Señales de operación real
 
@@ -206,6 +242,8 @@ Se agregaron workflows en:
 
 - `.github/workflows/deploy-pages.yml`
 - `.github/workflows/quality-checks.yml`
+- `.github/workflows/staging-readiness.yml`
+- `.github/workflows/ops-monitor.yml`
 
 El deploy publica automáticamente en GitHub Pages cada `push` a `main`, pero solo si `npm run validate` pasa.
 
