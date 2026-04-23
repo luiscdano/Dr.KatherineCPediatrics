@@ -33,7 +33,8 @@ docker compose -f deploy/staging/docker-compose.staging.yml --env-file deploy/st
 
 ## Producción
 
-1. Activar `ADMIN_COOKIE_SECURE=true` y definir `ADMIN_ALLOWED_IPS` para panel admin.
-2. Definir `OPS_METRICS_KEY` y `ALERT_WEBHOOK_URL`.
-3. Confirmar webhook de Meta y credenciales reales.
-4. Ejecutar rollout y monitorear logs iniciales por 30 minutos.
+1. Basarte en `deploy/production/.env.production.example`.
+2. Activar `ADMIN_COOKIE_SECURE=true` y definir `ADMIN_ALLOWED_IPS` para panel admin.
+3. Definir `OPS_METRICS_KEY` y `ALERT_WEBHOOK_URL`.
+4. Confirmar webhook de Meta y credenciales reales.
+5. Ejecutar rollout y monitorear logs iniciales por 30 minutos.

@@ -6,6 +6,8 @@ node_modules/
 .env
 .env.*
 !.env.example
+!deploy/staging/.env.staging.example
+!deploy/production/.env.production.example
 
 npm-debug.log*
 yarn-debug.log*

@@ -220,6 +220,7 @@ En `.env` del proyecto principal:
 ### Flujo recomendado de release
 
 - Checklist técnico: `RELEASE_CHECKLIST.md`
+- Plantilla de producción endurecida: `deploy/production/.env.production.example`
 - Ejecuta antes de publicar:
 
 ```bash

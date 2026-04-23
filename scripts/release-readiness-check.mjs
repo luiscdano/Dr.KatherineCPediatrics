@@ -9,6 +9,8 @@ const requiredFiles = [
   "whatsapp-backend/docker-compose.yml",
   "whatsapp-backend/docker-compose.override.local.yml",
   "deploy/staging/docker-compose.staging.yml",
+  "deploy/production/.env.production.example",
+  "deploy/production/README.md",
   "RELEASE_CHECKLIST.md",
   ".github/workflows/quality-checks.yml",
   ".github/workflows/deploy-pages.yml",
