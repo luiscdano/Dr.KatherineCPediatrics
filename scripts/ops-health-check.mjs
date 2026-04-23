@@ -1,12 +1,33 @@
 import process from "node:process";
 
 const DEFAULT_TIMEOUT_MS = Number(process.env.OPS_HEALTH_TIMEOUT_MS || 8000);
+function extractUrlCandidate(value) {
+  const raw = String(value || "")
+    .trim()
+    .replace(/^['"]+|['"]+$/g, "");
+  if (!raw) {
+    return "";
+  }
+
+  const directMatch = raw.match(/^https?:\/\/\S+$/i);
+  if (directMatch) {
+    return directMatch[0];
+  }
+
+  const embeddedMatch = raw.match(/https?:\/\/[^\s,]+/i);
+  if (embeddedMatch) {
+    return embeddedMatch[0];
+  }
+
+  return "";
+}
+
 const urls = String(process.env.OPS_HEALTH_URLS || "")
   .replace(/\r\n/g, "\n")
   .replace(/\n+/g, ",")
   .split(",")
   .map((item) => item.trim())
-  .map((item) => item.replace(/^['"]+|['"]+$/g, ""))
+  .map((item) => extractUrlCandidate(item))
   .filter(Boolean);
 
 if (!urls.length) {
@@ -24,9 +45,7 @@ function withTimeout(url, timeoutMs) {
 }
 
 async function sendAlert(message, details) {
-  const webhookUrl = String(process.env.ALERT_WEBHOOK_URL || "")
-    .trim()
-    .replace(/^['"]+|['"]+$/g, "");
+  const webhookUrl = extractUrlCandidate(process.env.ALERT_WEBHOOK_URL);
   if (!webhookUrl) {
     return;
   }
