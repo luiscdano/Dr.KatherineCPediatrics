@@ -15,15 +15,63 @@ import {
   updateAppointmentStatus
 } from "./repositories/appointments-repository.mjs";
 import { createContactMessage, listContactMessages } from "./repositories/contact-messages-repository.mjs";
+import {
+  createPreVisitAssessment,
+  listPreVisitAssessments
+} from "./repositories/pre-visit-assessments-repository.mjs";
+import {
+  createResourceDownloadEvent,
+  listResourceDownloadEvents
+} from "./repositories/resource-downloads-repository.mjs";
+import {
+  addTriageCaseResponse,
+  createTriageCase,
+  getTriageCaseById,
+  listTriageCases,
+  listTriageHistoryByGuardianPhone,
+  updateTriageCaseStatus
+} from "./repositories/triage-cases-repository.mjs";
+import { listReminders } from "./repositories/whatsapp-reminders-repository.mjs";
 import { getDashboardMetrics, getDashboardTimeSeries } from "./repositories/metrics-repository.mjs";
-import { notifyAppointmentCreated, notifyContactMessageCreated } from "./whatsapp-notifier.mjs";
-import { ValidationError, normalizeText, validateAppointmentPayload, validateContactPayload, validateISODate } from "./validation.mjs";
+import {
+  notifyAppointmentCreated,
+  notifyContactMessageCreated,
+  notifyPreVisitAssessmentCreated,
+  notifyTriageCaseCreated
+} from "./whatsapp-notifier.mjs";
+import {
+  cancelAppointmentReminders,
+  processDueAppointmentReminders,
+  scheduleAppointmentReminders,
+  scheduleNoShowRecoveryReminder
+} from "./services/appointment-reminders-service.mjs";
+import { evaluateClinicalUrgency } from "./services/triage-evaluator.mjs";
+import {
+  ValidationError,
+  normalizeText,
+  validateAppointmentPayload,
+  validateContactPayload,
+  validateISODate,
+  validatePreVisitPayload,
+  validateResourceDownloadPayload,
+  validateTriageCasePayload
+} from "./validation.mjs";
 
 const app = express();
 const appointmentUpdatableStatuses = new Set(["pending", "confirmed", "completed", "cancelled", "no_show"]);
+const triageUpdatableStatuses = new Set(["new", "in_review", "responded", "follow_up", "closed", "referred_er"]);
+const triageResponseTemplates = new Set([
+  "monitor_casa_12h",
+  "agendar_mismo_dia",
+  "ir_emergencias_ahora",
+  "solicitar_estudios_previos",
+  "seguimiento_24h"
+]);
 const revokedAdminSessions = new Map();
 const processStartedAt = Date.now();
 let lastAlertSentAt = 0;
+let remindersTimer = null;
+let reminderWorkerBusy = false;
 const metricsState = {
   requests: {
     total: 0,
@@ -39,7 +87,12 @@ const metricsState = {
   },
   business: {
     appointmentsCreated: 0,
-    contactsCreated: 0
+    contactsCreated: 0,
+    preVisitsCreated: 0,
+    triageCasesCreated: 0,
+    resourceDownloadsCreated: 0,
+    remindersSent: 0,
+    remindersFailed: 0
   },
   alerts: {
     sent: 0,
@@ -47,6 +100,25 @@ const metricsState = {
   }
 };
 let server;
+
+const premiumResourceCatalog = {
+  "fiebre-24h-kit": {
+    title: "Kit Fiebre 24H",
+    downloadUrl: "/assets/downloads/fiebre-24h-kit.txt"
+  },
+  "alimentacion-etapas-kit": {
+    title: "Guía de Alimentación por Etapas",
+    downloadUrl: "/assets/downloads/alimentacion-etapas-kit.txt"
+  },
+  "vacunas-checklist-kit": {
+    title: "Checklist de Vacunación",
+    downloadUrl: "/assets/downloads/vacunas-checklist-kit.txt"
+  },
+  "botiquin-hogar-kit": {
+    title: "Botiquín Pediátrico en Casa",
+    downloadUrl: "/assets/downloads/botiquin-hogar-kit.txt"
+  }
+};
 
 app.disable("x-powered-by");
 if (config.trustProxy) {
@@ -202,6 +274,67 @@ async function sendAlertIfNeeded(eventName, payload = {}) {
   }
 }
 
+function isReminderWorkerEnabled() {
+  return Boolean(config.whatsappAutomation.enabled && config.whatsappAutomation.remindersEnabled);
+}
+
+async function runReminderWorkerTick() {
+  if (!isReminderWorkerEnabled() || reminderWorkerBusy) {
+    return;
+  }
+
+  reminderWorkerBusy = true;
+  try {
+    const result = await processDueAppointmentReminders({
+      logger,
+      maxBatch: config.whatsappAutomation.reminderBatchSize
+    });
+
+    metricsState.business.remindersSent += Number(result.sent || 0);
+    metricsState.business.remindersFailed += Number(result.failed || 0);
+
+    if (Number(result.queued || 0) > 0) {
+      logger.info("reminder_worker_tick", {
+        queued: result.queued,
+        sent: result.sent,
+        failed: result.failed,
+        skipped: result.skipped
+      });
+    }
+  } catch (error) {
+    logger.error("reminder_worker_tick_failed", {
+      error: error?.message || "unknown error"
+    });
+
+    runBackgroundTask(
+      sendAlertIfNeeded("reminder_worker_failed", {
+        error: error?.message || "unknown error"
+      }),
+      "reminder_worker_failed_alert"
+    );
+  } finally {
+    reminderWorkerBusy = false;
+  }
+}
+
+function startReminderWorker() {
+  if (!isReminderWorkerEnabled() || remindersTimer) {
+    return;
+  }
+
+  const tickMs = Math.max(10_000, Number(config.whatsappAutomation.reminderTickMs || 30_000));
+  remindersTimer = setInterval(() => {
+    runBackgroundTask(runReminderWorkerTick(), "runReminderWorkerTick");
+  }, tickMs);
+
+  runBackgroundTask(runReminderWorkerTick(), "runReminderWorkerTick_initial");
+
+  logger.info("reminder_worker_started", {
+    tickMs,
+    batchSize: config.whatsappAutomation.reminderBatchSize
+  });
+}
+
 function toIsoDate(date) {
   return date.toISOString().slice(0, 10);
 }
@@ -231,6 +364,18 @@ function parseMetricsRange(query) {
     from: parsedFrom,
     to: parsedTo
   };
+}
+
+function parseCsvList(input) {
+  const raw = normalizeText(input);
+  if (!raw) {
+    return [];
+  }
+
+  return raw
+    .split(",")
+    .map((item) => normalizeText(item).toLowerCase())
+    .filter(Boolean);
 }
 
 function csvEscape(value) {
@@ -619,6 +764,12 @@ function buildOpsSnapshot() {
     admin: metricsState.admin,
     business: metricsState.business,
     alerts: metricsState.alerts,
+    reminderWorker: {
+      enabled: isReminderWorkerEnabled(),
+      busy: reminderWorkerBusy,
+      tickMs: config.whatsappAutomation.reminderTickMs,
+      batchSize: config.whatsappAutomation.reminderBatchSize
+    },
     timestamp: new Date().toISOString()
   };
 }
@@ -699,6 +850,11 @@ app.post("/api/v1/appointments", async (req, res, next) => {
     metricsState.business.appointmentsCreated += 1;
 
     runBackgroundTask(
+      scheduleAppointmentReminders(createdAppointment),
+      `scheduleAppointmentReminders requestId=${req.requestId}`
+    );
+
+    runBackgroundTask(
       notifyAppointmentCreated(createdAppointment),
       `notifyAppointmentCreated requestId=${req.requestId}`
     );
@@ -757,6 +913,202 @@ app.post("/api/v1/contact-messages", async (req, res, next) => {
           topic: messageRecord.topic,
           createdAt: messageRecord.createdAt
         }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/v1/pre-visit-assessments", async (req, res, next) => {
+  try {
+    const payload = validatePreVisitPayload(req.body || {});
+    if (payload.companyWebsite) {
+      sendJson(res, 202, {
+        ok: true,
+        data: {
+          accepted: true
+        }
+      });
+      return;
+    }
+
+    const triage = evaluateClinicalUrgency({
+      patientAge: payload.patientAge,
+      feverCelsius: payload.feverCelsius,
+      painLevel: payload.painLevel,
+      durationHours: payload.durationHours,
+      warningSigns: []
+    });
+
+    const assessment = await createPreVisitAssessment({
+      id: randomUUID(),
+      patientName: payload.patientName,
+      patientAge: payload.patientAge,
+      guardianName: payload.guardianName,
+      guardianPhone: payload.guardianPhone,
+      primaryReason: payload.primaryReason,
+      symptoms: payload.symptoms,
+      feverCelsius: payload.feverCelsius,
+      painLevel: payload.painLevel,
+      durationHours: payload.durationHours,
+      allergies: payload.allergies,
+      medications: payload.medications,
+      urgencyLevel: triage.urgencyLevel,
+      triageSummary: triage.urgencyReason,
+      recommendedChannel: triage.recommendedChannel,
+      source: "website",
+      createdAt: new Date().toISOString()
+    });
+    metricsState.business.preVisitsCreated += 1;
+
+    runBackgroundTask(
+      notifyPreVisitAssessmentCreated(assessment),
+      `notifyPreVisitAssessmentCreated requestId=${req.requestId}`
+    );
+
+    sendJson(res, 201, {
+      ok: true,
+      data: {
+        assessment: {
+          id: assessment.id,
+          urgencyLevel: assessment.urgencyLevel,
+          recommendedChannel: assessment.recommendedChannel,
+          triageSummary: assessment.triageSummary
+        },
+        advisory: triage.advisory
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/v1/resource-downloads", async (req, res, next) => {
+  try {
+    const payload = validateResourceDownloadPayload(req.body || {});
+    if (payload.companyWebsite) {
+      sendJson(res, 202, {
+        ok: true,
+        data: {
+          accepted: true
+        }
+      });
+      return;
+    }
+
+    const catalog = premiumResourceCatalog[payload.resourceKey];
+    if (!catalog) {
+      throw new ValidationError("No se encontró el recurso solicitado.");
+    }
+
+    const event = await createResourceDownloadEvent({
+      id: randomUUID(),
+      resourceKey: payload.resourceKey,
+      parentName: payload.parentName,
+      parentEmail: payload.parentEmail,
+      childAgeGroup: payload.childAgeGroup,
+      consentGiven: payload.privacyConsent,
+      source: "website",
+      createdAt: new Date().toISOString()
+    });
+    metricsState.business.resourceDownloadsCreated += 1;
+
+    sendJson(res, 201, {
+      ok: true,
+      data: {
+        eventId: event.id,
+        resource: {
+          key: payload.resourceKey,
+          title: catalog.title,
+          downloadUrl: catalog.downloadUrl
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/v1/triage/cases", async (req, res, next) => {
+  try {
+    const payload = validateTriageCasePayload(req.body || {});
+    if (payload.companyWebsite) {
+      sendJson(res, 202, {
+        ok: true,
+        data: {
+          accepted: true
+        }
+      });
+      return;
+    }
+
+    const triage = evaluateClinicalUrgency({
+      patientAge: payload.patientAge,
+      feverCelsius: payload.feverCelsius,
+      painLevel: payload.painLevel,
+      durationHours: payload.durationHours,
+      warningSigns: payload.warningSigns
+    });
+
+    const createdCase = await createTriageCase({
+      id: randomUUID(),
+      patientName: payload.patientName,
+      patientAge: payload.patientAge,
+      guardianName: payload.guardianName,
+      guardianPhone: payload.guardianPhone,
+      guardianEmail: payload.guardianEmail,
+      title: payload.title,
+      description: payload.description,
+      feverCelsius: payload.feverCelsius,
+      painLevel: payload.painLevel,
+      durationHours: payload.durationHours,
+      hasAllergies: payload.hasAllergies,
+      allergyDetails: payload.allergyDetails,
+      warningSigns: triage.normalizedWarningSigns,
+      urgencyLevel: triage.urgencyLevel,
+      urgencyScore: triage.urgencyScore,
+      urgencyReason: triage.urgencyReason,
+      status: triage.urgencyLevel === "critical" ? "referred_er" : "new",
+      source: "website",
+      assets: payload.photos.map((photo) => ({
+        id: randomUUID(),
+        originalName: photo.originalName,
+        mimeType: photo.mimeType,
+        fileSizeBytes: photo.fileSizeBytes,
+        dataBase64: photo.dataBase64
+      })),
+      createdAt: new Date().toISOString()
+    });
+    metricsState.business.triageCasesCreated += 1;
+
+    runBackgroundTask(
+      notifyTriageCaseCreated(createdCase),
+      `notifyTriageCaseCreated requestId=${req.requestId}`
+    );
+
+    if (createdCase.urgencyLevel === "critical") {
+      runBackgroundTask(
+        sendAlertIfNeeded("triage_case_critical", {
+          caseId: createdCase.id,
+          urgencyLevel: createdCase.urgencyLevel
+        }),
+        `sendAlertIfNeeded triage_case_critical requestId=${req.requestId}`
+      );
+    }
+
+    sendJson(res, 201, {
+      ok: true,
+      data: {
+        triageCase: {
+          id: createdCase.id,
+          urgencyLevel: createdCase.urgencyLevel,
+          urgencyScore: createdCase.urgencyScore,
+          urgencyReason: createdCase.urgencyReason,
+          status: createdCase.status
+        },
+        recommendedChannel: triage.recommendedChannel,
+        advisory: triage.advisory
       }
     });
   } catch (error) {
@@ -917,6 +1269,20 @@ app.patch("/api/v1/admin/appointments/:id/status", ensureAdminAccess, ensureAdmi
       throw notFoundError;
     }
 
+    if (status === "cancelled" || status === "completed") {
+      runBackgroundTask(
+        cancelAppointmentReminders(updated.id),
+        `cancelAppointmentReminders requestId=${req.requestId}`
+      );
+    }
+
+    if (status === "no_show") {
+      runBackgroundTask(
+        scheduleNoShowRecoveryReminder(updated),
+        `scheduleNoShowRecoveryReminder requestId=${req.requestId}`
+      );
+    }
+
     sendJson(res, 200, {
       ok: true,
       data: {
@@ -936,6 +1302,264 @@ app.get("/api/v1/admin/contact-messages", ensureAdminAccess, async (_req, res, n
       data: {
         count: messages.length,
         messages
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/pre-visit-assessments", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const urgencyLevel = normalizeText(req.query.urgencyLevel).toLowerCase();
+    const guardianPhone = normalizeText(req.query.guardianPhone);
+    const limit = Number(req.query.limit);
+
+    const items = await listPreVisitAssessments({
+      urgencyLevel: urgencyLevel || undefined,
+      guardianPhone: guardianPhone || undefined,
+      limit: Number.isFinite(limit) ? limit : undefined
+    });
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        count: items.length,
+        assessments: items
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/resource-downloads", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const resourceKey = normalizeText(req.query.resourceKey).toLowerCase();
+    const limit = Number(req.query.limit);
+    const items = await listResourceDownloadEvents({
+      resourceKey: resourceKey || undefined,
+      limit: Number.isFinite(limit) ? limit : undefined
+    });
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        count: items.length,
+        events: items
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/triage/cases", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const statusItems = parseCsvList(req.query.status);
+    if (statusItems.length && statusItems.some((item) => !triageUpdatableStatuses.has(item))) {
+      throw new ValidationError("status contiene un valor no permitido para triage.");
+    }
+
+    const urgencyLevel = normalizeText(req.query.urgencyLevel).toLowerCase();
+    const guardianPhone = normalizeText(req.query.guardianPhone);
+    const limit = Number(req.query.limit);
+
+    const items = await listTriageCases({
+      status: statusItems.length ? statusItems : undefined,
+      urgencyLevel: urgencyLevel || undefined,
+      guardianPhone: guardianPhone || undefined,
+      limit: Number.isFinite(limit) ? limit : undefined
+    });
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        count: items.length,
+        triageCases: items
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/triage/cases/:id", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const caseId = normalizeText(req.params.id);
+    if (!caseId) {
+      throw new ValidationError("Debes indicar un id de caso válido.");
+    }
+
+    const triageCase = await getTriageCaseById(caseId, { includeAssets: true, includeEvents: true });
+    if (!triageCase) {
+      const notFoundError = new Error("No se encontró el caso solicitado.");
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        triageCase: {
+          ...triageCase,
+          assets: (triageCase.assets || []).map((asset) => ({
+            id: asset.id,
+            originalName: asset.originalName,
+            mimeType: asset.mimeType,
+            fileSizeBytes: asset.fileSizeBytes,
+            dataUri: `data:${asset.mimeType};base64,${asset.dataBase64}`,
+            createdAt: asset.createdAt
+          }))
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.patch("/api/v1/admin/triage/cases/:id/status", ensureAdminAccess, ensureAdminCsrf, async (req, res, next) => {
+  try {
+    const caseId = normalizeText(req.params.id);
+    const status = normalizeText(req.body?.status).toLowerCase();
+    if (!caseId) {
+      throw new ValidationError("Debes indicar un id de caso válido.");
+    }
+    if (!triageUpdatableStatuses.has(status)) {
+      throw new ValidationError("status no contiene un valor permitido para triage.");
+    }
+
+    const updated = await updateTriageCaseStatus(caseId, status, "admin");
+    if (!updated) {
+      const notFoundError = new Error("No se encontró el caso solicitado.");
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
+
+    if (status === "referred_er") {
+      runBackgroundTask(
+        sendAlertIfNeeded("triage_case_referred_er", {
+          caseId: updated.id,
+          urgencyLevel: updated.urgencyLevel
+        }),
+        `triage_case_referred_er requestId=${req.requestId}`
+      );
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        triageCase: updated
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/v1/admin/triage/cases/:id/respond", ensureAdminAccess, ensureAdminCsrf, async (req, res, next) => {
+  try {
+    const caseId = normalizeText(req.params.id);
+    if (!caseId) {
+      throw new ValidationError("Debes indicar un id de caso válido.");
+    }
+
+    const template = normalizeText(req.body?.template).toLowerCase();
+    const note = normalizeText(req.body?.note);
+    const nextStatus = normalizeText(req.body?.status).toLowerCase() || "responded";
+    const followUpHoursRaw = req.body?.followUpHours;
+    const followUpHours = Number(followUpHoursRaw);
+
+    if (!template && !note) {
+      throw new ValidationError("Debes incluir una plantilla o nota clínica para responder el caso.");
+    }
+    if (template && !triageResponseTemplates.has(template)) {
+      throw new ValidationError("template contiene un valor no permitido.");
+    }
+    if (!triageUpdatableStatuses.has(nextStatus)) {
+      throw new ValidationError("status no contiene un valor permitido para triage.");
+    }
+
+    let followUpAt = null;
+    if (followUpHoursRaw != null && followUpHoursRaw !== "") {
+      if (!Number.isInteger(followUpHours) || followUpHours < 0 || followUpHours > 168) {
+        throw new ValidationError("followUpHours debe ser un entero entre 0 y 168.");
+      }
+      followUpAt = new Date(Date.now() + followUpHours * 60 * 60 * 1000).toISOString();
+    }
+
+    const updated = await addTriageCaseResponse(caseId, {
+      template: template || "custom",
+      note,
+      followUpAt,
+      status: nextStatus,
+      actor: "admin"
+    });
+
+    if (!updated) {
+      const notFoundError = new Error("No se encontró el caso solicitado.");
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        triageCase: updated
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/triage/patient-history", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const guardianPhone = normalizeText(req.query.guardianPhone);
+    if (!guardianPhone) {
+      throw new ValidationError("Debes indicar guardianPhone para consultar historial.");
+    }
+    if (!/^[0-9+()\-\s]{7,20}$/.test(guardianPhone)) {
+      throw new ValidationError("guardianPhone no tiene formato válido.");
+    }
+
+    const limit = Number(req.query.limit);
+    const history = await listTriageHistoryByGuardianPhone(
+      guardianPhone,
+      Number.isFinite(limit) ? limit : undefined
+    );
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        guardianPhone,
+        count: history.length,
+        cases: history
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/v1/admin/whatsapp-reminders", ensureAdminAccess, async (req, res, next) => {
+  try {
+    const status = normalizeText(req.query.status).toLowerCase();
+    const appointmentId = normalizeText(req.query.appointmentId);
+    const limit = Number(req.query.limit);
+
+    const items = await listReminders({
+      status: status || undefined,
+      appointmentId: appointmentId || undefined,
+      limit: Number.isFinite(limit) ? limit : undefined
+    });
+
+    sendJson(res, 200, {
+      ok: true,
+      data: {
+        count: items.length,
+        reminders: items
       }
     });
   } catch (error) {
@@ -976,7 +1600,17 @@ app.get("/api/v1/admin/metrics/export.csv", ensureAdminAccess, async (req, res, 
   try {
     const range = parseMetricsRange(req.query || {});
     const series = await getDashboardTimeSeries(range);
-    const headers = ["day", "appointments", "contacts", "confirmed", "cancelled", "no_show"];
+    const headers = [
+      "day",
+      "appointments",
+      "contacts",
+      "confirmed",
+      "cancelled",
+      "no_show",
+      "pre_visits",
+      "triage_cases",
+      "resource_downloads"
+    ];
     const rows = [headers.join(",")];
 
     for (const item of series) {
@@ -987,7 +1621,10 @@ app.get("/api/v1/admin/metrics/export.csv", ensureAdminAccess, async (req, res, 
           csvEscape(item.contacts),
           csvEscape(item.confirmed),
           csvEscape(item.cancelled),
-          csvEscape(item.noShow)
+          csvEscape(item.noShow),
+          csvEscape(item.preVisits),
+          csvEscape(item.triageCases),
+          csvEscape(item.resourceDownloads)
         ].join(",")
       );
     }
@@ -1063,6 +1700,8 @@ async function startServer() {
     server = app.listen(config.port, config.host, resolve);
   });
 
+  startReminderWorker();
+
   logger.info("api_started", {
     host: config.host,
     port: config.port,
@@ -1077,6 +1716,11 @@ async function shutdown(signal) {
   logger.info("api_shutdown_signal", {
     signal
   });
+
+  if (remindersTimer) {
+    clearInterval(remindersTimer);
+    remindersTimer = null;
+  }
 
   if (server) {
     await new Promise((resolve) => server.close(resolve));

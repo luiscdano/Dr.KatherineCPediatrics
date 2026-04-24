@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evaluación Pediátrica Express | Dr. Katherine C Pediatrics</title>
+    <meta
+      name="description"
+      content="Envía una evaluación pediátrica rápida con fotos y datos clínicos iniciales para priorización médica."
+    />
+    <link rel="canonical" href="https://drkatherinecpediatrics.com/evaluacion-pediatrica-express/" />
+    <meta name="theme-color" content="#8BA18A" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/assets/css/styles.css" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="apple-touch-icon" href="/assets/img/isotipo.png?v=20260420-03" />
+    <link rel="shortcut icon" href="/assets/img/isotipo.png?v=20260420-03" />
+  </head>
+  <body data-page="triage">
+    <div id="site-header"></div>
+
+    <main>
+      <section class="page-hero">
+        <div class="shell page-hero-wrap reveal">
+          <span class="eyebrow">Evaluación Pediátrica Express</span>
+          <h1>Triage visual rápido para tutores</h1>
+          <p>
+            Comparte fotos y datos clave del caso para priorizar la respuesta clínica de la Dra. Katherine Cedano.
+            Esta herramienta orienta, pero no reemplaza consulta médica presencial ni urgencias.
+          </p>
+          <p class="form-note">
+            Si hay dificultad respiratoria, convulsión, desmayo, sangrado intenso o pérdida de conciencia, ve a
+            emergencias inmediatamente.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="rapid-eval-module">
+        <div class="shell previsit-grid">
+          <article class="agenda-card reveal">
+            <h3>Formulario inteligente del caso</h3>
+            <form id="rapid-eval-form" class="form-grid">
+              <div class="form-field honeypot-field" aria-hidden="true">
+                <label for="rapid-company">Empresa</label>
+                <input id="rapid-company" name="companyWebsite" type="text" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="rapid-patient-name">Nombre del paciente</label>
+                  <input id="rapid-patient-name" name="patientName" type="text" minlength="3" maxlength="90" required />
+                </div>
+                <div class="form-field">
+                  <label for="rapid-patient-age">Edad</label>
+                  <input id="rapid-patient-age" name="patientAge" type="number" min="0" max="18" step="1" required />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="rapid-guardian-name">Nombre del tutor</label>
+                  <input id="rapid-guardian-name" name="guardianName" type="text" minlength="3" maxlength="90" required />
+                </div>
+                <div class="form-field">
+                  <label for="rapid-guardian-phone">Teléfono</label>
+                  <input
+                    id="rapid-guardian-phone"
+                    name="guardianPhone"
+                    type="tel"
+                    inputmode="tel"
+                    pattern="[0-9+()\\-\\s]{7,20}"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label for="rapid-guardian-email">Correo (opcional)</label>
+                <input id="rapid-guardian-email" name="guardianEmail" type="email" />
+              </div>
+
+              <div class="form-field">
+                <label for="rapid-title">Resumen breve del caso</label>
+                <input id="rapid-title" name="title" type="text" minlength="6" maxlength="120" required />
+              </div>
+
+              <div class="form-field">
+                <label for="rapid-description">Descripción clínica observada</label>
+                <textarea id="rapid-description" name="description" minlength="20" maxlength="2200" required></textarea>
+              </div>
+
+              <div class="form-row-3">
+                <div class="form-field">
+                  <label for="rapid-fever">Fiebre (°C)</label>
+                  <input id="rapid-fever" name="feverCelsius" type="number" min="34" max="43" step="0.1" />
+                </div>
+                <div class="form-field">
+                  <label for="rapid-pain">Dolor (0-10)</label>
+                  <input id="rapid-pain" name="painLevel" type="number" min="0" max="10" step="1" value="0" required />
+                </div>
+                <div class="form-field">
+                  <label for="rapid-duration">Horas de evolución</label>
+                  <input id="rapid-duration" name="durationHours" type="number" min="0" max="720" step="1" value="0" required />
+                </div>
+              </div>
+
+              <div class="consent-box">
+                <input id="rapid-has-allergies" name="hasAllergies" type="checkbox" />
+                <label for="rapid-has-allergies">El paciente tiene alergias conocidas</label>
+              </div>
+
+              <div class="form-field">
+                <label for="rapid-allergy-details">Detalle de alergias (si aplica)</label>
+                <input id="rapid-allergy-details" name="allergyDetails" type="text" maxlength="500" />
+              </div>
+
+              <fieldset class="warning-checkboxes">
+                <legend>Señales observadas</legend>
+                <label><input type="checkbox" name="warningSigns" value="difficulty_breathing" /> Dificultad respiratoria</label>
+                <label><input type="checkbox" name="warningSigns" value="persistent_vomiting" /> Vómitos persistentes</label>
+                <label><input type="checkbox" name="warningSigns" value="dehydration_signs" /> Signos de deshidratación</label>
+                <label><input type="checkbox" name="warningSigns" value="seizure" /> Convulsión</label>
+                <label><input type="checkbox" name="warningSigns" value="high_fever_persistent" /> Fiebre alta persistente</label>
+                <label><input type="checkbox" name="warningSigns" value="lethargy" /> Somnolencia extrema</label>
+              </fieldset>
+
+              <div class="form-field">
+                <label for="rapid-photos">Fotos del caso (hasta 4 imágenes)</label>
+                <input id="rapid-photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+              </div>
+
+              <div id="rapid-photo-preview" class="photo-preview-grid"></div>
+
+              <div class="consent-box">
+                <input id="rapid-consent" name="privacyConsent" type="checkbox" required />
+                <label for="rapid-consent">
+                  Acepto la <a href="/politica-de-privacidad.html">Política de privacidad</a> y autorizo análisis inicial
+                  del caso para priorización clínica.
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Enviar evaluación</button>
+                <a class="btn btn-secondary" href="/contacto/">Contacto directo</a>
+              </div>
+            </form>
+
+            <p id="rapid-eval-confirmation" class="confirmation" aria-live="polite"></p>
+          </article>
+
+          <article class="agenda-card reveal">
+            <h3>Bandeja clínica priorizada</h3>
+            <p>
+              El caso se ordena por urgencia para la doctora, con fotos y datos estructurados para continuidad de
+              atención.
+            </p>
+            <div id="rapid-eval-result" class="previsit-summary">
+              <p>Cuando envíes el caso, aquí verás urgencia, recomendación y próximo paso.</p>
+            </div>
+            <div class="warning-signs-inline">
+              <h4>Canales recomendados</h4>
+              <ul class="agenda-flow">
+                <li>Monitoreo en casa con seguimiento.</li>
+                <li>Consulta prioritaria en 24 horas.</li>
+                <li>Consulta el mismo día.</li>
+                <li>Derivación a emergencias (si aplica).</li>
+              </ul>
+              <a class="btn btn-ghost" href="/citas/">Ir a citas en línea</a>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="/assets/js/content-data.js" defer></script>
+    <script src="/assets/js/utils.js" defer></script>
+    <script src="/assets/js/i18n-dict.js" defer></script>
+    <script src="/assets/js/i18n.js" defer></script>
+    <script src="/assets/js/layout.js" defer></script>
+    <script src="/assets/js/main.js" defer></script>
+  </body>
+</html>

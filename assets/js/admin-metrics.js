@@ -20,6 +20,9 @@
   var transitionsChartHost = document.getElementById("chart-transitions");
   var statusDistributionHost = document.getElementById("status-distribution");
   var topicDistributionHost = document.getElementById("topic-distribution");
+  var triageDistributionHost = document.getElementById("triage-distribution");
+  var resourcesDistributionHost = document.getElementById("resources-distribution");
+  var triageQueueHost = document.getElementById("triage-queue");
 
   function withApiBase(path) {
     return apiBase ? apiBase + path : path;
@@ -177,9 +180,13 @@
 
   async function requestJson(path, options) {
     var method = ((options && options.method) || "GET").toUpperCase();
-    var headers = {
-      "Content-Type": "application/json"
-    };
+    var headers = Object.assign(
+      {
+        "Content-Type": "application/json"
+      },
+      (options && options.headers) || {}
+    );
+    var body = options && Object.prototype.hasOwnProperty.call(options, "body") ? options.body : undefined;
 
     if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
       var csrfToken = getCsrfToken();
@@ -191,7 +198,8 @@
     var response = await fetch(withApiBase(path), {
       method: method,
       credentials: "include",
-      headers: headers
+      headers: headers,
+      body: body
     });
 
     var payload = await response.json().catch(function () {
@@ -214,6 +222,9 @@
   }
 
   function renderDistribution(host, rows, emptyMessage) {
+    if (!host) {
+      return;
+    }
     host.innerHTML = "";
 
     if (!rows.length) {
@@ -251,6 +262,102 @@
       row.appendChild(bar);
       row.appendChild(value);
       host.appendChild(row);
+    });
+  }
+
+  function urgencyClass(urgencyLevel) {
+    var key = String(urgencyLevel || "").toLowerCase();
+    if (["low", "medium", "high", "critical"].indexOf(key) >= 0) {
+      return key;
+    }
+    return "low";
+  }
+
+  function renderTriageQueue(items) {
+    if (!triageQueueHost) {
+      return;
+    }
+
+    triageQueueHost.innerHTML = "";
+    if (!Array.isArray(items) || !items.length) {
+      triageQueueHost.innerHTML = '<p class="admin-empty">No hay casos express pendientes para revisar.</p>';
+      return;
+    }
+
+    items.forEach(function (item) {
+      var card = document.createElement("article");
+      card.className = "triage-case-card";
+      card.setAttribute("data-case-id", item.id);
+
+      var head = document.createElement("div");
+      head.className = "triage-case-head";
+      head.innerHTML =
+        "<strong>" +
+        item.patientName +
+        " (" +
+        item.patientAge +
+        "a)</strong>" +
+        '<span class="triage-pill ' +
+        urgencyClass(item.urgencyLevel) +
+        '">' +
+        String(item.urgencyLevel || "low") +
+        "</span>";
+
+      var meta = document.createElement("div");
+      meta.className = "triage-case-meta";
+      meta.innerHTML =
+        "<span>Tutor: " +
+        item.guardianName +
+        " - " +
+        item.guardianPhone +
+        "</span>" +
+        "<span>Estado: " +
+        item.status +
+        " | Fotos: " +
+        Number(item.assetCount || 0) +
+        "</span>" +
+        "<span>Resumen: " +
+        item.urgencyReason +
+        "</span>";
+
+      var actions = document.createElement("div");
+      actions.className = "triage-actions";
+      actions.innerHTML =
+        '<select class="triage-status-select">' +
+        '<option value="new">new</option>' +
+        '<option value="in_review">in_review</option>' +
+        '<option value="responded">responded</option>' +
+        '<option value="follow_up">follow_up</option>' +
+        '<option value="closed">closed</option>' +
+        '<option value="referred_er">referred_er</option>' +
+        "</select>" +
+        '<button type="button" data-action="status">Actualizar estado</button>' +
+        '<select class="triage-template-select">' +
+        '<option value="monitor_casa_12h">monitor_casa_12h</option>' +
+        '<option value="agendar_mismo_dia">agendar_mismo_dia</option>' +
+        '<option value="ir_emergencias_ahora">ir_emergencias_ahora</option>' +
+        '<option value="solicitar_estudios_previos">solicitar_estudios_previos</option>' +
+        '<option value="seguimiento_24h">seguimiento_24h</option>' +
+        "</select>" +
+        '<input class="triage-followup-input" type="number" min="0" max="168" step="1" value="24" />' +
+        '<button type="button" data-action="respond">Responder</button>' +
+        '<button type="button" data-action="details">Ver detalle</button>';
+
+      var detail = document.createElement("div");
+      detail.className = "triage-case-meta";
+      detail.setAttribute("data-role", "details");
+      detail.textContent = "";
+
+      card.appendChild(head);
+      card.appendChild(meta);
+      card.appendChild(actions);
+      card.appendChild(detail);
+      triageQueueHost.appendChild(card);
+
+      var statusSelect = actions.querySelector(".triage-status-select");
+      if (statusSelect) {
+        statusSelect.value = item.status || "new";
+      }
     });
   }
 
@@ -356,6 +463,22 @@
           }),
           color: "#a89d75",
           lineClass: "chart-line-secondary"
+        },
+        {
+          label: "Pre-citas",
+          values: seriesData.map(function (item) {
+            return item.preVisits;
+          }),
+          color: "#3f8f9d",
+          lineClass: "chart-line-quaternary"
+        },
+        {
+          label: "Casos express",
+          values: seriesData.map(function (item) {
+            return item.triageCases;
+          }),
+          color: "#c24f4f",
+          lineClass: "chart-line-danger"
         }
       ],
       labels
@@ -392,6 +515,91 @@
     );
   }
 
+  async function handleTriageQueueAction(event) {
+    var target = event.target;
+    if (!target || !target.getAttribute) {
+      return;
+    }
+
+    var action = target.getAttribute("data-action");
+    if (!action) {
+      return;
+    }
+
+    var card = target.closest(".triage-case-card");
+    if (!card) {
+      return;
+    }
+
+    var caseId = card.getAttribute("data-case-id");
+    if (!caseId) {
+      return;
+    }
+
+    var statusSelect = card.querySelector(".triage-status-select");
+    var templateSelect = card.querySelector(".triage-template-select");
+    var followUpInput = card.querySelector(".triage-followup-input");
+    var detailHost = card.querySelector('[data-role=\"details\"]');
+
+    if (action === "status") {
+      var statusValue = statusSelect ? String(statusSelect.value || "").trim() : "";
+      if (!statusValue) {
+        setAuthStatus("Selecciona un estado válido.", true);
+        return;
+      }
+
+      await requestJson("/api/v1/admin/triage/cases/" + encodeURIComponent(caseId) + "/status", {
+        method: "PATCH",
+        body: JSON.stringify({
+          status: statusValue
+        })
+      });
+      setAuthStatus("Estado de caso actualizado.");
+      await loadDashboard();
+      return;
+    }
+
+    if (action === "respond") {
+      var template = templateSelect ? String(templateSelect.value || "").trim() : "";
+      var followUpHours = followUpInput ? Number(followUpInput.value || 0) : 0;
+      var responseNote = "Respuesta clínica guiada enviada desde panel admin.";
+
+      await requestJson("/api/v1/admin/triage/cases/" + encodeURIComponent(caseId) + "/respond", {
+        method: "POST",
+        body: JSON.stringify({
+          template: template,
+          note: responseNote,
+          status: statusSelect ? String(statusSelect.value || "responded") : "responded",
+          followUpHours: followUpHours
+        })
+      });
+      setAuthStatus("Respuesta clínica registrada correctamente.");
+      await loadDashboard();
+      return;
+    }
+
+    if (action === "details") {
+      var detail = await requestJson("/api/v1/admin/triage/cases/" + encodeURIComponent(caseId));
+      var triageCase = detail && detail.triageCase ? detail.triageCase : null;
+      if (!triageCase) {
+        setAuthStatus("No fue posible cargar el detalle del caso.", true);
+        return;
+      }
+
+      var detailLines = [];
+      detailLines.push("Título: " + (triageCase.title || "-"));
+      detailLines.push("Descripción: " + (triageCase.description || "-"));
+      detailLines.push("Urgencia: " + (triageCase.urgencyLevel || "-") + " | Score: " + (triageCase.urgencyScore || 0));
+      detailLines.push("Alergias: " + (triageCase.hasAllergies ? triageCase.allergyDetails || "Sí (sin detalle)" : "No"));
+      detailLines.push("Fotos: " + ((triageCase.assets && triageCase.assets.length) || 0));
+      detailLines.push("Eventos: " + ((triageCase.events && triageCase.events.length) || 0));
+      if (detailHost) {
+        detailHost.innerHTML = detailLines.map(function (line) { return "<span>" + line + "</span>"; }).join("");
+      }
+      setAuthStatus("Detalle del caso cargado.");
+    }
+  }
+
   async function loadDashboard() {
     await ensureSession();
 
@@ -403,6 +611,7 @@
     var query = buildQuery(range);
     var metrics = await requestJson("/api/v1/admin/metrics" + query);
     var timeseries = await requestJson("/api/v1/admin/metrics/timeseries" + query);
+    var triageQueueData = await requestJson("/api/v1/admin/triage/cases?status=new,in_review,follow_up&limit=20");
 
     var kpis = metrics.kpis || {};
     setKpi("kpi-appointments-total", formatNumber(kpis.appointmentsTotal));
@@ -411,6 +620,11 @@
     setKpi("kpi-conversion-rate", formatPercent(kpis.conversionRate));
     setKpi("kpi-no-show-rate", formatPercent(kpis.noShowRate));
     setKpi("kpi-avg-lead-hours", formatHours(kpis.avgLeadHours));
+    setKpi("kpi-previsit-total", formatNumber(kpis.preVisitTotal));
+    setKpi("kpi-triage-total", formatNumber(kpis.triageCasesTotal));
+    setKpi("kpi-triage-critical", formatNumber(kpis.triageCriticalTotal));
+    setKpi("kpi-resource-downloads", formatNumber(kpis.resourceDownloadsTotal));
+    setKpi("kpi-reminders-sent", formatNumber(kpis.remindersSentTotal));
 
     var statusRows = Object.keys(metrics.appointmentsByStatus || {}).map(function (key) {
       return {
@@ -428,7 +642,24 @@
     });
     renderDistribution(topicDistributionHost, topicRows, "Sin mensajes de contacto en el rango seleccionado.");
 
+    var triageRows = (metrics.triageByUrgency || []).map(function (row) {
+      return {
+        label: row.urgencyLevel,
+        total: row.total
+      };
+    });
+    renderDistribution(triageDistributionHost, triageRows, "Sin casos express en el rango seleccionado.");
+
+    var resourcesRows = (metrics.resourcesByKey || []).map(function (row) {
+      return {
+        label: row.resourceKey,
+        total: row.total
+      };
+    });
+    renderDistribution(resourcesDistributionHost, resourcesRows, "Sin descargas premium en el rango seleccionado.");
+
     renderCharts(timeseries.series || []);
+    renderTriageQueue((triageQueueData && triageQueueData.triageCases) || []);
     setAuthStatus("Métricas actualizadas correctamente.");
   }
 
@@ -508,6 +739,14 @@
         setAuthStatus(error.message, true);
       });
   });
+
+  if (triageQueueHost) {
+    triageQueueHost.addEventListener("click", function (event) {
+      handleTriageQueueAction(event).catch(function (error) {
+        setAuthStatus(error.message || "No se pudo procesar la acción sobre el caso.", true);
+      });
+    });
+  }
 
   preloadState();
   setAuthStatus("Verificando sesión...");

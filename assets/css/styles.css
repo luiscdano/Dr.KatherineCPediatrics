@@ -1551,6 +1551,213 @@ ul {
   color: var(--primary-700);
 }
 
+.age-route-module {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.age-route-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.age-route-tab {
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--primary-900);
+  font-weight: 700;
+  padding: 0.45rem 0.86rem;
+  cursor: pointer;
+}
+
+.age-route-tab.is-active {
+  background: var(--primary-900);
+  color: #fff;
+  border-color: var(--primary-900);
+}
+
+.age-route-card {
+  border-radius: 16px;
+  border: 1px solid rgba(114, 140, 112, 0.25);
+  background: linear-gradient(170deg, rgba(248, 246, 238, 0.96), rgba(215, 212, 187, 0.5));
+  padding: 1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.age-route-list {
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.warning-signs-card {
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(194, 79, 79, 0.28);
+  background: linear-gradient(160deg, rgba(255, 244, 244, 0.88), rgba(255, 255, 255, 0.95));
+  padding: 1.1rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.warning-signs-head {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.warning-signs-list ul {
+  padding-left: 1.1rem;
+  margin: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.warning-signs-list.compact ul {
+  gap: 0.25rem;
+}
+
+.warning-signs-list li {
+  color: #6b2b2b;
+  font-weight: 600;
+}
+
+.previsit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.previsit-summary {
+  border-radius: 12px;
+  border: 1px dashed rgba(63, 82, 62, 0.35);
+  background: rgba(248, 246, 238, 0.78);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.previsit-advisory {
+  border-radius: 10px;
+  background: rgba(114, 140, 112, 0.14);
+  border: 1px solid rgba(114, 140, 112, 0.3);
+  padding: 0.55rem 0.62rem;
+  color: var(--primary-900);
+  font-weight: 600;
+}
+
+.urgency-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 0.64rem;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.urgency-low {
+  background: #6e8b6d;
+}
+
+.urgency-medium {
+  background: #b48c37;
+}
+
+.urgency-high {
+  background: #d16e2d;
+}
+
+.urgency-critical {
+  background: #b53b3b;
+}
+
+.premium-resource-card {
+  min-height: 100%;
+}
+
+.premium-audience {
+  color: var(--primary-700);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.premium-download-list {
+  margin-top: 0.45rem;
+  border-radius: 10px;
+  border: 1px dashed var(--border);
+  background: rgba(248, 246, 238, 0.75);
+  padding: 0.7rem;
+}
+
+.premium-download-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.warning-checkboxes {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.64rem 0.74rem;
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.warning-checkboxes legend {
+  font-weight: 700;
+  color: var(--primary-900);
+  padding: 0 0.3rem;
+}
+
+.warning-checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--primary-700);
+  font-size: 0.92rem;
+}
+
+.warning-signs-inline {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.photo-preview-item {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 0.48rem 0.58rem;
+  font-size: 0.82rem;
+  color: var(--primary-700);
+}
+
 .site-footer {
   margin-top: 2.2rem;
   background: var(--primary-700);
@@ -1761,6 +1968,7 @@ ul {
   .grid-about,
   .profile-grid,
   .agenda-grid,
+  .previsit-grid,
   .review-wrap,
   .cta-section .cta-wrap,
   .footer-grid {
@@ -1877,7 +2085,8 @@ ul {
   .metric-grid,
   .grid-stats-item,
   .grid-about-feature,
-  .form-row-2 {
+  .form-row-2,
+  .form-row-3 {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -2008,7 +2217,12 @@ ul {
   .grid-about-feature,
   .metric-grid,
   .grid-stats-item,
-  .form-row-2 {
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-preview-grid {
     grid-template-columns: 1fr;
   }
 

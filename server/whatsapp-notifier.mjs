@@ -1,6 +1,6 @@
 import config from "./config.mjs";
 
-function isConfigured() {
+export function isWhatsAppAutomationConfigured() {
   const automation = config.whatsappAutomation;
   return (
     automation.enabled &&
@@ -50,7 +50,7 @@ function topicToLabel(topic) {
   return labels[normalized] || "Otro";
 }
 
-async function sendInternalWhatsAppMessage(to, message, contextLabel) {
+export async function sendWhatsAppAutomationMessage(to, message, contextLabel = "generic") {
   const timeout = Number(config.whatsappAutomation.requestTimeoutMs) || 6000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
@@ -119,8 +119,32 @@ function formatContactMessage(messageRecord) {
   ].join("\n");
 }
 
+function formatPreVisitMessage(assessment) {
+  return [
+    "Nuevo pre-triage antes de cita",
+    `ID: ${assessment.id}`,
+    `Paciente: ${truncate(assessment.patientName, 80)} (${assessment.patientAge} años)`,
+    `Tutor: ${truncate(assessment.guardianName, 80)} - ${assessment.guardianPhone}`,
+    `Motivo: ${truncate(assessment.primaryReason, 180)}`,
+    `Urgencia: ${assessment.urgencyLevel}`,
+    `Recomendación: ${assessment.recommendedChannel}`
+  ].join("\n");
+}
+
+function formatTriageCaseMessage(triageCase) {
+  return [
+    "Nuevo caso - Evaluación Pediátrica Express",
+    `ID: ${triageCase.id}`,
+    `Paciente: ${truncate(triageCase.patientName, 80)} (${triageCase.patientAge} años)`,
+    `Tutor: ${truncate(triageCase.guardianName, 80)} - ${triageCase.guardianPhone}`,
+    `Título: ${truncate(triageCase.title, 120)}`,
+    `Urgencia: ${triageCase.urgencyLevel} (score ${triageCase.urgencyScore})`,
+    `Resumen: ${truncate(triageCase.urgencyReason, 240)}`
+  ].join("\n");
+}
+
 export async function notifyAppointmentCreated(appointment) {
-  if (!isConfigured()) {
+  if (!isWhatsAppAutomationConfigured()) {
     return { sent: false, reason: "disabled_or_missing_configuration" };
   }
 
@@ -129,7 +153,7 @@ export async function notifyAppointmentCreated(appointment) {
     return { sent: false, reason: "invalid_clinic_recipient" };
   }
 
-  await sendInternalWhatsAppMessage(
+  await sendWhatsAppAutomationMessage(
     clinicRecipient,
     formatAppointmentMessage(appointment),
     "appointment_admin_notification"
@@ -138,7 +162,7 @@ export async function notifyAppointmentCreated(appointment) {
   if (config.whatsappAutomation.notifyParentOnAppointment) {
     const parentRecipient = normalizePhone(appointment.parentPhone);
     if (parentRecipient) {
-      await sendInternalWhatsAppMessage(
+      await sendWhatsAppAutomationMessage(
         parentRecipient,
         formatParentAcknowledgement(appointment),
         "appointment_parent_notification"
@@ -150,7 +174,7 @@ export async function notifyAppointmentCreated(appointment) {
 }
 
 export async function notifyContactMessageCreated(messageRecord) {
-  if (!isConfigured()) {
+  if (!isWhatsAppAutomationConfigured()) {
     return { sent: false, reason: "disabled_or_missing_configuration" };
   }
 
@@ -159,10 +183,46 @@ export async function notifyContactMessageCreated(messageRecord) {
     return { sent: false, reason: "invalid_clinic_recipient" };
   }
 
-  await sendInternalWhatsAppMessage(
+  await sendWhatsAppAutomationMessage(
     clinicRecipient,
     formatContactMessage(messageRecord),
     "contact_admin_notification"
+  );
+  return { sent: true };
+}
+
+export async function notifyPreVisitAssessmentCreated(assessment) {
+  if (!isWhatsAppAutomationConfigured()) {
+    return { sent: false, reason: "disabled_or_missing_configuration" };
+  }
+
+  const clinicRecipient = normalizePhone(config.whatsappAutomation.clinicRecipient);
+  if (!clinicRecipient) {
+    return { sent: false, reason: "invalid_clinic_recipient" };
+  }
+
+  await sendWhatsAppAutomationMessage(
+    clinicRecipient,
+    formatPreVisitMessage(assessment),
+    "pre_visit_notification"
+  );
+  return { sent: true };
+}
+
+export async function notifyTriageCaseCreated(triageCase) {
+  if (!isWhatsAppAutomationConfigured()) {
+    return { sent: false, reason: "disabled_or_missing_configuration" };
+  }
+
+  const clinicRecipient = normalizePhone(config.whatsappAutomation.clinicRecipient);
+  if (!clinicRecipient) {
+    return { sent: false, reason: "invalid_clinic_recipient" };
+  }
+
+  await sendWhatsAppAutomationMessage(
+    clinicRecipient,
+    formatTriageCaseMessage(triageCase),
+    "triage_case_notification"
   );
   return { sent: true };
 }

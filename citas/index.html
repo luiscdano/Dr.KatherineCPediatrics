@@ -186,6 +186,134 @@
         </div>
       </section>
 
+      <section class="section alt" id="previsit-module" aria-labelledby="previsit-title">
+        <div class="shell">
+          <div class="previsit-grid">
+            <article class="agenda-card reveal">
+              <h3 id="previsit-title">Mini asistente pre-cita</h3>
+              <p>
+                Responde preguntas rápidas antes de la consulta para generar un resumen clínico preliminar que ayude a
+                priorizar la atención de la doctora.
+              </p>
+
+              <form id="previsit-form" class="form-grid">
+                <div class="form-field honeypot-field" aria-hidden="true">
+                  <label for="previsit-company">Empresa</label>
+                  <input
+                    id="previsit-company"
+                    name="companyWebsite"
+                    type="text"
+                    tabindex="-1"
+                    autocomplete="off"
+                    inputmode="url"
+                  />
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-field">
+                    <label for="previsit-patient-name">Paciente</label>
+                    <input id="previsit-patient-name" name="patientName" type="text" minlength="3" maxlength="90" required />
+                  </div>
+                  <div class="form-field">
+                    <label for="previsit-patient-age">Edad</label>
+                    <input id="previsit-patient-age" name="patientAge" type="number" min="0" max="18" step="1" required />
+                  </div>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-field">
+                    <label for="previsit-guardian-name">Tutor</label>
+                    <input
+                      id="previsit-guardian-name"
+                      name="guardianName"
+                      type="text"
+                      minlength="3"
+                      maxlength="90"
+                      required
+                    />
+                  </div>
+                  <div class="form-field">
+                    <label for="previsit-guardian-phone">Teléfono</label>
+                    <input
+                      id="previsit-guardian-phone"
+                      name="guardianPhone"
+                      type="tel"
+                      inputmode="tel"
+                      pattern="[0-9+()\\-\\s]{7,20}"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label for="previsit-reason">Motivo principal</label>
+                  <input id="previsit-reason" name="primaryReason" type="text" minlength="6" maxlength="240" required />
+                </div>
+
+                <div class="form-field">
+                  <label for="previsit-symptoms">Síntomas observados</label>
+                  <textarea id="previsit-symptoms" name="symptoms" minlength="12" maxlength="1800" required></textarea>
+                </div>
+
+                <div class="form-row-3">
+                  <div class="form-field">
+                    <label for="previsit-fever">Fiebre (°C)</label>
+                    <input id="previsit-fever" name="feverCelsius" type="number" min="34" max="43" step="0.1" />
+                  </div>
+                  <div class="form-field">
+                    <label for="previsit-pain">Dolor (0-10)</label>
+                    <input id="previsit-pain" name="painLevel" type="number" min="0" max="10" step="1" value="0" required />
+                  </div>
+                  <div class="form-field">
+                    <label for="previsit-duration">Horas de evolución</label>
+                    <input id="previsit-duration" name="durationHours" type="number" min="0" max="720" step="1" value="0" required />
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label for="previsit-allergies">Alergias conocidas (opcional)</label>
+                  <input id="previsit-allergies" name="allergies" type="text" maxlength="500" />
+                </div>
+
+                <div class="form-field">
+                  <label for="previsit-meds">Medicamentos actuales (opcional)</label>
+                  <input id="previsit-meds" name="medications" type="text" maxlength="500" />
+                </div>
+
+                <div class="consent-box">
+                  <input id="previsit-consent" name="privacyConsent" type="checkbox" required />
+                  <label for="previsit-consent">
+                    Acepto la <a href="/politica-de-privacidad.html">Política de privacidad</a> para enviar este
+                    pre-triage.
+                  </label>
+                </div>
+
+                <div class="form-actions">
+                  <button class="btn btn-primary" type="submit">Generar resumen pre-cita</button>
+                  <a class="btn btn-secondary" href="/evaluacion-pediatrica-express/">Abrir Evaluación Express</a>
+                </div>
+              </form>
+
+              <p id="previsit-confirmation" class="confirmation" aria-live="polite"></p>
+            </article>
+
+            <article class="agenda-card reveal">
+              <h3>Resultado del pre-triage</h3>
+              <p>
+                Este resultado ayuda a priorizar la agenda clínica. No sustituye evaluación médica presencial.
+              </p>
+              <div id="previsit-summary" class="previsit-summary">
+                <p>Completa el formulario para ver el resumen clínico sugerido.</p>
+              </div>
+              <div class="warning-signs-inline">
+                <h4>Señales de alarma</h4>
+                <div id="alert-signs-list-inline" class="warning-signs-list compact"></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="section alt" aria-labelledby="faq-title">
         <div class="shell">
           <header class="section-head reveal">

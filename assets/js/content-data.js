@@ -27,6 +27,7 @@ window.DR_KATHERINE_DATA = {
     { key: "about", label: "Sobre la doctora", href: "/sobre-la-doctora/" },
     { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos/" },
     { key: "citas", label: "Citas", href: "/citas/" },
+    { key: "triage", label: "Evaluación Express", href: "/evaluacion-pediatrica-express/" },
     { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres/" },
     { key: "contact", label: "Contacto", href: "/contacto/" }
   ],
@@ -166,6 +167,101 @@ window.DR_KATHERINE_DATA = {
       excerpt: "Recomendaciones de nutrición infantil desde lactantes hasta edad escolar.",
       href: "/recursos/alimentacion-por-etapas.html",
       tag: "Nutrición"
+    }
+  ],
+  ageRoutes: [
+    {
+      key: "0-12m",
+      label: "0-12 meses",
+      title: "Primer año: protección y neurodesarrollo",
+      focus: [
+        "Lactancia o fórmula adaptada con seguimiento pediátrico.",
+        "Control de vacunas y crecimiento mes a mes.",
+        "Detección temprana de alergias y trastornos del sueño."
+      ],
+      ctaLabel: "Ver guía de alimentación",
+      ctaHref: "/recursos/alimentacion-por-etapas.html"
+    },
+    {
+      key: "1-3a",
+      label: "1-3 años",
+      title: "Etapa de exploración y prevención de accidentes",
+      focus: [
+        "Rutina de alimentación y hábitos de higiene.",
+        "Seguimiento de lenguaje y socialización.",
+        "Prevención de caídas, intoxicaciones y quemaduras."
+      ],
+      ctaLabel: "Ver checklist de prevención",
+      ctaHref: "/evaluacion-pediatrica-express/"
+    },
+    {
+      key: "4-6a",
+      label: "4-6 años",
+      title: "Inicio escolar con base inmunológica sólida",
+      focus: [
+        "Refuerzo de vacunas y chequeos anuales.",
+        "Manejo de infecciones respiratorias frecuentes.",
+        "Educación para sueño, alimentación y actividad física."
+      ],
+      ctaLabel: "Ver calendario de vacunación",
+      ctaHref: "/recursos/calendario-vacunacion.html"
+    },
+    {
+      key: "7-12a",
+      label: "7-12 años",
+      title: "Crecimiento activo con vigilancia de hábitos",
+      focus: [
+        "Control de peso/talla y postura.",
+        "Prevención de sedentarismo y pantallas excesivas.",
+        "Apoyo en salud emocional y rendimiento escolar."
+      ],
+      ctaLabel: "Solicitar pre-cita",
+      ctaHref: "/citas/"
+    },
+    {
+      key: "13-17a",
+      label: "13-17 años",
+      title: "Adolescencia: acompañamiento clínico y emocional",
+      focus: [
+        "Salud mental, sueño y autocuidado.",
+        "Educación preventiva en sexualidad y hábitos.",
+        "Seguimiento de acné, nutrición y deporte."
+      ],
+      ctaLabel: "Contactar consultorio",
+      ctaHref: "/contacto/"
+    }
+  ],
+  alertSigns: [
+    "Dificultad para respirar o respiración rápida persistente.",
+    "Convulsión, desmayo o somnolencia extrema.",
+    "Fiebre alta que no cede o fiebre en menores de 3 meses.",
+    "Vómitos persistentes con signos de deshidratación.",
+    "Erupción morada, rigidez de cuello o dolor intenso inusual."
+  ],
+  premiumResources: [
+    {
+      key: "fiebre-24h-kit",
+      title: "Kit Fiebre 24H",
+      summary: "Acciones concretas para observar, hidratar y decidir cuándo consultar.",
+      audience: "0-12m, 1-3a, 4-6a"
+    },
+    {
+      key: "alimentacion-etapas-kit",
+      title: "Guía de Alimentación por Etapas",
+      summary: "Plan práctico por edad para reducir dudas sobre nutrición infantil.",
+      audience: "0-12m, 1-3a, 4-6a, 7-12a"
+    },
+    {
+      key: "vacunas-checklist-kit",
+      title: "Checklist de Vacunación",
+      summary: "Control rápido para validar esquema y preparar próximas dosis.",
+      audience: "0-12m, 1-3a, 4-6a, 7-12a, 13-17a"
+    },
+    {
+      key: "botiquin-hogar-kit",
+      title: "Botiquín Pediátrico en Casa",
+      summary: "Lista esencial para reacción inicial segura en casa.",
+      audience: "1-3a, 4-6a, 7-12a, 13-17a"
     }
   ],
   testimonials: [

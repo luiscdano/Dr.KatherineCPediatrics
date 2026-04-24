@@ -9,6 +9,7 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 - `sobre-la-doctora/index.html`
 - `servicios-pediatricos/index.html`
 - `citas/index.html`
+- `evaluacion-pediatrica-express/index.html`
 - `recursos-para-padres/index.html`
 - `contacto/index.html`
 - `politica-de-privacidad.html`
@@ -25,14 +26,22 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
   - layout compartido (header/footer)
   - render de contenido modular
   - interacciones (menú móvil, testimonios, citas y formularios)
+  - ruta pediátrica por edad
+  - mini asistente pre-cita
+  - recursos premium con tracking de descargas
+  - evaluación pediátrica express con carga de fotos
 - API backend en Node.js/Express para:
   - persistencia de solicitudes de cita
   - recepción de mensajes de contacto
   - consulta de disponibilidad por fecha
+  - pre-triage clínico y priorización por urgencia
+  - bandeja de casos express con trazabilidad
+  - eventos de descarga premium para métricas
 - servicio dedicado de WhatsApp Business Cloud API en `whatsapp-backend/` para:
   - webhook de Meta
   - chatbot básico extensible
   - envío transaccional interno desde el backend principal
+  - recordatorios automáticos de cita (confirmación, 24h, 2h y no-show recovery)
 
 ## Configuración rápida
 
@@ -105,6 +114,9 @@ python3 -m http.server 8080
   - `GET /api/v1/appointments/taken?date=YYYY-MM-DD`
   - `POST /api/v1/appointments`
   - `POST /api/v1/contact-messages`
+  - `POST /api/v1/pre-visit-assessments`
+  - `POST /api/v1/resource-downloads`
+  - `POST /api/v1/triage/cases`
 - Endpoints de autenticación admin:
   - `POST /api/v1/admin/auth/login`
   - `GET /api/v1/admin/auth/me`
@@ -113,6 +125,14 @@ python3 -m http.server 8080
   - `GET /api/v1/admin/appointments`
   - `PATCH /api/v1/admin/appointments/:id/status`
   - `GET /api/v1/admin/contact-messages`
+  - `GET /api/v1/admin/pre-visit-assessments`
+  - `GET /api/v1/admin/resource-downloads`
+  - `GET /api/v1/admin/triage/cases`
+  - `GET /api/v1/admin/triage/cases/:id`
+  - `PATCH /api/v1/admin/triage/cases/:id/status`
+  - `POST /api/v1/admin/triage/cases/:id/respond`
+  - `GET /api/v1/admin/triage/patient-history`
+  - `GET /api/v1/admin/whatsapp-reminders`
   - `GET /api/v1/admin/metrics?from=YYYY-MM-DD&to=YYYY-MM-DD`
   - `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
   - `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
@@ -169,7 +189,11 @@ En `.env` del proyecto principal:
 - `WHATSAPP_BACKEND_BASE_URL=http://localhost:3000`
 - `WHATSAPP_BACKEND_API_KEY=<internal_api_key_de_whatsapp_backend>`
 - `WHATSAPP_CLINIC_RECIPIENT=<numero_destino_en_formato_whatsapp>`
+- `WHATSAPP_REQUEST_TIMEOUT_MS=6000`
 - `WHATSAPP_NOTIFY_PARENT_ON_APPOINTMENT=false` (opcional)
+- `WHATSAPP_REMINDERS_ENABLED=true`
+- `WHATSAPP_REMINDER_TICK_MS=30000`
+- `WHATSAPP_REMINDER_BATCH_SIZE=20`
 
 ### Variables de base de datos en `server/`
 
@@ -250,6 +274,15 @@ Pendiente para endurecimiento final tras reunión con cliente:
   - `politica-de-privacidad.html`
   - `terminos-y-condiciones.html`
 - Disclaimer médico en footer y links legales persistentes
+
+## Módulos de alto impacto implementados
+
+1. Recordatorios y confirmaciones por WhatsApp (incluye recuperación de no-show).
+2. Ruta pediátrica por edad con contenido personalizado en Home.
+3. Mini asistente pre-cita con resumen clínico para priorización.
+4. Centro de recursos premium con descargas y tracking.
+5. Bloque de señales de alerta con CTA directo a cita/contacto.
+6. Evaluación Pediátrica Express: fotos + formulario inteligente + filtro de urgencia + bandeja priorizada + trazabilidad.
 
 ## Deploy automático (GitHub Pages)
 

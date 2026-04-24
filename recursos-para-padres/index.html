@@ -65,6 +65,82 @@
         </div>
       </section>
 
+      <section class="section alt" id="premium-resources-module" aria-labelledby="premium-resources-title">
+        <div class="shell">
+          <header class="section-head reveal">
+            <span class="eyebrow">Centro de recursos premium</span>
+            <h2 id="premium-resources-title">Descargas con seguimiento para padres</h2>
+            <p>
+              Activa guías prácticas descargables y registra intereses para ofrecer contenido de seguimiento por edad
+              pediátrica.
+            </p>
+          </header>
+
+          <div id="premium-resources-grid" class="grid-2"></div>
+
+          <article class="agenda-card reveal">
+            <h3>Desbloquear recurso premium</h3>
+            <form id="premium-resources-form" class="form-grid">
+              <div class="form-field honeypot-field" aria-hidden="true">
+                <label for="premium-company">Empresa</label>
+                <input id="premium-company" name="companyWebsite" type="text" tabindex="-1" autocomplete="off" />
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="premium-parent-name">Nombre del tutor</label>
+                  <input
+                    id="premium-parent-name"
+                    name="parentName"
+                    type="text"
+                    minlength="3"
+                    maxlength="100"
+                    required
+                  />
+                </div>
+                <div class="form-field">
+                  <label for="premium-parent-email">Correo</label>
+                  <input id="premium-parent-email" name="parentEmail" type="email" required />
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-field">
+                  <label for="premium-age-group">Grupo de edad</label>
+                  <select id="premium-age-group" name="childAgeGroup" required>
+                    <option value="0-12m">0-12 meses</option>
+                    <option value="1-3a">1-3 años</option>
+                    <option value="4-6a">4-6 años</option>
+                    <option value="7-12a">7-12 años</option>
+                    <option value="13-17a">13-17 años</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="premium-resource-key">Recurso premium</label>
+                  <select id="premium-resource-key" name="resourceKey" required></select>
+                </div>
+              </div>
+
+              <div class="consent-box">
+                <input id="premium-consent" name="privacyConsent" type="checkbox" required />
+                <label for="premium-consent">
+                  Acepto la <a href="/politica-de-privacidad.html">Política de privacidad</a> y autorizo seguimiento
+                  educativo por correo.
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Activar recurso</button>
+                <a class="btn btn-secondary" href="/citas/">Agendar consulta</a>
+              </div>
+            </form>
+
+            <p id="premium-resource-result" class="confirmation" aria-live="polite"></p>
+            <div id="premium-download-list" class="premium-download-list"></div>
+          </article>
+        </div>
+      </section>
+
       <section class="section alt">
         <div class="shell">
           <article class="cta-banner reveal">

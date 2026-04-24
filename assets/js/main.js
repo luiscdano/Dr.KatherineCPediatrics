@@ -21,6 +21,19 @@
     return /^[0-9+()\-\s]{7,20}$/.test(normalizeText(value));
   }
 
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeText(value));
+  }
+
+  function escapeHTML(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function setStatusMessage(node, text, isError) {
     if (!node) {
       return;
@@ -262,6 +275,129 @@
 
     setHTML("resources-home-grid", html);
     setHTML("resources-page-grid", html);
+  }
+
+  function renderAgeRoutes() {
+    var moduleHost = document.getElementById("age-route-module");
+    var tabsHost = document.getElementById("age-route-tabs");
+    var cardHost = document.getElementById("age-route-card");
+    var routes = Array.isArray(data.ageRoutes) ? data.ageRoutes : [];
+
+    if (!moduleHost || !tabsHost || !cardHost || !routes.length) {
+      return;
+    }
+
+    var activeKey = routes[0].key;
+    function paint() {
+      tabsHost.innerHTML = routes
+        .map(function (route) {
+          var activeClass = route.key === activeKey ? " is-active" : "";
+          return (
+            '<button class="age-route-tab' +
+            activeClass +
+            '" type="button" data-key="' +
+            route.key +
+            '">' +
+            route.label +
+            "</button>"
+          );
+        })
+        .join("");
+
+      var selected = routes.find(function (route) {
+        return route.key === activeKey;
+      }) || routes[0];
+
+      cardHost.innerHTML =
+        '<h3>' +
+        selected.title +
+        "</h3>" +
+        '<ul class="age-route-list">' +
+        selected.focus
+          .map(function (line) {
+            return "<li>" + line + "</li>";
+          })
+          .join("") +
+        "</ul>" +
+        '<a class="btn btn-ghost" href="' +
+        localUrl(selected.ctaHref) +
+        '">' +
+        selected.ctaLabel +
+        "</a>";
+
+      var buttons = tabsHost.querySelectorAll(".age-route-tab");
+      buttons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          activeKey = normalizeText(button.getAttribute("data-key"));
+          paint();
+        });
+      });
+    }
+
+    paint();
+  }
+
+  function renderWarningSigns() {
+    var signs = Array.isArray(data.alertSigns) ? data.alertSigns : [];
+    if (!signs.length) {
+      return;
+    }
+
+    function renderIn(hostId) {
+      var host = document.getElementById(hostId);
+      if (!host) {
+        return;
+      }
+
+      host.innerHTML =
+        "<ul>" +
+        signs
+          .map(function (line) {
+            return "<li>" + line + "</li>";
+          })
+          .join("") +
+        "</ul>";
+    }
+
+    renderIn("alert-signs-list");
+    renderIn("alert-signs-list-inline");
+  }
+
+  function renderPremiumResourcesCards() {
+    var host = document.getElementById("premium-resources-grid");
+    var select = document.getElementById("premium-resource-key");
+    var resources = Array.isArray(data.premiumResources) ? data.premiumResources : [];
+
+    if (!host || !resources.length) {
+      return;
+    }
+
+    host.innerHTML = resources
+      .map(function (item) {
+        return (
+          '<article class="resource-card reveal premium-resource-card">' +
+          '<span class="pill">Premium</span>' +
+          "<h3>" +
+          item.title +
+          "</h3>" +
+          "<p>" +
+          item.summary +
+          "</p>" +
+          '<p class="premium-audience">Edades: ' +
+          item.audience +
+          "</p>" +
+          "</article>"
+        );
+      })
+      .join("");
+
+    if (select) {
+      select.innerHTML = resources
+        .map(function (item) {
+          return '<option value="' + item.key + '">' + item.title + "</option>";
+        })
+        .join("");
+    }
   }
 
   function renderTestimonials() {
@@ -983,6 +1119,458 @@
     });
   }
 
+  function renderPrevisitSummary(summaryHost, payload) {
+    if (!summaryHost) {
+      return;
+    }
+
+    var urgency = normalizeText(payload.urgencyLevel || "").toLowerCase();
+    var urgencyClass = "urgency-low";
+    if (urgency === "critical") {
+      urgencyClass = "urgency-critical";
+    } else if (urgency === "high") {
+      urgencyClass = "urgency-high";
+    } else if (urgency === "medium") {
+      urgencyClass = "urgency-medium";
+    }
+
+    summaryHost.innerHTML =
+      '<p><strong>Urgencia detectada:</strong> <span class="urgency-pill ' +
+      urgencyClass +
+      '">' +
+      escapeHTML(urgency || "low") +
+      "</span></p>" +
+      '<p><strong>Canal recomendado:</strong> ' +
+      escapeHTML(payload.recommendedChannel || "priority_visit") +
+      "</p>" +
+      '<p><strong>Resumen clínico:</strong> ' +
+      escapeHTML(payload.triageSummary || payload.urgencyReason || "Sin observaciones adicionales.") +
+      "</p>" +
+      (payload.advisory ? '<p class="previsit-advisory">' + escapeHTML(payload.advisory) + "</p>" : "");
+  }
+
+  function evaluateLocalUrgency(input) {
+    var score = 0;
+
+    if (Number(input.feverCelsius) >= 40) {
+      score += 35;
+    } else if (Number(input.feverCelsius) >= 39) {
+      score += 22;
+    }
+
+    if (Number(input.patientAge) <= 1 && Number(input.feverCelsius) >= 38) {
+      score += 28;
+    }
+
+    if (Number(input.painLevel) >= 8) {
+      score += 22;
+    } else if (Number(input.painLevel) >= 5) {
+      score += 12;
+    }
+
+    if (Number(input.durationHours) >= 72) {
+      score += 14;
+    } else if (Number(input.durationHours) >= 24) {
+      score += 6;
+    }
+
+    if (Array.isArray(input.warningSigns) && input.warningSigns.length >= 2) {
+      score += 15;
+    }
+
+    if (Array.isArray(input.warningSigns) && input.warningSigns.indexOf("difficulty_breathing") >= 0) {
+      score += 40;
+    }
+
+    var urgencyLevel = "low";
+    var recommendedChannel = "home_monitor";
+    var advisory = "Monitoreo en casa con seguimiento pediátrico.";
+
+    if (score >= 70) {
+      urgencyLevel = "critical";
+      recommendedChannel = "emergency";
+      advisory = "Acude a emergencias pediátricas de inmediato.";
+    } else if (score >= 45) {
+      urgencyLevel = "high";
+      recommendedChannel = "same_day_visit";
+      advisory = "Consulta pediátrica el mismo día.";
+    } else if (score >= 24) {
+      urgencyLevel = "medium";
+      recommendedChannel = "priority_visit";
+      advisory = "Consulta prioritaria en las próximas 24 horas.";
+    }
+
+    return {
+      urgencyLevel: urgencyLevel,
+      urgencyScore: score,
+      recommendedChannel: recommendedChannel,
+      triageSummary: "Resultado preliminar generado localmente.",
+      advisory: advisory
+    };
+  }
+
+  function setupPreVisitAssistant() {
+    var form = document.getElementById("previsit-form");
+    if (!form) {
+      return;
+    }
+
+    var confirmation = document.getElementById("previsit-confirmation");
+    var summaryHost = document.getElementById("previsit-summary");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setStatusMessage(confirmation, "Completa los campos obligatorios para continuar.", true);
+        return;
+      }
+
+      var formData = new FormData(form);
+      if (normalizeText(formData.get("companyWebsite"))) {
+        setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        return;
+      }
+
+      var payload = {
+        patientName: normalizeText(formData.get("patientName")),
+        patientAge: Number(normalizeText(formData.get("patientAge"))),
+        guardianName: normalizeText(formData.get("guardianName")),
+        guardianPhone: normalizeText(formData.get("guardianPhone")),
+        primaryReason: normalizeText(formData.get("primaryReason")),
+        symptoms: normalizeText(formData.get("symptoms")),
+        feverCelsius: normalizeText(formData.get("feverCelsius")) ? Number(normalizeText(formData.get("feverCelsius"))) : null,
+        painLevel: Number(normalizeText(formData.get("painLevel")) || 0),
+        durationHours: Number(normalizeText(formData.get("durationHours")) || 0),
+        allergies: normalizeText(formData.get("allergies")),
+        medications: normalizeText(formData.get("medications")),
+        privacyConsent: Boolean(formData.get("privacyConsent")),
+        companyWebsite: normalizeText(formData.get("companyWebsite"))
+      };
+
+      if (!isValidPhone(payload.guardianPhone)) {
+        setStatusMessage(confirmation, "Ingresa un teléfono válido para poder responderte.", true);
+        return;
+      }
+
+      if (hasApiBase()) {
+        try {
+          var response = await apiRequest("/api/v1/pre-visit-assessments", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          var assessment = (response && response.data && response.data.assessment) || {};
+          var advisory = (response && response.data && response.data.advisory) || "";
+          renderPrevisitSummary(summaryHost, {
+            urgencyLevel: assessment.urgencyLevel,
+            recommendedChannel: assessment.recommendedChannel,
+            triageSummary: assessment.triageSummary,
+            advisory: advisory
+          });
+          setStatusMessage(confirmation, "Pre-triage enviado correctamente y agregado a la bandeja clínica.", false);
+          return;
+        } catch (error) {
+          setStatusMessage(confirmation, "No se pudo enviar el pre-triage al servidor. Mostramos evaluación local.", true);
+        }
+      }
+
+      var localResult = evaluateLocalUrgency(payload);
+      renderPrevisitSummary(summaryHost, localResult);
+    });
+  }
+
+  function setupPremiumResources() {
+    var form = document.getElementById("premium-resources-form");
+    var resultHost = document.getElementById("premium-resource-result");
+    var listHost = document.getElementById("premium-download-list");
+    if (!form || !resultHost || !listHost) {
+      return;
+    }
+
+    var storageKey = "dr_katherine_premium_resources";
+    var localCatalog = {
+      "fiebre-24h-kit": "/assets/downloads/fiebre-24h-kit.txt",
+      "alimentacion-etapas-kit": "/assets/downloads/alimentacion-etapas-kit.txt",
+      "vacunas-checklist-kit": "/assets/downloads/vacunas-checklist-kit.txt",
+      "botiquin-hogar-kit": "/assets/downloads/botiquin-hogar-kit.txt"
+    };
+
+    function readUnlocked() {
+      try {
+        var raw = window.localStorage.getItem(storageKey);
+        var parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (_error) {
+        return [];
+      }
+    }
+
+    function writeUnlocked(items) {
+      try {
+        window.localStorage.setItem(storageKey, JSON.stringify(items));
+      } catch (_error) {
+        // ignore local storage errors
+      }
+    }
+
+    function renderUnlocked() {
+      var items = readUnlocked();
+      if (!items.length) {
+        listHost.innerHTML = "<p>Aún no hay recursos desbloqueados en este dispositivo.</p>";
+        return;
+      }
+
+      listHost.innerHTML =
+        "<ul>" +
+        items
+          .map(function (item) {
+            return (
+              '<li><a class=\"text-link\" href=\"' +
+              localUrl(item.downloadUrl) +
+              '" download>' +
+              escapeHTML(item.title) +
+              "</a></li>"
+            );
+          })
+          .join("") +
+        "</ul>";
+    }
+
+    renderUnlocked();
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setStatusMessage(resultHost, "Completa los campos requeridos para activar el recurso.", true);
+        return;
+      }
+
+      var formData = new FormData(form);
+      if (normalizeText(formData.get("companyWebsite"))) {
+        setStatusMessage(resultHost, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        return;
+      }
+
+      var payload = {
+        parentName: normalizeText(formData.get("parentName")),
+        parentEmail: normalizeText(formData.get("parentEmail")),
+        childAgeGroup: normalizeText(formData.get("childAgeGroup")),
+        resourceKey: normalizeText(formData.get("resourceKey")),
+        privacyConsent: Boolean(formData.get("privacyConsent")),
+        companyWebsite: normalizeText(formData.get("companyWebsite"))
+      };
+
+      if (!isValidEmail(payload.parentEmail)) {
+        setStatusMessage(resultHost, "Ingresa un correo electrónico válido.", true);
+        return;
+      }
+
+      var unlockItem = {
+        key: payload.resourceKey,
+        title: payload.resourceKey,
+        downloadUrl: localCatalog[payload.resourceKey] || "#"
+      };
+
+      if (hasApiBase()) {
+        try {
+          var response = await apiRequest("/api/v1/resource-downloads", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (response && response.data && response.data.resource) {
+            unlockItem.title = response.data.resource.title || unlockItem.title;
+            unlockItem.downloadUrl = response.data.resource.downloadUrl || unlockItem.downloadUrl;
+          }
+        } catch (error) {
+          setStatusMessage(
+            resultHost,
+            "No se pudo registrar el recurso en el servidor. Lo activamos localmente en este dispositivo.",
+            true
+          );
+        }
+      }
+
+      var current = readUnlocked().filter(function (item) {
+        return item.key !== unlockItem.key;
+      });
+      current.unshift(unlockItem);
+      writeUnlocked(current.slice(0, 10));
+      renderUnlocked();
+      setStatusMessage(resultHost, "Recurso activado correctamente. Ya puedes descargarlo.", false);
+      form.reset();
+    });
+  }
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = String(reader.result || "");
+        resolve(result.replace(/^data:[^;]+;base64,/i, ""));
+      };
+      reader.onerror = function () {
+        reject(new Error("No fue posible leer una de las imágenes."));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setupRapidEvaluationForm() {
+    var form = document.getElementById("rapid-eval-form");
+    if (!form) {
+      return;
+    }
+
+    var confirmation = document.getElementById("rapid-eval-confirmation");
+    var resultHost = document.getElementById("rapid-eval-result");
+    var photosInput = document.getElementById("rapid-photos");
+    var previewHost = document.getElementById("rapid-photo-preview");
+
+    function renderPreview(files) {
+      if (!previewHost) {
+        return;
+      }
+      if (!files || !files.length) {
+        previewHost.innerHTML = "";
+        return;
+      }
+
+      previewHost.innerHTML = "";
+      Array.prototype.slice.call(files, 0, 4).forEach(function (file) {
+        var item = document.createElement("div");
+        item.className = "photo-preview-item";
+        item.textContent = file.name + " (" + Math.round(file.size / 1024) + "KB)";
+        previewHost.appendChild(item);
+      });
+    }
+
+    if (photosInput) {
+      photosInput.addEventListener("change", function () {
+        renderPreview(photosInput.files);
+      });
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        setStatusMessage(confirmation, "Completa los campos requeridos para enviar el caso.", true);
+        return;
+      }
+
+      var formData = new FormData(form);
+      if (normalizeText(formData.get("companyWebsite"))) {
+        setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        return;
+      }
+
+      var warningSigns = formData.getAll("warningSigns").map(function (item) {
+        return normalizeText(item);
+      }).filter(Boolean);
+
+      var files = photosInput && photosInput.files ? Array.prototype.slice.call(photosInput.files, 0, 4) : [];
+      var encodedPhotos = [];
+      if (files.length) {
+        for (var index = 0; index < files.length; index += 1) {
+          var file = files[index];
+          var encoded = await fileToBase64(file);
+          encodedPhotos.push({
+            originalName: file.name,
+            mimeType: file.type || "image/jpeg",
+            dataBase64: encoded
+          });
+        }
+      }
+
+      var payload = {
+        patientName: normalizeText(formData.get("patientName")),
+        patientAge: Number(normalizeText(formData.get("patientAge"))),
+        guardianName: normalizeText(formData.get("guardianName")),
+        guardianPhone: normalizeText(formData.get("guardianPhone")),
+        guardianEmail: normalizeText(formData.get("guardianEmail")),
+        title: normalizeText(formData.get("title")),
+        description: normalizeText(formData.get("description")),
+        feverCelsius: normalizeText(formData.get("feverCelsius")) ? Number(normalizeText(formData.get("feverCelsius"))) : null,
+        painLevel: Number(normalizeText(formData.get("painLevel")) || 0),
+        durationHours: Number(normalizeText(formData.get("durationHours")) || 0),
+        hasAllergies: Boolean(formData.get("hasAllergies")),
+        allergyDetails: normalizeText(formData.get("allergyDetails")),
+        warningSigns: warningSigns,
+        photos: encodedPhotos,
+        privacyConsent: Boolean(formData.get("privacyConsent")),
+        companyWebsite: normalizeText(formData.get("companyWebsite"))
+      };
+
+      if (!isValidPhone(payload.guardianPhone)) {
+        setStatusMessage(confirmation, "Ingresa un teléfono válido para seguimiento clínico.", true);
+        return;
+      }
+      if (payload.guardianEmail && !isValidEmail(payload.guardianEmail)) {
+        setStatusMessage(confirmation, "Ingresa un correo válido o déjalo en blanco.", true);
+        return;
+      }
+
+      var triageResult;
+      if (hasApiBase()) {
+        try {
+          var response = await apiRequest("/api/v1/triage/cases", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          triageResult = {
+            id: response && response.data && response.data.triageCase ? response.data.triageCase.id : "N/A",
+            urgencyLevel: response && response.data && response.data.triageCase ? response.data.triageCase.urgencyLevel : "low",
+            urgencyReason: response && response.data && response.data.triageCase ? response.data.triageCase.urgencyReason : "",
+            recommendedChannel: response && response.data ? response.data.recommendedChannel : "priority_visit",
+            advisory: response && response.data ? response.data.advisory : ""
+          };
+          setStatusMessage(
+            confirmation,
+            "Caso enviado correctamente. La doctora lo verá en su bandeja priorizada.",
+            false
+          );
+        } catch (error) {
+          setStatusMessage(
+            confirmation,
+            "No se pudo enviar el caso al servidor. Mostramos evaluación preliminar local.",
+            true
+          );
+        }
+      }
+
+      if (!triageResult) {
+        var local = evaluateLocalUrgency(payload);
+        triageResult = {
+          id: "LOCAL",
+          urgencyLevel: local.urgencyLevel,
+          urgencyReason: local.triageSummary,
+          recommendedChannel: local.recommendedChannel,
+          advisory: local.advisory
+        };
+      }
+
+      renderPrevisitSummary(resultHost, {
+        urgencyLevel: triageResult.urgencyLevel,
+        recommendedChannel: triageResult.recommendedChannel,
+        triageSummary: triageResult.urgencyReason,
+        advisory: triageResult.advisory
+      });
+    });
+  }
+
   function setupReveal() {
     var items = document.querySelectorAll(".reveal");
     if (!items.length) {
@@ -1021,9 +1609,15 @@
   renderServices();
   renderDoctorInfo();
   renderResources();
+  renderAgeRoutes();
+  renderWarningSigns();
+  renderPremiumResourcesCards();
   renderTestimonials();
   renderFaqs();
   setupAgendaModule();
   setupContactForm();
+  setupPreVisitAssistant();
+  setupPremiumResources();
+  setupRapidEvaluationForm();
   setupReveal();
 })();

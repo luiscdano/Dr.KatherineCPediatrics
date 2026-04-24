@@ -96,7 +96,7 @@
 
 .admin-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.7rem;
 }
 
@@ -162,6 +162,12 @@
 .chart-line-tertiary {
   fill: none;
   stroke: #cf8b2e;
+  stroke-width: 2.2;
+}
+
+.chart-line-quaternary {
+  fill: none;
+  stroke: #3f8f9d;
   stroke-width: 2.2;
 }
 
@@ -243,9 +249,105 @@
   padding: 0.66rem 0.7rem;
 }
 
+.triage-queue {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.triage-case-card {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.98), rgba(248, 246, 238, 0.92));
+  padding: 0.7rem;
+  display: grid;
+  gap: 0.46rem;
+}
+
+.triage-case-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.triage-case-head strong {
+  color: var(--primary-900);
+}
+
+.triage-case-meta {
+  color: var(--primary-700);
+  font-size: 0.86rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.triage-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0 0.58rem;
+}
+
+.triage-pill.low {
+  background: #6e8b6d;
+}
+
+.triage-pill.medium {
+  background: #b48c37;
+}
+
+.triage-pill.high {
+  background: #d16e2d;
+}
+
+.triage-pill.critical {
+  background: #b53b3b;
+}
+
+.triage-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.triage-actions select,
+.triage-actions input {
+  min-height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  color: var(--primary-900);
+  background: #fff;
+}
+
+.triage-actions button {
+  min-height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--primary-900);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0.85rem;
+}
+
+.triage-actions button:hover,
+.triage-actions button:focus-visible {
+  background: rgba(114, 140, 112, 0.14);
+}
+
 @media (max-width: 1100px) {
   .admin-kpi-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

@@ -112,7 +112,10 @@ const config = {
     backendApiKey: String(process.env.WHATSAPP_BACKEND_API_KEY || "").trim(),
     clinicRecipient: String(process.env.WHATSAPP_CLINIC_RECIPIENT || "").trim(),
     requestTimeoutMs: toPositiveNumber(process.env.WHATSAPP_REQUEST_TIMEOUT_MS, 6000),
-    notifyParentOnAppointment: toBoolean(process.env.WHATSAPP_NOTIFY_PARENT_ON_APPOINTMENT, false)
+    notifyParentOnAppointment: toBoolean(process.env.WHATSAPP_NOTIFY_PARENT_ON_APPOINTMENT, false),
+    remindersEnabled: toBoolean(process.env.WHATSAPP_REMINDERS_ENABLED, true),
+    reminderTickMs: toPositiveNumber(process.env.WHATSAPP_REMINDER_TICK_MS, 30_000),
+    reminderBatchSize: toPositiveNumber(process.env.WHATSAPP_REMINDER_BATCH_SIZE, 20)
   }
 };
 

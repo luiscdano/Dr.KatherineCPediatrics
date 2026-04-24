@@ -8,49 +8,16 @@ Base URL esperada en producción:
 
 - `GET /api/v1/health`
 
-Respuesta:
-
-```json
-{
-  "ok": true,
-  "data": {
-    "service": "dr-katherine-api",
-    "status": "up",
-    "database": {
-      "status": "up",
-      "latencyMs": 3
-    },
-    "timestamp": "2026-04-19T02:00:00.000Z"
-  }
-}
-```
-
-## Consultar horarios ocupados
+## Citas
 
 - `GET /api/v1/appointments/taken?date=YYYY-MM-DD`
-
-Respuesta:
-
-```json
-{
-  "ok": true,
-  "data": {
-    "date": "2026-04-20",
-    "timesTaken": ["08:00", "09:30"]
-  }
-}
-```
-
-## Crear solicitud de cita
-
 - `POST /api/v1/appointments`
-- `Content-Type: application/json`
 
-Body:
+Body (`POST /appointments`):
 
 ```json
 {
-  "date": "2026-04-20",
+  "date": "2026-04-24",
   "time": "09:30",
   "patientName": "Juan Perez",
   "patientAge": 4,
@@ -62,52 +29,132 @@ Body:
 }
 ```
 
-Respuesta exitosa (`201`):
-
-```json
-{
-  "ok": true,
-  "data": {
-    "appointment": {
-      "id": "uuid",
-      "date": "2026-04-20",
-      "time": "09:30",
-      "status": "pending"
-    }
-  }
-}
-```
-
-## Crear mensaje de contacto
+## Contacto
 
 - `POST /api/v1/contact-messages`
-- `Content-Type: application/json`
+
+## Pre-cita (mini asistente)
+
+- `POST /api/v1/pre-visit-assessments`
 
 Body:
 
 ```json
 {
-  "name": "Maria Perez",
-  "phone": "849-564-6212",
-  "email": "maria@email.com",
-  "topic": "agenda",
-  "message": "Quiero confirmar disponibilidad para esta semana.",
+  "patientName": "Juan Perez",
+  "patientAge": 4,
+  "guardianName": "Maria Perez",
+  "guardianPhone": "849-564-6212",
+  "primaryReason": "Fiebre desde ayer",
+  "symptoms": "Fiebre intermitente, congestión y poco apetito.",
+  "feverCelsius": 38.7,
+  "painLevel": 4,
+  "durationHours": 18,
+  "allergies": "No conocidas",
+  "medications": "Paracetamol pediátrico",
   "privacyConsent": true,
-  "companyName": ""
+  "companyWebsite": ""
 }
 ```
 
-Respuesta exitosa (`201`):
+Respuesta (`201`):
 
 ```json
 {
   "ok": true,
   "data": {
-    "message": {
+    "assessment": {
       "id": "uuid",
-      "topic": "agenda",
-      "createdAt": "2026-04-19T02:00:00.000Z"
+      "urgencyLevel": "medium",
+      "recommendedChannel": "priority_visit",
+      "triageSummary": "Fiebre presente. Síntomas por más de 24 horas."
+    },
+    "advisory": "Recomendamos consulta pediátrica prioritaria en las próximas 24 horas."
+  }
+}
+```
+
+## Recursos premium (descargas con tracking)
+
+- `POST /api/v1/resource-downloads`
+
+Body:
+
+```json
+{
+  "resourceKey": "fiebre-24h-kit",
+  "parentName": "Maria Perez",
+  "parentEmail": "maria@email.com",
+  "childAgeGroup": "1-3a",
+  "privacyConsent": true,
+  "companyWebsite": ""
+}
+```
+
+Respuesta (`201`):
+
+```json
+{
+  "ok": true,
+  "data": {
+    "eventId": "uuid",
+    "resource": {
+      "key": "fiebre-24h-kit",
+      "title": "Kit Fiebre 24H",
+      "downloadUrl": "/assets/downloads/fiebre-24h-kit.txt"
     }
+  }
+}
+```
+
+## Evaluación Pediátrica Express (fotos + urgencia)
+
+- `POST /api/v1/triage/cases`
+
+Body:
+
+```json
+{
+  "patientName": "Juan Perez",
+  "patientAge": 4,
+  "guardianName": "Maria Perez",
+  "guardianPhone": "849-564-6212",
+  "guardianEmail": "maria@email.com",
+  "title": "Golpe con inflamación",
+  "description": "Golpe en antebrazo derecho hace 2 horas, dolor moderado y enrojecimiento.",
+  "feverCelsius": null,
+  "painLevel": 5,
+  "durationHours": 2,
+  "hasAllergies": false,
+  "allergyDetails": "",
+  "warningSigns": ["severe_pain"],
+  "photos": [
+    {
+      "originalName": "brazo.jpg",
+      "mimeType": "image/jpeg",
+      "dataBase64": "..."
+    }
+  ],
+  "privacyConsent": true,
+  "companyWebsite": ""
+}
+```
+
+Respuesta (`201`):
+
+```json
+{
+  "ok": true,
+  "data": {
+    "triageCase": {
+      "id": "uuid",
+      "urgencyLevel": "medium",
+      "urgencyScore": 29,
+      "urgencyReason": "Dolor moderado.",
+      "status": "new"
+    },
+    "recommendedChannel": "priority_visit",
+    "advisory": "Recomendamos consulta pediátrica prioritaria en las próximas 24 horas."
   }
 }
 ```
@@ -115,41 +162,19 @@ Respuesta exitosa (`201`):
 ## Auth admin
 
 - `POST /api/v1/admin/auth/login`
-- `Content-Type: application/json`
-
-Body:
-
-```json
-{
-  "password": "admin_password"
-}
-```
-
-Respuesta exitosa (`200`):
-
-```json
-{
-  "ok": true,
-  "data": {
-    "tokenType": "Bearer",
-    "token": "jwt_token",
-    "expiresIn": 28800,
-    "csrfToken": "csrf_hex_token"
-  }
-}
-```
-
 - `GET /api/v1/admin/auth/me`
 - `POST /api/v1/admin/auth/logout`
 
 Notas de seguridad admin:
 
-- El login también abre sesión por cookie `httpOnly` (`drk_admin_session`).
-- El backend entrega cookie CSRF (`drk_admin_csrf`) para validación de mutaciones.
-- Para requests `POST/PATCH` autenticados por cookie, enviar header `x-csrf-token`.
-- Se mantiene compatibilidad con `Authorization: Bearer <token>` y `x-admin-key` legado.
+- Login abre sesión por cookie `httpOnly` (`drk_admin_session`).
+- Cookie CSRF (`drk_admin_csrf`) para mutaciones por cookie.
+- En mutaciones por cookie enviar `x-csrf-token`.
+- Compatibilidad con `Authorization: Bearer <token>` y `x-admin-key` legado.
 
-## Admin (requieren `Authorization: Bearer <token>` o `x-admin-key` legado)
+## Admin (requieren auth admin)
+
+### Operación existente
 
 - `GET /api/v1/admin/appointments`
 - `PATCH /api/v1/admin/appointments/:id/status`
@@ -158,97 +183,47 @@ Notas de seguridad admin:
 - `GET /api/v1/admin/metrics/timeseries?from=YYYY-MM-DD&to=YYYY-MM-DD`
 - `GET /api/v1/admin/metrics/export.csv?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
-Para mutaciones (`PATCH /api/v1/admin/appointments/:id/status`), si usas sesión por cookie debes enviar:
+### Nuevos módulos
 
-- `x-csrf-token: <token>`
+- `GET /api/v1/admin/pre-visit-assessments?urgencyLevel=&guardianPhone=&limit=`
+- `GET /api/v1/admin/resource-downloads?resourceKey=&limit=`
+- `GET /api/v1/admin/triage/cases?status=new,in_review&urgencyLevel=&guardianPhone=&limit=`
+- `GET /api/v1/admin/triage/cases/:id`
+- `PATCH /api/v1/admin/triage/cases/:id/status`
+- `POST /api/v1/admin/triage/cases/:id/respond`
+- `GET /api/v1/admin/triage/patient-history?guardianPhone=&limit=`
+- `GET /api/v1/admin/whatsapp-reminders?status=&appointmentId=&limit=`
 
-Estados permitidos para cita:
-
-- `pending`
-- `confirmed`
-- `completed`
-- `cancelled`
-- `no_show`
-
-### Ejemplo respuesta `GET /api/v1/admin/metrics`
+Body ejemplo (`POST /api/v1/admin/triage/cases/:id/respond`):
 
 ```json
 {
-  "ok": true,
-  "data": {
-    "range": {
-      "from": "2026-03-24",
-      "to": "2026-04-22"
-    },
-    "kpis": {
-      "appointmentsTotal": 42,
-      "contactsTotal": 37,
-      "busySlots": 31,
-      "slotCapacity": 360,
-      "occupancyRate": 8.61,
-      "conversionRate": 113.51,
-      "noShowRate": 4.76,
-      "avgLeadHours": 68.2
-    },
-    "appointmentsByStatus": {
-      "pending": 10,
-      "confirmed": 16,
-      "completed": 12,
-      "cancelled": 2,
-      "no_show": 2
-    },
-    "contactsByTopic": [
-      { "topic": "agenda", "total": 14 },
-      { "topic": "seguimiento", "total": 12 }
-    ],
-    "statusTransitions": [
-      { "status": "confirmed", "total": 18 },
-      { "status": "completed", "total": 9 }
-    ]
-  }
+  "template": "seguimiento_24h",
+  "note": "Mantener observación y agendar consulta de control.",
+  "status": "follow_up",
+  "followUpHours": 24
 }
 ```
+
+## Recordatorios WhatsApp automáticos
+
+Al crear una cita, el backend programa recordatorios en `whatsapp_reminders`:
+
+- `confirmation`
+- `reminder_24h`
+- `reminder_2h`
+
+Al marcar cita `no_show`, programa `no_show_recovery`.
+
+Controlado por variables:
+
+- `WHATSAPP_REMINDERS_ENABLED`
+- `WHATSAPP_REMINDER_TICK_MS`
+- `WHATSAPP_REMINDER_BATCH_SIZE`
 
 ## Ops
 
 - `GET /api/v1/ops/metrics`
 - Header requerido: `x-ops-key: <OPS_METRICS_KEY>`
 
-Respuesta (`200`):
-
-```json
-{
-  "ok": true,
-  "data": {
-    "service": "dr-katherine-api",
-    "startedAt": "2026-04-23T14:00:00.000Z",
-    "uptimeSeconds": 1234.56,
-    "memory": {
-      "rssMb": 85.21,
-      "heapUsedMb": 27.14,
-      "heapTotalMb": 43.7
-    },
-    "requests": {
-      "total": 302,
-      "byMethod": { "GET": 250, "POST": 42, "PATCH": 10 },
-      "byStatusClass": { "2xx": 290, "4xx": 10, "5xx": 2 },
-      "errors5xx": 2
-    },
-    "admin": {
-      "loginSuccess": 5,
-      "loginFailure": 1,
-      "ipDenied": 0,
-      "csrfDenied": 0
-    },
-    "business": {
-      "appointmentsCreated": 32,
-      "contactsCreated": 18
-    },
-    "alerts": {
-      "sent": 0,
-      "failed": 0
-    },
-    "timestamp": "2026-04-23T14:20:00.000Z"
-  }
-}
-```
+Incluye estado del worker de recordatorios y métricas de negocio extendidas.
