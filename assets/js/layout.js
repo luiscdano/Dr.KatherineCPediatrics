@@ -44,7 +44,7 @@
   }
 
   function navTemplate() {
-    var orderedHeaderKeys = ["about", "services", "resources", "citas", "contact"];
+    var orderedHeaderKeys = ["about", "services", "resources", "citas", "triage", "contact"];
     return orderedHeaderKeys
       .map(function (key) {
         return data.nav.find(function (item) {

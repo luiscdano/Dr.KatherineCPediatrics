@@ -9,7 +9,7 @@ Sitio web multipágina para consultorio pediátrico, diseñado con arquitectura 
 - `sobre-la-doctora/index.html`
 - `servicios-pediatricos/index.html`
 - `citas/index.html`
-- `evaluacion-pediatrica-express/index.html`
+- `una-prioridad/index.html`
 - `recursos-para-padres/index.html`
 - `contacto/index.html`
 - `politica-de-privacidad.html`
@@ -282,7 +282,7 @@ Pendiente para endurecimiento final tras reunión con cliente:
 3. Mini asistente pre-cita con resumen clínico para priorización.
 4. Centro de recursos premium con descargas y tracking.
 5. Bloque de señales de alerta con CTA directo a cita/contacto.
-6. Evaluación Pediátrica Express: fotos + formulario inteligente + filtro de urgencia + bandeja priorizada + trazabilidad.
+6. Una prioridad: fotos + formulario inteligente + filtro de urgencia + bandeja priorizada + trazabilidad.
 
 ## Deploy automático (GitHub Pages)
 

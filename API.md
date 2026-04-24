@@ -107,7 +107,7 @@ Respuesta (`201`):
 }
 ```
 
-## Evaluación Pediátrica Express (fotos + urgencia)
+## Una prioridad (fotos + urgencia)
 
 - `POST /api/v1/triage/cases`
 

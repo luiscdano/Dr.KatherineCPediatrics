@@ -27,7 +27,7 @@ window.DR_KATHERINE_DATA = {
     { key: "about", label: "Sobre la doctora", href: "/sobre-la-doctora/" },
     { key: "services", label: "Servicios pediátricos", href: "/servicios-pediatricos/" },
     { key: "citas", label: "Citas", href: "/citas/" },
-    { key: "triage", label: "Evaluación Express", href: "/evaluacion-pediatrica-express/" },
+    { key: "triage", label: "Una prioridad", href: "/una-prioridad/" },
     { key: "resources", label: "Recursos para padres", href: "/recursos-para-padres/" },
     { key: "contact", label: "Contacto", href: "/contacto/" }
   ],
@@ -192,7 +192,7 @@ window.DR_KATHERINE_DATA = {
         "Prevención de caídas, intoxicaciones y quemaduras."
       ],
       ctaLabel: "Ver checklist de prevención",
-      ctaHref: "/evaluacion-pediatrica-express/"
+      ctaHref: "/una-prioridad/"
     },
     {
       key: "4-6a",

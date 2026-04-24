@@ -133,7 +133,7 @@ function formatPreVisitMessage(assessment) {
 
 function formatTriageCaseMessage(triageCase) {
   return [
-    "Nuevo caso - Evaluación Pediátrica Express",
+    "Nuevo caso - Una prioridad",
     `ID: ${triageCase.id}`,
     `Paciente: ${truncate(triageCase.patientName, 80)} (${triageCase.patientAge} años)`,
     `Tutor: ${truncate(triageCase.guardianName, 80)} - ${triageCase.guardianPhone}`,
