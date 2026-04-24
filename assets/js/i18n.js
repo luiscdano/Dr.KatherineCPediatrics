@@ -28,7 +28,7 @@
     ["Recursos para padres", "Parent resources"],
     ["Contacto", "Contact"],
     ["Citas", "Appointments"],
-    ["Una prioridad", "A priority"],
+    ["Una prioridad", "A Priority"],
     ["Ruta pediátrica por edad", "Pediatric route by age"],
     ["Señales de alerta", "Warning signs"],
     ["Mini asistente pre-cita", "Pre-appointment mini assistant"],
@@ -529,6 +529,9 @@
 
   function translateWordToken(token) {
     var key = token.toLowerCase();
+    if (key === "a" && token === "A") {
+      return "A";
+    }
     var mapped = WORD_MAP[key];
     if (!mapped) {
       return token;
