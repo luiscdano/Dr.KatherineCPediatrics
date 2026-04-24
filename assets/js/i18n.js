@@ -3,7 +3,8 @@
   var DEFAULT_LANG = "es";
   var SUPPORTED_LANGS = {
     en: true,
-    es: true
+    es: true,
+    fr: true
   };
 
   var listeners = [];
@@ -12,11 +13,17 @@
   var pending = false;
   var applying = false;
   var externalDictRaw = window.DR_KATHERINE_I18N_DICT || {};
+  var externalDictFrRaw = window.DR_KATHERINE_I18N_DICT_FR || {};
   var externalDict = {};
   var externalDictLower = {};
+  var externalDictFr = {};
+  var externalDictFrLower = {};
   var reverseExternalDict = {};
   var reverseExternalDictLower = {};
+  var reverseExternalDictFr = {};
+  var reverseExternalDictFrLower = {};
   var reverseWordMap = {};
+  var reverseWordMapFr = {};
   var AMBIGUOUS_ENGLISH_WORDS = {
     "a": true,
     "an": true
@@ -133,6 +140,81 @@
     ["agenda", "appointments"],
     ["servicios", "services"],
     ["seguimiento", "follow-up"]
+  ];
+
+  var PHRASE_MAP_FR = [
+    ["Sobre la doctora", "À propos de la docteure"],
+    ["Servicios pediátricos", "Services pédiatriques"],
+    ["Recursos para padres", "Ressources pour les parents"],
+    ["Contacto", "Contact"],
+    ["Citas", "Rendez-vous"],
+    ["Una prioridad", "Une priorité"],
+    ["Ruta pediátrica por edad", "Parcours pédiatrique par âge"],
+    ["Señales de alerta", "Signaux d'alerte"],
+    ["Mini asistente pre-cita", "Mini assistant pré-rendez-vous"],
+    ["Centro de recursos premium", "Centre de ressources premium"],
+    ["Inicio", "Accueil"],
+    ["Política de privacidad", "Politique de confidentialité"],
+    ["Términos y condiciones", "Termes et conditions"],
+    ["Mapa del sitio", "Plan du site"],
+    ["Horarios", "Horaires"],
+    ["Citas en línea", "Rendez-vous en ligne"],
+    ["Todos los derechos reservados.", "Tous droits réservés."],
+    ["Este sitio ofrece información general y no sustituye una evaluación médica presencial.", "Ce site offre des informations générales et ne remplace pas une évaluation médicale en présentiel."],
+    ["Cultivando inicios felices y saludables.", "Des débuts heureux et en bonne santé."],
+    ["Clínica pediátrica", "Clinique pédiatrique"],
+    ["Punta Cana Village", "Punta Cana Village"],
+    ["Pediatra certificada por American Board", "Pédiatre certifiée par l'American Board"],
+    ["Próximamente", "Bientôt"],
+    ["Conocer a la doctora", "Rencontrer la docteure"],
+    ["Solicitar cita", "Demander un rendez-vous"],
+    ["Solicitar cita ahora", "Demander un rendez-vous maintenant"],
+    ["Solicitar información", "Demander des informations"],
+    ["Solicitar orientación", "Demander une orientation"],
+    ["Ver todos los recursos", "Voir toutes les ressources"],
+    ["Ver todos los servicios", "Voir tous les services"],
+    ["Explorar todos los servicios", "Explorer tous les services"],
+    ["Explorar recursos", "Explorer les ressources"],
+    ["Volver a recursos", "Retour aux ressources"],
+    ["Volver a servicios", "Retour aux services"],
+    ["Volver a la portada principal", "Retour à la page d'accueil"],
+    ["No encontramos esta página", "Nous n'avons pas trouvé cette page"],
+    ["Error 404", "Erreur 404"],
+    ["Agendar cita", "Planifier un rendez-vous"],
+    ["Agendar consulta", "Planifier une consultation"],
+    ["Agendar revisión", "Planifier un contrôle"],
+    ["Contactar consultorio", "Contacter le cabinet"],
+    ["Contactarnos", "Nous contacter"],
+    ["Guardar solicitud", "Enregistrer la demande"],
+    ["Limpiar formulario", "Effacer le formulaire"],
+    ["Limpiar historial local", "Effacer l'historique local"],
+    ["Enviar mensaje", "Envoyer le message"],
+    ["Aún no hay solicitudes recientes en este dispositivo.", "Il n'y a pas encore de demandes récentes sur cet appareil."],
+    ["Eliminar", "Supprimer"],
+    ["Seleccionado:", "Sélectionné :"],
+    ["Sin fecha", "Sans date"],
+    ["Sin horario", "Sans horaire"],
+    ["Solicitud de cita pediátrica", "Demande de rendez-vous pédiatrique"],
+    ["Fecha:", "Date :"],
+    ["Hora:", "Heure :"],
+    ["Paciente:", "Patient :"],
+    ["Tutor:", "Tuteur :"],
+    ["Teléfono:", "Téléphone :"],
+    ["Motivo:", "Motif :"],
+    ["Borrador local", "Brouillon local"],
+    ["Pendiente de confirmación", "En attente de confirmation"],
+    ["Navegación principal", "Navigation principale"],
+    ["Abrir menú", "Ouvrir le menu"],
+    ["Ir al inicio de", "Aller à l'accueil de"],
+    ["Lenguaje", "Langue"],
+    ["Idioma", "Langue"],
+    ["Español", "Espagnol"],
+    ["Inglés", "Anglais"],
+    ["Francés", "Français"],
+    ["Nombre:", "Nom :"],
+    ["Correo:", "E-mail :"],
+    ["Tema:", "Sujet :"],
+    ["Mensaje:", "Message :"]
   ];
 
   var WORD_MAP = {
@@ -391,6 +473,8 @@
     "ya": "already"
   };
 
+  var WORD_MAP_FR = {};
+
   function getStoredLang() {
     try {
       return String(window.localStorage.getItem(STORAGE_KEY) || "").trim().toLowerCase();
@@ -446,51 +530,91 @@
     return englishCount > 0 && englishCount > spanishCount;
   }
 
-  Object.keys(externalDictRaw).forEach(function (key) {
-    var normalizedKey = normalizeDictionaryKey(key);
-    if (!normalizedKey) {
-      return;
+  function isLikelyFrench(value) {
+    var sample = normalizeDictionaryKey(value).toLowerCase();
+    if (!sample) {
+      return false;
     }
-    var value = String(externalDictRaw[key] || "").trim();
-    externalDict[normalizedKey] = value;
-    var loweredKey = normalizedKey.toLowerCase();
-    if (!externalDictLower[loweredKey]) {
-      externalDictLower[loweredKey] = value;
-    }
-  });
 
-  Object.keys(externalDict).forEach(function (key) {
-    var englishValue = normalizeDictionaryKey(externalDict[key]);
-    if (!englishValue) {
-      return;
+    if (/[àâçéèêëîïôûùüÿœæ]/.test(sample)) {
+      return true;
     }
-    if (englishValue.toLowerCase() === key.toLowerCase()) {
-      return;
-    }
-    if (!reverseExternalDict[englishValue]) {
-      reverseExternalDict[englishValue] = key;
-    }
-    var loweredEnglishValue = englishValue.toLowerCase();
-    if (!reverseExternalDictLower[loweredEnglishValue]) {
-      reverseExternalDictLower[loweredEnglishValue] = key;
-    }
-  });
 
-  Object.keys(WORD_MAP).forEach(function (spanishWord) {
-    var englishWord = String(WORD_MAP[spanishWord] || "").trim().toLowerCase();
-    if (!englishWord || englishWord.indexOf(" ") !== -1) {
-      return;
-    }
-    if (!/^[a-z]+$/i.test(englishWord)) {
-      return;
-    }
-    if (AMBIGUOUS_ENGLISH_WORDS[englishWord]) {
-      return;
-    }
-    if (!reverseWordMap[englishWord]) {
-      reverseWordMap[englishWord] = spanishWord;
-    }
-  });
+    var frenchCount = countMatches(
+      sample,
+      /\b(le|la|les|des|du|de|pour|avec|et|clinique|rendez-vous|contact|ressources|santé|soins)\b/g
+    );
+    var englishCount = countMatches(
+      sample,
+      /\b(the|and|for|with|to|is|are|of|in|clinic|appointments|contact|resources)\b/g
+    );
+    var spanishCount = countMatches(
+      sample,
+      /\b(el|la|los|las|de|del|para|con|y|que|una|un|cada|consultorio|pediatría|pediátrica|citas|contacto|recursos)\b/g
+    );
+
+    return frenchCount > 0 && frenchCount >= englishCount && frenchCount >= spanishCount;
+  }
+
+  function ingestExternalDictionary(source, target, targetLower) {
+    Object.keys(source).forEach(function (key) {
+      var normalizedKey = normalizeDictionaryKey(key);
+      if (!normalizedKey) {
+        return;
+      }
+      var value = String(source[key] || "").trim();
+      target[normalizedKey] = value;
+      var loweredKey = normalizedKey.toLowerCase();
+      if (!targetLower[loweredKey]) {
+        targetLower[loweredKey] = value;
+      }
+    });
+  }
+
+  function buildReverseExternalDictionary(source, target, targetLower) {
+    Object.keys(source).forEach(function (key) {
+      var translatedValue = normalizeDictionaryKey(source[key]);
+      if (!translatedValue) {
+        return;
+      }
+      if (translatedValue.toLowerCase() === key.toLowerCase()) {
+        return;
+      }
+      if (!target[translatedValue]) {
+        target[translatedValue] = key;
+      }
+      var loweredTranslatedValue = translatedValue.toLowerCase();
+      if (!targetLower[loweredTranslatedValue]) {
+        targetLower[loweredTranslatedValue] = key;
+      }
+    });
+  }
+
+  function buildReverseWordMap(source, target, options) {
+    var opts = options || {};
+    Object.keys(source).forEach(function (spanishWord) {
+      var translatedWord = String(source[spanishWord] || "").trim().toLowerCase();
+      if (!translatedWord || translatedWord.indexOf(" ") !== -1) {
+        return;
+      }
+      if (opts.asciiOnly && !/^[a-z]+$/i.test(translatedWord)) {
+        return;
+      }
+      if (opts.skipAmbiguous && AMBIGUOUS_ENGLISH_WORDS[translatedWord]) {
+        return;
+      }
+      if (!target[translatedWord]) {
+        target[translatedWord] = spanishWord;
+      }
+    });
+  }
+
+  ingestExternalDictionary(externalDictRaw, externalDict, externalDictLower);
+  ingestExternalDictionary(externalDictFrRaw, externalDictFr, externalDictFrLower);
+  buildReverseExternalDictionary(externalDict, reverseExternalDict, reverseExternalDictLower);
+  buildReverseExternalDictionary(externalDictFr, reverseExternalDictFr, reverseExternalDictFrLower);
+  buildReverseWordMap(WORD_MAP, reverseWordMap, { asciiOnly: true, skipAmbiguous: true });
+  buildReverseWordMap(WORD_MAP_FR, reverseWordMapFr, { asciiOnly: false, skipAmbiguous: false });
 
   function normalizeLanguage(value) {
     var lang = String(value || "").trim().toLowerCase();
@@ -527,7 +651,25 @@
     return target;
   }
 
-  function translateWordToken(token) {
+  var WORD_TOKEN_REGEX = /[A-Za-zÀ-ÖØ-öø-ÿÁÉÍÓÚÜÑáéíóúüñ]+/g;
+
+  function canSkipTranslation(text) {
+    if (typeof text !== "string" || !text.trim()) {
+      return true;
+    }
+    if (/^[\d\s().+\-/:|]+$/.test(text)) {
+      return true;
+    }
+    if (/https?:\/\//i.test(text) || /^mailto:/i.test(text) || /^tel:/i.test(text)) {
+      return true;
+    }
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())) {
+      return true;
+    }
+    return false;
+  }
+
+  function translateSpanishWordToEnglishToken(token) {
     var key = token.toLowerCase();
     if (key === "a" && token === "A") {
       return "A";
@@ -544,19 +686,7 @@
       return text;
     }
 
-    if (!text.trim()) {
-      return text;
-    }
-
-    if (/^[\d\s().+\-/:|]+$/.test(text)) {
-      return text;
-    }
-
-    if (/https?:\/\//i.test(text) || /^mailto:/i.test(text) || /^tel:/i.test(text)) {
-      return text;
-    }
-
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())) {
+    if (canSkipTranslation(text)) {
       return text;
     }
 
@@ -581,14 +711,64 @@
       out = out.replace(re, target);
     });
 
-    out = out.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function (token) {
-      return translateWordToken(token);
+    out = out.replace(WORD_TOKEN_REGEX, function (token) {
+      return translateSpanishWordToEnglishToken(token);
     });
 
     out = out
       .replace(/\bof the of\b/gi, "of the")
       .replace(/\bthe the\b/gi, "the")
       .replace(/\bto the the\b/gi, "to the")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1");
+
+    return out;
+  }
+
+  function translateSpanishWordToFrenchToken(token) {
+    var key = token.toLowerCase();
+    var mapped = WORD_MAP_FR[key];
+    if (!mapped) {
+      return token;
+    }
+    return preserveCase(token, mapped);
+  }
+
+  function translateSpanishToFrench(text) {
+    if (typeof text !== "string") {
+      return text;
+    }
+
+    if (canSkipTranslation(text)) {
+      return text;
+    }
+
+    var leading = (text.match(/^\s*/) || [""])[0];
+    var trailing = (text.match(/\s*$/) || [""])[0];
+    var core = text.trim();
+    var normalizedCore = normalizeDictionaryKey(core);
+    var exactMatch = externalDictFr[normalizedCore] || externalDictFrLower[normalizedCore.toLowerCase()];
+    if (exactMatch) {
+      return leading + exactMatch + trailing;
+    }
+
+    var out = text;
+
+    PHRASE_MAP_FR.forEach(function (pair) {
+      var source = pair[0];
+      var target = pair[1];
+      if (!source || source === target) {
+        return;
+      }
+      var re = phraseRegex(source);
+      out = out.replace(re, target);
+    });
+
+    out = out.replace(WORD_TOKEN_REGEX, function (token) {
+      return translateSpanishWordToFrenchToken(token);
+    });
+
+    out = out
       .replace(/\s{2,}/g, " ")
       .replace(/\s+([,.;:!?])/g, "$1");
 
@@ -612,19 +792,7 @@
       return text;
     }
 
-    if (!text.trim()) {
-      return text;
-    }
-
-    if (/^[\d\s().+\-/:|]+$/.test(text)) {
-      return text;
-    }
-
-    if (/https?:\/\//i.test(text) || /^mailto:/i.test(text) || /^tel:/i.test(text)) {
-      return text;
-    }
-
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text.trim())) {
+    if (canSkipTranslation(text)) {
       return text;
     }
 
@@ -640,6 +808,9 @@
     if (isLikelySpanish(core) && !isLikelyEnglish(core)) {
       return text;
     }
+    if (isLikelyFrench(core) && !isLikelyEnglish(core)) {
+      return text;
+    }
 
     var out = text;
 
@@ -653,7 +824,7 @@
       out = out.replace(re, target);
     });
 
-    out = out.replace(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+/g, function (token) {
+    out = out.replace(WORD_TOKEN_REGEX, function (token) {
       return translateEnglishWordToken(token);
     });
 
@@ -667,11 +838,86 @@
     return out;
   }
 
-  function translateForLanguage(text, lang) {
-    if (lang === "en") {
-      return translateSpanishToEnglish(text);
+  function translateFrenchWordToken(token) {
+    var key = token.toLowerCase();
+    var mapped = reverseWordMapFr[key];
+    if (!mapped) {
+      return token;
+    }
+    return preserveCase(token, mapped);
+  }
+
+  function translateFrenchToSpanish(text) {
+    if (typeof text !== "string") {
+      return text;
+    }
+
+    if (canSkipTranslation(text)) {
+      return text;
+    }
+
+    var leading = (text.match(/^\s*/) || [""])[0];
+    var trailing = (text.match(/\s*$/) || [""])[0];
+    var core = text.trim();
+    var normalizedCore = normalizeDictionaryKey(core);
+    var exactMatch = reverseExternalDictFr[normalizedCore] || reverseExternalDictFrLower[normalizedCore.toLowerCase()];
+    if (exactMatch) {
+      return leading + exactMatch + trailing;
+    }
+
+    if (isLikelySpanish(core) && !isLikelyFrench(core)) {
+      return text;
+    }
+
+    var out = text;
+
+    PHRASE_MAP_FR.forEach(function (pair) {
+      var source = pair[1];
+      var target = pair[0];
+      if (!source || source === target) {
+        return;
+      }
+      var re = phraseRegex(source);
+      out = out.replace(re, target);
+    });
+
+    out = out.replace(WORD_TOKEN_REGEX, function (token) {
+      return translateFrenchWordToken(token);
+    });
+
+    out = out
+      .replace(/\bde de\b/gi, "de")
+      .replace(/\bel el\b/gi, "el")
+      .replace(/\bla la\b/gi, "la")
+      .replace(/\s{2,}/g, " ")
+      .replace(/\s+([,.;:!?])/g, "$1");
+
+    return out;
+  }
+
+  function translateAnyToSpanish(text) {
+    if (typeof text !== "string") {
+      return text;
+    }
+    if (isLikelyFrench(text) && !isLikelyEnglish(text)) {
+      return translateFrenchToSpanish(text);
     }
     return translateEnglishToSpanish(text);
+  }
+
+  function translateForLanguage(text, lang) {
+    if (lang === "es") {
+      return translateAnyToSpanish(text);
+    }
+
+    var sourceInSpanish = translateAnyToSpanish(text);
+    if (lang === "en") {
+      return translateSpanishToEnglish(sourceInSpanish);
+    }
+    if (lang === "fr") {
+      return translateSpanishToFrench(sourceInSpanish);
+    }
+    return sourceInSpanish;
   }
 
   function getCurrentLanguage() {
@@ -739,7 +985,7 @@
     var bag = getAttributeSourceBag(node);
     if (!Object.prototype.hasOwnProperty.call(bag, attrName)) {
       bag[attrName] = currentValue;
-    } else if (currentLang === "en" && currentValue !== translateSpanishToEnglish(bag[attrName]) && isLikelySpanish(currentValue)) {
+    } else if (currentLang !== "es" && currentValue !== translateForLanguage(bag[attrName], currentLang) && isLikelySpanish(currentValue)) {
       bag[attrName] = currentValue;
     }
 
