@@ -229,6 +229,20 @@ npm run release:check
 OPS_HEALTH_URLS="http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health" npm run monitor:health
 ```
 
+### Estado actual y pendientes (seguridad/ops)
+
+Estado cerrado con lo disponible hoy:
+
+- Auth admin endurecido (cookie `httpOnly`, CSRF, rate-limit y opción de allowlist IP).
+- Variables de monitoreo y alerta configuradas en GitHub (`ALERT_WEBHOOK_URL`, `OPS_HEALTH_URLS`, `ADMIN_COOKIE_SECURE`, `ADMIN_ALLOWED_IPS`).
+- Dashboard y backend operativos con la configuración actual.
+
+Pendiente para endurecimiento final tras reunión con cliente:
+
+- Definir IP(s) pública(s) fija(s) de operación y actualizar `ADMIN_ALLOWED_IPS` con valores definitivos.
+- Rotar `ALERT_WEBHOOK_URL` si hubo exposición del valor en canales no seguros.
+- Validar endpoint público final para monitoreo externo y ajustar `OPS_HEALTH_URLS` al dominio productivo definitivo.
+
 ## Señales de operación real
 
 - Aviso de emergencia visible en todo el sitio (header sticky)
