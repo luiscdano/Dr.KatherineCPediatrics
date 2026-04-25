@@ -132,7 +132,20 @@
 
               <div class="form-field">
                 <label for="rapid-photos">Fotos del caso (hasta 4 imágenes)</label>
-                <input id="rapid-photos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+                <div class="file-picker-wrap">
+                  <input
+                    id="rapid-photos"
+                    class="file-input-native"
+                    name="photos"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                  />
+                  <button id="rapid-photos-trigger" class="btn btn-secondary file-picker-trigger" type="button">
+                    Seleccionar archivo
+                  </button>
+                  <span id="rapid-photos-status" class="file-picker-status">Ningún archivo seleccionado</span>
+                </div>
               </div>
 
               <div id="rapid-photo-preview" class="photo-preview-grid"></div>

@@ -22,6 +22,18 @@
   var reverseExternalDictLower = {};
   var reverseExternalDictFr = {};
   var reverseExternalDictFrLower = {};
+  var keyCatalogs = {
+    es: {},
+    en: {},
+    fr: {}
+  };
+  var keyCatalogReady = false;
+  var keyCatalogListeners = [];
+  var KEY_CATALOG_URLS = {
+    es: "/assets/i18n/keys.es.json",
+    en: "/assets/i18n/keys.en.json",
+    fr: "/assets/i18n/keys.fr.json"
+  };
 
 
   var PHRASE_MAP = [
@@ -377,6 +389,226 @@
     return lang;
   }
 
+  function formatTemplate(template, params) {
+    var source = String(template || "");
+    if (!source || !params || typeof params !== "object") {
+      return source;
+    }
+
+    return source.replace(/\{([a-zA-Z0-9_]+)\}/g, function (_match, token) {
+      if (!Object.prototype.hasOwnProperty.call(params, token)) {
+        return "";
+      }
+      return String(params[token] == null ? "" : params[token]);
+    });
+  }
+
+  function getCatalogValueForLang(lang, key) {
+    if (!key || typeof key !== "string") {
+      return "";
+    }
+
+    var currentCatalog = keyCatalogs[lang] || {};
+    if (Object.prototype.hasOwnProperty.call(currentCatalog, key)) {
+      return String(currentCatalog[key] || "");
+    }
+
+    var defaultCatalog = keyCatalogs[DEFAULT_LANG] || {};
+    if (lang !== DEFAULT_LANG && Object.prototype.hasOwnProperty.call(defaultCatalog, key)) {
+      return String(defaultCatalog[key] || "");
+    }
+
+    var baseCatalog = keyCatalogs.es || {};
+    if (lang !== "es" && Object.prototype.hasOwnProperty.call(baseCatalog, key)) {
+      return String(baseCatalog[key] || "");
+    }
+
+    return "";
+  }
+
+  function translateByKey(key, params, targetLang) {
+    var lang = normalizeLanguage(targetLang || currentLang);
+    var template = getCatalogValueForLang(lang, String(key || ""));
+    if (!template) {
+      return "";
+    }
+    return formatTemplate(template, params);
+  }
+
+  function extractKeyParams(node) {
+    var params = {};
+    if (!node || !node.attributes) {
+      return params;
+    }
+
+    Array.prototype.forEach.call(node.attributes, function (attribute) {
+      if (!attribute || !attribute.name) {
+        return;
+      }
+      if (attribute.name.indexOf("data-i18n-param-") !== 0) {
+        return;
+      }
+      var token = attribute.name.replace("data-i18n-param-", "");
+      if (!token) {
+        return;
+      }
+      params[token] = attribute.value;
+    });
+
+    return params;
+  }
+
+  function applyKeyTranslationToElement(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+
+    var params = extractKeyParams(node);
+    var textKey = node.getAttribute("data-i18n-key");
+    if (textKey) {
+      var textValue = translateByKey(textKey, params, currentLang);
+      if (textValue) {
+        node.textContent = textValue;
+      }
+    }
+
+    var htmlKey = node.getAttribute("data-i18n-html-key");
+    if (htmlKey) {
+      var htmlValue = translateByKey(htmlKey, params, currentLang);
+      if (htmlValue) {
+        node.innerHTML = htmlValue;
+      }
+    }
+
+    var attrConfig = [
+      ["data-i18n-placeholder-key", "placeholder"],
+      ["data-i18n-title-key", "title"],
+      ["data-i18n-aria-label-key", "aria-label"],
+      ["data-i18n-alt-key", "alt"],
+      ["data-i18n-value-key", "value"]
+    ];
+
+    attrConfig.forEach(function (item) {
+      var keyAttr = item[0];
+      var targetAttr = item[1];
+      var keyValue = node.getAttribute(keyAttr);
+      if (!keyValue) {
+        return;
+      }
+      var translatedValue = translateByKey(keyValue, params, currentLang);
+      if (!translatedValue) {
+        return;
+      }
+      node.setAttribute(targetAttr, translatedValue);
+    });
+  }
+
+  function applyKeyTranslationsToTree(base) {
+    if (!base || (base.nodeType !== Node.ELEMENT_NODE && base !== document)) {
+      return;
+    }
+
+    if (base.nodeType === Node.ELEMENT_NODE) {
+      applyKeyTranslationToElement(base);
+    }
+
+    var root = base === document ? document.documentElement : base;
+    if (!root || !root.querySelectorAll) {
+      return;
+    }
+
+    var keyedNodes = root.querySelectorAll(
+      "[data-i18n-key], [data-i18n-html-key], [data-i18n-placeholder-key], [data-i18n-title-key], [data-i18n-aria-label-key], [data-i18n-alt-key], [data-i18n-value-key]"
+    );
+    keyedNodes.forEach(applyKeyTranslationToElement);
+  }
+
+  function notifyKeyCatalogReady() {
+    keyCatalogListeners.forEach(function (listener) {
+      try {
+        listener(keyCatalogReady);
+      } catch (_error) {
+        // no-op
+      }
+    });
+  }
+
+  function onKeyCatalogReady(listener) {
+    if (typeof listener !== "function") {
+      return function () {};
+    }
+
+    keyCatalogListeners.push(listener);
+    if (keyCatalogReady) {
+      listener(true);
+    }
+
+    return function () {
+      keyCatalogListeners = keyCatalogListeners.filter(function (item) {
+        return item !== listener;
+      });
+    };
+  }
+
+  function mergeKeyCatalog(lang, payload) {
+    var language = normalizeLanguage(lang);
+    if (!payload || typeof payload !== "object") {
+      return;
+    }
+
+    Object.keys(payload).forEach(function (key) {
+      if (!key || typeof key !== "string") {
+        return;
+      }
+      keyCatalogs[language][key] = String(payload[key] == null ? "" : payload[key]);
+    });
+  }
+
+  function loadKeyCatalogFile(lang, url) {
+    if (!window.fetch || typeof window.fetch !== "function") {
+      return Promise.resolve();
+    }
+
+    return window
+      .fetch(url, { cache: "no-store" })
+      .then(function (response) {
+        if (!response || !response.ok) {
+          return {};
+        }
+        return response.json();
+      })
+      .then(function (payload) {
+        mergeKeyCatalog(lang, payload);
+      })
+      .catch(function () {
+        // no-op
+      });
+  }
+
+  function initKeyCatalogs() {
+    if (!window.Promise || typeof window.Promise.all !== "function") {
+      keyCatalogReady = true;
+      notifyKeyCatalogReady();
+      return;
+    }
+
+    var tasks = Object.keys(KEY_CATALOG_URLS).map(function (lang) {
+      return loadKeyCatalogFile(lang, KEY_CATALOG_URLS[lang]);
+    });
+
+    Promise.all(tasks)
+      .then(function () {
+        // no-op
+      }, function () {
+        // no-op
+      })
+      .then(function () {
+        keyCatalogReady = true;
+        notifyKeyCatalogReady();
+        scheduleApply(document.body || document.documentElement);
+      });
+  }
+
   var currentLang = normalizeLanguage(getStoredLang() || DEFAULT_LANG);
 
   function canSkipTranslation(text) {
@@ -577,6 +809,9 @@
     if (tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT" || tag === "CODE" || tag === "PRE") {
       return true;
     }
+    if (node.hasAttribute("data-i18n-key") || node.hasAttribute("data-i18n-html-key")) {
+      return true;
+    }
     if (node.closest("[data-no-translate='true']")) {
       return true;
     }
@@ -668,6 +903,8 @@
     if (base.nodeType === Node.ELEMENT_NODE && shouldSkipElement(base)) {
       return;
     }
+
+    applyKeyTranslationsToTree(base);
 
     if (base.nodeType === Node.ELEMENT_NODE) {
       ["placeholder", "title", "aria-label", "alt"].forEach(function (attrName) {
@@ -788,7 +1025,20 @@
       childList: true,
       characterData: true,
       attributes: true,
-      attributeFilter: ["placeholder", "title", "aria-label", "alt", "content"]
+      attributeFilter: [
+        "placeholder",
+        "title",
+        "aria-label",
+        "alt",
+        "content",
+        "data-i18n-key",
+        "data-i18n-html-key",
+        "data-i18n-placeholder-key",
+        "data-i18n-title-key",
+        "data-i18n-aria-label-key",
+        "data-i18n-alt-key",
+        "data-i18n-value-key"
+      ]
     });
   }
 
@@ -796,6 +1046,16 @@
     getLanguage: getCurrentLanguage,
     setLanguage: setLanguage,
     onLanguageChange: onLanguageChange,
+    onCatalogReady: onKeyCatalogReady,
+    isCatalogReady: function () {
+      return keyCatalogReady;
+    },
+    tKey: function (key, params, targetLang) {
+      return translateByKey(key, params || {}, normalizeLanguage(targetLang || currentLang));
+    },
+    hasKey: function (key, targetLang) {
+      return Boolean(getCatalogValueForLang(normalizeLanguage(targetLang || currentLang), String(key || "")));
+    },
     translateText: function (text, targetLang) {
       return translateForLanguage(text, normalizeLanguage(targetLang || currentLang));
     },
@@ -806,11 +1066,13 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
+      initKeyCatalogs();
       startObserver();
       setLanguage(currentLang, { silent: true });
       scheduleApply(document.body || document.documentElement);
     });
   } else {
+    initKeyCatalogs();
     startObserver();
     setLanguage(currentLang, { silent: true });
     scheduleApply(document.body || document.documentElement);

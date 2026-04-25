@@ -11,35 +11,24 @@
   var page = document.body.getAttribute("data-page") || "";
   var headerHost = document.getElementById("site-header");
   var footerHost = document.getElementById("site-footer");
-  var LANGUAGE_UI_LABELS = {
-    es: {
-      toggle: "Cambiar idioma",
-      menu: "Selector de idioma",
-      options: {
-        en: "Inglés",
-        es: "Español",
-        fr: "Francés"
-      }
-    },
-    en: {
-      toggle: "Change language",
-      menu: "Language selector",
-      options: {
-        en: "English",
-        es: "Spanish",
-        fr: "French"
-      }
-    },
-    fr: {
-      toggle: "Changer de langue",
-      menu: "Sélecteur de langue",
-      options: {
-        en: "Anglais",
-        es: "Espagnol",
-        fr: "Français"
-      }
-    }
+  var SUPPORTED_LANGS = {
+    en: true,
+    es: true,
+    fr: true
   };
+
+  function formatTemplate(template, params) {
+    var source = String(template || "");
+    if (!params || typeof params !== "object") {
+      return source;
+    }
+    return source.replace(/\{([a-zA-Z0-9_]+)\}/g, function (_match, key) {
+      if (!Object.prototype.hasOwnProperty.call(params, key)) {
+        return "";
+      }
+      return String(params[key] == null ? "" : params[key]);
+    });
+  }
 
   function currentLang() {
     if (i18n && typeof i18n.getLanguage === "function") {
@@ -48,9 +37,31 @@
     return "en";
   }
 
+  function t(text) {
+    var source = String(text || "");
+    if (!source) {
+      return source;
+    }
+    if (i18n && typeof i18n.translateText === "function") {
+      return i18n.translateText(source, currentLang());
+    }
+    return source;
+  }
+
+  function tk(key, fallback, params) {
+    var keyed = "";
+    if (i18n && typeof i18n.tKey === "function") {
+      keyed = i18n.tKey(key, params || {}, currentLang());
+    }
+    if (keyed) {
+      return keyed;
+    }
+    return formatTemplate(t(fallback || ""), params || {});
+  }
+
   function normalizeUiLang(lang) {
     var key = String(lang || "").trim().toLowerCase();
-    if (!Object.prototype.hasOwnProperty.call(LANGUAGE_UI_LABELS, key)) {
+    if (!Object.prototype.hasOwnProperty.call(SUPPORTED_LANGS, key)) {
       return "en";
     }
     return key;
@@ -68,7 +79,16 @@
   }
 
   function labelsForCurrentLanguage(lang) {
-    return LANGUAGE_UI_LABELS[normalizeUiLang(lang)] || LANGUAGE_UI_LABELS.en;
+    normalizeUiLang(lang);
+    return {
+      toggle: tk("lang.toggle", "Cambiar idioma"),
+      menu: tk("lang.menu", "Selector de idioma"),
+      options: {
+        en: tk("lang.option.en", "Inglés"),
+        es: tk("lang.option.es", "Español"),
+        fr: tk("lang.option.fr", "Francés")
+      }
+    };
   }
 
   function languageSelectorTemplate() {
@@ -116,7 +136,7 @@
     }
     return (
       '<div class="footer-legal">' +
-      "<h3>Legal</h3>" +
+      "<h3>" + tk("layout.footer.legalTitle", "Legal") + "</h3>" +
       '<ul class="footer-legal-list">' +
       data.legalLinks
         .map(function (item) {
@@ -132,15 +152,15 @@
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
       '  <div class="shell">' +
-      '    <a class="brand" href="' + localUrl("/inicio/") + '" aria-label="Ir al inicio de ' + data.siteName + '">' +
-      '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="Logo ' + data.siteName + '" width="1536" height="1024" loading="eager" />' +
+      '    <a class="brand" href="' + localUrl("/inicio/") + '" aria-label="' + tk("layout.header.homeAriaPrefix", "Ir al inicio de") + ' ' + data.siteName + '">' +
+      '      <img class="brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="' + tk("layout.header.logoAltPrefix", "Logo") + ' ' + data.siteName + '" width="1536" height="1024" loading="eager" />' +
       '    </a>' +
-      '    <nav class="site-nav" id="site-nav" aria-label="Navegación principal">' + navTemplate() + "</nav>" +
+      '    <nav class="site-nav" id="site-nav" aria-label="' + tk("layout.header.mainNavAria", "Navegación principal") + '">' + navTemplate() + "</nav>" +
       '    <div class="header-actions">' +
       languageSelectorTemplate() +
       '      <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">' +
       '        <span></span><span></span><span></span>' +
-      '        <span class="sr-only">Abrir menú</span>' +
+      '        <span class="sr-only">' + tk("layout.header.openMenuSr", "Abrir menú") + "</span>" +
       "      </button>" +
       "    </div>" +
       "  </div>" +
@@ -153,17 +173,17 @@
       '  <div class="shell footer-grid">' +
       '    <section class="footer-main">' +
       '      <h2>' + data.siteName + '</h2>' +
-      '      <p>Cuidado pediátrico profesional y cercano para cada etapa de la infancia.</p>' +
+      '      <p>' + tk("layout.footer.mainDescription", "Cuidado pediátrico profesional y cercano para cada etapa de la infancia.") + "</p>" +
       '      <ul class="footer-contact-list">' +
       '        <li><a href="' + data.clinic.phoneHref + '">' + data.clinic.phoneDisplay + '</a></li>' +
       '        <li><a href="mailto:' + data.clinic.email + '">' + data.clinic.email + '</a></li>' +
       '        <li>' + data.clinic.address + '</li>' +
-      '        <li><a href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer">Google Maps</a></li>' +
-      '        <li><a href="' + data.clinic.instagramUrl + '" target="_blank" rel="noopener noreferrer">Instagram</a></li>' +
+      '        <li><a href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer">' + tk("layout.footer.googleMaps", "Google Maps") + "</a></li>" +
+      '        <li><a href="' + data.clinic.instagramUrl + '" target="_blank" rel="noopener noreferrer">' + tk("layout.footer.instagram", "Instagram") + "</a></li>" +
       '      </ul>' +
       "    </section>" +
       '    <section class="footer-links">' +
-      '      <h3>Mapa del sitio</h3>' +
+      '      <h3>' + tk("layout.footer.siteMap", "Mapa del sitio") + "</h3>" +
       "      <ul>" +
       data.nav
         .map(function (item) {
@@ -174,7 +194,7 @@
       legalLinksTemplate() +
       "    </section>" +
       '    <section class="footer-hours">' +
-      '      <h3>Horarios</h3>' +
+      '      <h3>' + tk("layout.footer.hours", "Horarios") + "</h3>" +
       "      <ul>" +
       data.clinic.officeHours
         .map(function (slot) {
@@ -182,15 +202,15 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary" href="' + localUrl("/citas/") + '">Citas en línea</a>' +
+      '      <a class="btn btn-secondary" href="' + localUrl("/citas/") + '">' + tk("layout.footer.onlineAppointments", "Citas en línea") + "</a>" +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +
-      '    <p>© <span id="current-year"></span> ' + data.siteName + '. Todos los derechos reservados.</p>' +
-      '    <p class="footer-disclaimer">Este sitio ofrece información general y no sustituye una evaluación médica presencial.</p>' +
+      '    <p>© <span id="current-year"></span> ' + data.siteName + '. ' + tk("layout.footer.rightsReserved", "Todos los derechos reservados.") + "</p>" +
+      '    <p class="footer-disclaimer">' + tk("layout.footer.disclaimer", "Este sitio ofrece información general y no sustituye una evaluación médica presencial.") + "</p>" +
       '    <div class="powered-by">' +
-      '      <span>Powered by</span>' +
-      '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="Ir a CmLayer">' +
+      '      <span>' + tk("layout.footer.poweredBy", "Powered by") + "</span>" +
+      '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.cmlayerAria", "Ir a CmLayer") + '">' +
       '        <span class="footer-cmlayer-logo" aria-hidden="true"></span>' +
       '        <span>CmLayer</span>' +
       "      </a>" +
@@ -308,6 +328,12 @@
   if (i18n && typeof i18n.onLanguageChange === "function") {
     i18n.onLanguageChange(function (lang) {
       syncLanguageUI(lang);
+    });
+  }
+
+  if (i18n && typeof i18n.onCatalogReady === "function") {
+    i18n.onCatalogReady(function () {
+      syncLanguageUI(currentLang());
     });
   }
 

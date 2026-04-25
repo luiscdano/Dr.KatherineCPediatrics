@@ -17,6 +17,11 @@ function loadWindowObject(filePath, varName) {
   return value;
 }
 
+function loadJsonFile(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  return JSON.parse(content);
+}
+
 function normalizeText(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
 }
@@ -38,6 +43,15 @@ function shouldSkipCandidate(value) {
   if (/^\/[a-z0-9\-_/]+\.?[a-z0-9]*$/i.test(text)) {
     return true;
   }
+  if (/^[a-z0-9]+(?:-[a-z0-9]+)+$/i.test(text)) {
+    return true;
+  }
+  if (/\b(?:tk|tKey)\s*\(/.test(text)) {
+    return true;
+  }
+  if (/\b(?:aria-label|class|id|href|src|alt|title)\s*=/.test(text)) {
+    return true;
+  }
   if (/^\{\s*"@context"/i.test(text)) {
     return true;
   }
@@ -54,7 +68,7 @@ function isLikelySpanishText(value) {
     return true;
   }
 
-  return /\b(el|la|los|las|de|del|para|con|y|que|una|un|cada|consultorio|pediatr|citas|contacto|recursos|señales|paso|fechas|horarios|meses|años|día|urgencias|doctora|formulario|inicio|servicios|recordatorio|opcional)\b/.test(
+  return /\b(el|la|los|las|de|del|para|con|y|que|una|un|cada|consultorio|pediatr|citas|contacto|recursos|señales|paso|fechas|horarios|meses|años|día|urgencias|doctora|formulario|inicio|servicios|recordatorio|opcional|ver|leer|edad|edades|paciente|tutor|correo|fiebre|dolor|disponibilidad|archivo|seleccionado|recurso|motivo|resumen|canal|estado)\b/.test(
     text
   );
 }
@@ -109,6 +123,93 @@ function collectCandidatesFromHtml(htmlFiles, candidates) {
   }
 }
 
+function decodeJsStringLiteral(literal) {
+  const quote = literal[0];
+  if (quote !== "'" && quote !== "\"") {
+    return literal;
+  }
+
+  let body = literal.slice(1, -1);
+  body = body
+    .replace(/\\n/g, " ")
+    .replace(/\\r/g, " ")
+    .replace(/\\t/g, " ")
+    .replace(/\\"/g, "\"")
+    .replace(/\\'/g, "'")
+    .replace(/\\\\/g, "\\");
+  return body;
+}
+
+function collectCandidatesFromJsLiterals(jsFiles, candidates) {
+  const literalRegex = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g;
+
+  for (const filePath of jsFiles) {
+    if (!fs.existsSync(filePath)) {
+      continue;
+    }
+
+    const relPath = path.relative(root, filePath);
+    const source = fs.readFileSync(filePath, "utf8");
+    let match = null;
+    while ((match = literalRegex.exec(source))) {
+      const decoded = decodeJsStringLiteral(match[0]);
+      const normalized = normalizeText(decoded);
+      if (!normalized) {
+        continue;
+      }
+      if (/[<>]/.test(normalized)) {
+        continue;
+      }
+      if (/^[a-z0-9._:/\-]+$/i.test(normalized)) {
+        continue;
+      }
+      addCandidate(normalized, relPath, candidates);
+    }
+  }
+}
+
+function collectKeyUsagesFromHtml(htmlFiles, keyUsages) {
+  const attrRegex =
+    /\bdata-i18n-(?:key|html-key|placeholder-key|title-key|aria-label-key|alt-key|value-key)="([^"]+)"/gi;
+  for (const filePath of htmlFiles) {
+    const relPath = path.relative(root, filePath);
+    const html = fs.readFileSync(filePath, "utf8");
+    let match = null;
+    while ((match = attrRegex.exec(html))) {
+      const key = normalizeText(match[1]);
+      if (!key) {
+        continue;
+      }
+      if (!keyUsages.has(key)) {
+        keyUsages.set(key, new Set());
+      }
+      keyUsages.get(key).add(relPath);
+    }
+  }
+}
+
+function collectKeyUsagesFromJs(jsFiles, keyUsages) {
+  const keyRegex = /\b(?:tk|tKey)\(\s*['"]([^'"]+)['"]/g;
+  for (const filePath of jsFiles) {
+    if (!fs.existsSync(filePath)) {
+      continue;
+    }
+    const relPath = path.relative(root, filePath);
+    const source = fs.readFileSync(filePath, "utf8");
+    let match = null;
+    while ((match = keyRegex.exec(source))) {
+      const key = normalizeText(match[1]);
+      if (!key) {
+        continue;
+      }
+      if (!keyUsages.has(key)) {
+        keyUsages.set(key, new Set());
+      }
+      keyUsages.get(key).add(relPath);
+    }
+  }
+}
+
 function walkObject(value, sourceName, candidates) {
   if (Array.isArray(value)) {
     value.forEach((item) => walkObject(item, sourceName, candidates));
@@ -128,10 +229,16 @@ function walkObject(value, sourceName, candidates) {
 const enDictPath = path.join(root, "assets/js/i18n-dict.js");
 const frDictPath = path.join(root, "assets/js/i18n-dict-fr.js");
 const contentDataPath = path.join(root, "assets/js/content-data.js");
+const keyCatalogEsPath = path.join(root, "assets/i18n/keys.es.json");
+const keyCatalogEnPath = path.join(root, "assets/i18n/keys.en.json");
+const keyCatalogFrPath = path.join(root, "assets/i18n/keys.fr.json");
 
 const enDict = loadWindowObject(enDictPath, "DR_KATHERINE_I18N_DICT");
 const frDict = loadWindowObject(frDictPath, "DR_KATHERINE_I18N_DICT_FR");
 const contentData = loadWindowObject(contentDataPath, "DR_KATHERINE_DATA");
+const keyCatalogEs = fs.existsSync(keyCatalogEsPath) ? loadJsonFile(keyCatalogEsPath) : {};
+const keyCatalogEn = fs.existsSync(keyCatalogEnPath) ? loadJsonFile(keyCatalogEnPath) : {};
+const keyCatalogFr = fs.existsSync(keyCatalogFrPath) ? loadJsonFile(keyCatalogFrPath) : {};
 
 const htmlFiles = [];
 collectHtmlFiles(root, htmlFiles);
@@ -139,9 +246,20 @@ collectHtmlFiles(root, htmlFiles);
 const candidates = new Map();
 collectCandidatesFromHtml(htmlFiles, candidates);
 walkObject(contentData, "assets/js/content-data.js", candidates);
+collectCandidatesFromJsLiterals(
+  [path.join(root, "assets/js/main.js")],
+  candidates
+);
+
+const keyUsages = new Map();
+collectKeyUsagesFromHtml(htmlFiles, keyUsages);
+collectKeyUsagesFromJs([path.join(root, "assets/js/main.js"), path.join(root, "assets/js/layout.js")], keyUsages);
 
 const missingEn = [];
 const missingFr = [];
+const missingKeyEs = [];
+const missingKeyEn = [];
+const missingKeyFr = [];
 
 for (const [text, sourceSet] of candidates.entries()) {
   const sources = Array.from(sourceSet).slice(0, 3);
@@ -153,10 +271,32 @@ for (const [text, sourceSet] of candidates.entries()) {
   }
 }
 
+for (const [key, sourceSet] of keyUsages.entries()) {
+  const sources = Array.from(sourceSet).slice(0, 3);
+  if (!Object.prototype.hasOwnProperty.call(keyCatalogEs, key)) {
+    missingKeyEs.push({ key, sources });
+  }
+  if (!Object.prototype.hasOwnProperty.call(keyCatalogEn, key)) {
+    missingKeyEn.push({ key, sources });
+  }
+  if (!Object.prototype.hasOwnProperty.call(keyCatalogFr, key)) {
+    missingKeyFr.push({ key, sources });
+  }
+}
+
 missingEn.sort((a, b) => a.text.localeCompare(b.text, "es"));
 missingFr.sort((a, b) => a.text.localeCompare(b.text, "es"));
+missingKeyEs.sort((a, b) => a.key.localeCompare(b.key, "es"));
+missingKeyEn.sort((a, b) => a.key.localeCompare(b.key, "es"));
+missingKeyFr.sort((a, b) => a.key.localeCompare(b.key, "es"));
 
-if (missingEn.length || missingFr.length) {
+if (
+  missingEn.length ||
+  missingFr.length ||
+  missingKeyEs.length ||
+  missingKeyEn.length ||
+  missingKeyFr.length
+) {
   console.error("Cobertura i18n incompleta detectada.");
   if (missingEn.length) {
     console.error(`\nFaltantes EN (${missingEn.length}):`);
@@ -170,7 +310,27 @@ if (missingEn.length || missingFr.length) {
       console.error(`- ${issue.text} :: ${issue.sources.join(", ")}`);
     }
   }
+  if (missingKeyEs.length) {
+    console.error(`\nClaves faltantes ES (${missingKeyEs.length}):`);
+    for (const issue of missingKeyEs.slice(0, 120)) {
+      console.error(`- ${issue.key} :: ${issue.sources.join(", ")}`);
+    }
+  }
+  if (missingKeyEn.length) {
+    console.error(`\nClaves faltantes EN (${missingKeyEn.length}):`);
+    for (const issue of missingKeyEn.slice(0, 120)) {
+      console.error(`- ${issue.key} :: ${issue.sources.join(", ")}`);
+    }
+  }
+  if (missingKeyFr.length) {
+    console.error(`\nClaves faltantes FR (${missingKeyFr.length}):`);
+    for (const issue of missingKeyFr.slice(0, 120)) {
+      console.error(`- ${issue.key} :: ${issue.sources.join(", ")}`);
+    }
+  }
   process.exit(1);
 }
 
-console.log(`Cobertura i18n OK (${candidates.size} cadenas base verificadas en EN y FR).`);
+console.log(
+  `Cobertura i18n OK (${candidates.size} cadenas base + ${keyUsages.size} claves verificadas en ES/EN/FR).`
+);

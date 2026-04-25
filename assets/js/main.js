@@ -2,6 +2,83 @@
   var data = window.DR_KATHERINE_DATA;
   var utils = window.DR_KATHERINE_UTILS || {};
   var localUrl = typeof utils.localUrl === "function" ? utils.localUrl : function (path) { return path; };
+  var i18n = window.DR_KATHERINE_I18N || null;
+
+  function currentLang() {
+    if (i18n && typeof i18n.getLanguage === "function") {
+      return i18n.getLanguage();
+    }
+    return "en";
+  }
+
+  function t(value) {
+    var text = String(value || "");
+    if (!text) {
+      return text;
+    }
+    if (i18n && typeof i18n.translateText === "function") {
+      return i18n.translateText(text, currentLang());
+    }
+    return text;
+  }
+
+  function formatTemplate(template, params) {
+    var source = String(template || "");
+    if (!params || typeof params !== "object") {
+      return source;
+    }
+    return source.replace(/\{([a-zA-Z0-9_]+)\}/g, function (_match, key) {
+      if (!Object.prototype.hasOwnProperty.call(params, key)) {
+        return "";
+      }
+      return String(params[key] == null ? "" : params[key]);
+    });
+  }
+
+  function tk(key, fallback, params) {
+    var keyed = "";
+    if (i18n && typeof i18n.tKey === "function") {
+      keyed = i18n.tKey(key, params || {}, currentLang());
+    }
+    if (keyed) {
+      return keyed;
+    }
+    return formatTemplate(t(fallback || ""), params || {});
+  }
+
+  function channelLabel(channelCode) {
+    var code = normalizeText(channelCode || "").toLowerCase();
+    if (code === "emergency") {
+      return tk("main.channels.emergency", "Derivación a emergencias (si aplica).");
+    }
+    if (code === "same_day_visit") {
+      return tk("main.channels.sameDayVisit", "Consulta el mismo día.");
+    }
+    if (code === "priority_visit") {
+      return tk("main.channels.priorityVisit", "Consulta prioritaria en 24 horas.");
+    }
+    return tk("main.channels.homeMonitor", "Monitoreo en casa con seguimiento.");
+  }
+
+  function localeForCurrentLang() {
+    var lang = currentLang();
+    if (lang === "fr") {
+      return "fr-FR";
+    }
+    if (lang === "es") {
+      return "es-DO";
+    }
+    return "en-US";
+  }
+
+  function normalizeWeekdayLabel(label) {
+    var compact = String(label || "").replace(/\./g, "").trim();
+    if (!compact) {
+      return compact;
+    }
+    return compact.charAt(0).toUpperCase() + compact.slice(1);
+  }
+
   if (!data) {
     return;
   }
@@ -73,7 +150,7 @@
   async function apiRequest(path, options) {
     var url = buildApiUrl(path);
     if (!url) {
-      throw new Error("No se configuró una URL válida de API.");
+      throw new Error(tk("main.errors.invalidApiUrl", "No se configuró una URL válida de API."));
     }
 
     var controller = new AbortController();
@@ -104,9 +181,9 @@
       response = await fetch(url, settings);
     } catch (error) {
       if (error && error.name === "AbortError") {
-        throw new Error("La solicitud tardó demasiado. Intenta nuevamente.");
+        throw new Error(tk("main.errors.requestTimeout", "La solicitud tardó demasiado. Intenta nuevamente."));
       }
-      throw new Error("No fue posible conectar con el servidor.");
+      throw new Error(tk("main.errors.cannotConnectServer", "No fue posible conectar con el servidor."));
     } finally {
       window.clearTimeout(timeout);
     }
@@ -124,7 +201,7 @@
     if (!response.ok) {
       var message =
         (payload && (payload.error || payload.message)) ||
-        "El servidor devolvió un error al procesar la solicitud.";
+        tk("main.errors.serverProcessingError", "El servidor devolvió un error al procesar la solicitud.");
       var requestError = new Error(message);
       requestError.status = response.status;
       requestError.payload = payload;
@@ -189,17 +266,18 @@
         return '<div class="service-badge">' + bullet + "</div>";
       })
       .join("");
+    var serviceIsotypeAlt = tk("main.alt.serviceIsotype", "Isotipo servicio pediátrico");
     return (
       '<article class="service-card service-item reveal">' +
       '<div class="service-image-wrap">' +
-      '<img class="service-image" src="' + localUrl("/assets/img/isotipo.png") + '" alt="Isotipo servicio pediátrico" loading="lazy" />' +
+      '<img class="service-image" src="' + localUrl("/assets/img/isotipo.png") + '" alt="' + serviceIsotypeAlt + '" loading="lazy" />' +
       '<div class="service-hover-wrap"><span class="service-hover-icon">+</span></div>' +
       "</div>" +
       '<div class="service-info">' +
       '<h3 class="service-title">' + item.title + '</h3>' +
       '<p class="service-description">' + item.summary + "</p>" +
       (compact ? '<div class="service-list-wrap">' + badges + "</div>" : '<ul class="service-list">' + bullets + "</ul>") +
-      '<a class="text-link" href="' + localUrl(item.detailHref) + '">Ver detalle</a>' +
+      '<a class="text-link" href="' + localUrl(item.detailHref) + '">' + tk("main.actions.viewDetail", "Ver detalle") + "</a>" +
       "</div>" +
       '</article>'
     );
@@ -267,7 +345,7 @@
           '<span class="pill">' + item.tag + '</span>' +
           '<h3>' + item.title + '</h3>' +
           '<p>' + item.excerpt + '</p>' +
-          '<a class="text-link" href="' + localUrl(item.href) + '">Leer recurso</a>' +
+          '<a class="text-link" href="' + localUrl(item.href) + '">' + tk("main.actions.readResource", "Leer recurso") + "</a>" +
           '</article>'
         );
       })
@@ -383,7 +461,7 @@
           "<p>" +
           item.summary +
           "</p>" +
-          '<p class="premium-audience">Edades: ' +
+          '<p class="premium-audience">' + tk("main.labels.ages", "Edades:") + " " +
           item.audience +
           "</p>" +
           "</article>"
@@ -505,9 +583,9 @@
         id: String(item.id || date + "-" + time + "-" + index),
         date: date,
         time: time,
-        patientName: String(item.patientName || "Paciente").trim() || "Paciente",
+        patientName: String(item.patientName || tk("main.labels.patient", "Paciente")).trim() || tk("main.labels.patient", "Paciente"),
         patientAge: String(item.patientAge || "").trim(),
-        parentName: String(item.parentName || "Tutor").trim() || "Tutor",
+        parentName: String(item.parentName || tk("main.labels.guardian", "Tutor")).trim() || tk("main.labels.guardian", "Tutor"),
         parentPhone: String(item.parentPhone || "").trim(),
         reason: String(item.reason || "").trim(),
         status: String(item.status || "draft").trim() || "draft",
@@ -601,16 +679,16 @@
     }
 
     function buildWhatsAppLink(appointment) {
-      var header = "Solicitud de cita pediátrica";
+      var header = tk("main.whatsapp.headerAppointmentRequest", "Solicitud de cita pediátrica");
       var lines = [
-        "Fecha: " + appointment.date,
-        "Hora: " + appointment.time,
-        "Paciente: " + appointment.patientName + " (" + appointment.patientAge + ")",
-        "Tutor: " + appointment.parentName,
-        "Teléfono: " + appointment.parentPhone
+        tk("main.labels.dateColon", "Fecha:") + " " + appointment.date,
+        tk("main.labels.timeColon", "Hora:") + " " + appointment.time,
+        tk("main.labels.patientColon", "Paciente:") + " " + appointment.patientName + " (" + appointment.patientAge + ")",
+        tk("main.labels.guardianColon", "Tutor:") + " " + appointment.parentName,
+        tk("main.labels.phoneColon", "Teléfono:") + " " + appointment.parentPhone
       ];
       if (appointment.reason) {
-        lines.push("Motivo: " + appointment.reason);
+        lines.push(tk("main.labels.motiveColon", "Motivo:") + " " + appointment.reason);
       }
       var text = header + "\n\n" + lines.join("\n");
       return data.clinic.whatsappHref + "?text=" + encodeURIComponent(text);
@@ -625,7 +703,7 @@
       var appointments = readAppointments();
       if (!appointments.length) {
         var empty = document.createElement("p");
-        empty.textContent = "Aún no hay solicitudes recientes en este dispositivo.";
+        empty.textContent = tk("main.messages.noRecentRequests", "Aún no hay solicitudes recientes en este dispositivo.");
         historyHost.appendChild(empty);
         return;
       }
@@ -639,8 +717,22 @@
         headline.textContent = item.date + " | " + item.time + " | " + item.patientName;
 
         var details = document.createElement("small");
-        var statusLabel = item.status === "draft" ? "Borrador local" : "Pendiente de confirmación";
-        details.textContent = "Tutor: " + item.parentName + " | Tel: " + item.parentPhone + " | Estado: " + statusLabel;
+        var statusLabel =
+          item.status === "draft"
+            ? tk("main.status.localDraft", "Borrador local")
+            : tk("main.status.pendingConfirmation", "Pendiente de confirmación");
+        details.textContent =
+          tk("main.labels.guardianColon", "Tutor:") +
+          " " +
+          item.parentName +
+          " | " +
+          tk("main.labels.phoneShort", "Tel:") +
+          " " +
+          item.parentPhone +
+          " | " +
+          tk("main.labels.statusColon", "Estado:") +
+          " " +
+          statusLabel;
 
         var actions = document.createElement("div");
         actions.className = "appointment-history-actions";
@@ -649,7 +741,7 @@
         removeBtn.type = "button";
         removeBtn.className = "appointment-remove-btn";
         removeBtn.setAttribute("data-id", item.id);
-        removeBtn.textContent = "Eliminar";
+        removeBtn.textContent = tk("main.actions.delete", "Eliminar");
 
         actions.appendChild(removeBtn);
         row.appendChild(headline);
@@ -661,11 +753,12 @@
     }
 
     function formatDateLabel(date) {
-      return date.toLocaleDateString("es-DO", {
+      var formatted = date.toLocaleDateString(localeForCurrentLang(), {
         weekday: "short",
         day: "2-digit",
         month: "short"
       });
+      return normalizeWeekdayLabel(formatted);
     }
 
     function formatDateValue(date) {
@@ -705,9 +798,16 @@
       if (!summary) {
         return;
       }
-      var datePart = selectedDate ? selectedDateInput.value : "Sin fecha";
-      var timePart = selectedTime ? selectedTimeInput.value : "Sin horario";
-      summary.textContent = "Seleccionado: " + datePart + " a las " + timePart;
+      var datePart = selectedDate ? selectedDateInput.value : tk("main.labels.noDate", "Sin fecha");
+      var timePart = selectedTime ? selectedTimeInput.value : tk("main.labels.noTime", "Sin horario");
+      summary.textContent =
+        tk("main.labels.selected", "Seleccionado:") +
+        " " +
+        datePart +
+        " " +
+        tk("main.labels.at", "a las") +
+        " " +
+        timePart;
     }
 
     function renderSlotsFromTakenTimes(takenTimes) {
@@ -727,7 +827,7 @@
           var active = selectedTime === time ? " is-active" : "";
           var isTaken = Boolean(takenTimes[time]);
           var disabled = isTaken ? " disabled" : "";
-          var label = isTaken ? time + " • ocupado" : time;
+          var label = isTaken ? time + " • " + tk("main.labels.booked", "ocupado") : time;
           return '<button class="slot-btn' + active + '" data-time="' + time + '" type="button"' + disabled + ">" + label + "</button>";
         })
         .join("");
@@ -770,8 +870,21 @@
       });
     }
 
+    var dates = [];
+
+    function refreshDateButtonLabels() {
+      if (!dateWrap || !dates.length) {
+        return;
+      }
+      var buttons = dateWrap.querySelectorAll("button[data-date]");
+      buttons.forEach(function (button, index) {
+        if (dates[index]) {
+          button.textContent = formatDateLabel(dates[index]);
+        }
+      });
+    }
+
     if (dateWrap) {
-      var dates = [];
       for (var i = 0; i < 14; i += 1) {
         var d = new Date(today);
         d.setDate(today.getDate() + i);
@@ -869,16 +982,16 @@
         event.preventDefault();
         if (!form.checkValidity()) {
           form.reportValidity();
-          setStatusMessage(confirmation, "Completa los campos obligatorios para continuar.", true);
+          setStatusMessage(confirmation, tk("main.validation.requiredContinue", "Completa los campos obligatorios para continuar."), true);
           return;
         }
         var formData = new FormData(form);
         if (normalizeText(formData.get("companyWebsite"))) {
-          setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+          setStatusMessage(confirmation, tk("main.validation.processingFailedRetry", "No fue posible procesar la solicitud. Inténtalo nuevamente."), true);
           return;
         }
         if (!selectedDate || !selectedTime) {
-          setStatusMessage(confirmation, "Selecciona fecha y horario antes de enviar.", true);
+          setStatusMessage(confirmation, tk("main.validation.selectDateTime", "Selecciona fecha y horario antes de enviar."), true);
           return;
         }
 
@@ -890,17 +1003,17 @@
         var ageNumber = Number(patientAge);
 
         if (!isValidPhone(parentPhone)) {
-          setStatusMessage(confirmation, "Ingresa un teléfono válido para confirmar la cita.", true);
+          setStatusMessage(confirmation, tk("main.validation.invalidPhoneConfirmAppointment", "Ingresa un teléfono válido para confirmar la cita."), true);
           return;
         }
 
         if (!Number.isFinite(ageNumber) || ageNumber < 0 || ageNumber > 18) {
-          setStatusMessage(confirmation, "La edad del paciente debe estar entre 0 y 18 años.", true);
+          setStatusMessage(confirmation, tk("main.validation.invalidPatientAgeRange", "La edad del paciente debe estar entre 0 y 18 años."), true);
           return;
         }
 
         if (reason.length < 8) {
-          setStatusMessage(confirmation, "Describe el motivo de consulta con más detalle (mínimo 8 caracteres).", true);
+          setStatusMessage(confirmation, tk("main.validation.describeReasonMin", "Describe el motivo de consulta con más detalle (mínimo 8 caracteres)."), true);
           return;
         }
 
@@ -920,7 +1033,7 @@
 
         var appointments = readAppointments();
         if (hasConflict(appointments, appointment.date, appointment.time)) {
-          setStatusMessage(confirmation, "Ese horario ya está ocupado para la fecha seleccionada. Elige otro.", true);
+          setStatusMessage(confirmation, tk("main.validation.slotTaken", "Ese horario ya está ocupado para la fecha seleccionada. Elige otro."), true);
           paintSlots();
           updateSummary();
           return;
@@ -965,7 +1078,7 @@
               remoteTakenTimesCache[appointment.date] = null;
               setStatusMessage(
                 confirmation,
-                "Ese horario acaba de ocuparse. Elige otro horario disponible para continuar.",
+                tk("main.validation.slotJustTaken", "Ese horario acaba de ocuparse. Elige otro horario disponible para continuar."),
                 true
               );
               paintSlots();
@@ -974,7 +1087,7 @@
             }
             setStatusMessage(
               confirmation,
-              "No se pudo enviar la solicitud al servidor. Puedes reintentar o contactar por WhatsApp.",
+              tk("main.validation.appointmentSendFailedWhatsapp", "No se pudo enviar la solicitud al servidor. Puedes reintentar o contactar por WhatsApp."),
               true
             );
             return;
@@ -992,17 +1105,17 @@
         if (savedInBackend) {
           setStatusMessage(
             confirmation,
-            "Solicitud enviada para el " +
-              appointment.date +
-              " a las " +
-              appointment.time +
-              ". Te confirmaremos por WhatsApp o llamada del consultorio.",
+            tk(
+              "main.messages.appointmentSentWithDateTime",
+              "Solicitud enviada para el {date} a las {time}. Te confirmaremos por WhatsApp o llamada del consultorio.",
+              { date: appointment.date, time: appointment.time }
+            ),
             false
           );
         } else {
           setStatusMessage(
             confirmation,
-            "Solicitud guardada localmente en este dispositivo. Configura la API para enviarla al consultorio.",
+            tk("main.messages.appointmentSavedLocal", "Solicitud guardada localmente en este dispositivo. Configura la API para enviarla al consultorio."),
             true
           );
         }
@@ -1025,6 +1138,15 @@
         updateSummary();
       });
     }
+
+    if (i18n && typeof i18n.onLanguageChange === "function") {
+      i18n.onLanguageChange(function () {
+        refreshDateButtonLabels();
+        renderAppointmentHistory();
+        paintSlots();
+        updateSummary();
+      });
+    }
   }
 
   function setupContactForm() {
@@ -1038,13 +1160,13 @@
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
-        setStatusMessage(message, "Completa los campos requeridos para enviar tu consulta.", true);
+        setStatusMessage(message, tk("main.validation.requiredContactFields", "Completa los campos requeridos para enviar tu consulta."), true);
         return;
       }
 
       var formData = new FormData(form);
       if (normalizeText(formData.get("companyName"))) {
-        setStatusMessage(message, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        setStatusMessage(message, tk("main.validation.processingFailedRetry", "No fue posible procesar la solicitud. Inténtalo nuevamente."), true);
         return;
       }
 
@@ -1055,12 +1177,12 @@
       var note = normalizeText(formData.get("message"));
 
       if (!isValidPhone(phone)) {
-        setStatusMessage(message, "Ingresa un teléfono válido para poder responderte.", true);
+        setStatusMessage(message, tk("main.validation.invalidPhoneReply", "Ingresa un teléfono válido para poder responderte."), true);
         return;
       }
 
       if (note.length < 10) {
-        setStatusMessage(message, "El mensaje debe tener al menos 10 caracteres.", true);
+        setStatusMessage(message, tk("main.validation.messageMinLength", "El mensaje debe tener al menos 10 caracteres."), true);
         return;
       }
 
@@ -1082,39 +1204,48 @@
             })
           });
 
-          setStatusMessage(message, "Mensaje enviado correctamente. Te responderemos en el horario de atención.", false);
+          setStatusMessage(message, tk("main.messages.contactSentSuccess", "Mensaje enviado correctamente. Te responderemos en el horario de atención."), false);
           form.reset();
           return;
         } catch (error) {
           setStatusMessage(
             message,
-            "No se pudo enviar tu mensaje al servidor. Intenta nuevamente o contáctanos por WhatsApp.",
+            tk("main.messages.contactSendFailed", "No se pudo enviar tu mensaje al servidor. Intenta nuevamente o contáctanos por WhatsApp."),
             true
           );
           return;
         }
       }
 
-      var subject = "Consulta web - " + (topic || "general");
+      var subject = tk("main.mail.subjectPrefix", "Consulta web -") + " " + (topic || tk("main.topics.general", "general"));
       var body =
-        "Nombre: " +
+        tk("main.mail.namePrefix", "Nombre:") +
+        " " +
         name +
-        "\nTeléfono: " +
+        "\n" +
+        tk("main.mail.phonePrefix", "Teléfono:") +
+        " " +
         phone +
-        "\nCorreo: " +
+        "\n" +
+        tk("main.mail.emailPrefix", "Correo:") +
+        " " +
         email +
-        "\nTema: " +
+        "\n" +
+        tk("main.mail.topicPrefix", "Tema:") +
+        " " +
         topic +
-        "\n\nMensaje:\n" +
+        "\n\n" +
+        tk("main.mail.messagePrefix", "Mensaje:") +
+        "\n" +
         note;
 
       if (!data.clinic || !data.clinic.email) {
-        setStatusMessage(message, "No se encontró un correo de destino configurado. Intenta por WhatsApp.", true);
+        setStatusMessage(message, tk("main.messages.noDestinationEmail", "No se encontró un correo de destino configurado. Intenta por WhatsApp."), true);
         return;
       }
 
       window.location.href = "mailto:" + data.clinic.email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      setStatusMessage(message, "Se abrió tu aplicación de correo para completar el envío del mensaje.", false);
+      setStatusMessage(message, tk("main.messages.mailAppOpened", "Se abrió tu aplicación de correo para completar el envío del mensaje."), false);
       form.reset();
     });
   }
@@ -1135,16 +1266,16 @@
     }
 
     summaryHost.innerHTML =
-      '<p><strong>Urgencia detectada:</strong> <span class="urgency-pill ' +
+      '<p><strong>' + tk("main.labels.detectedUrgency", "Urgencia detectada:") + '</strong> <span class="urgency-pill ' +
       urgencyClass +
       '">' +
       escapeHTML(urgency || "low") +
       "</span></p>" +
-      '<p><strong>Canal recomendado:</strong> ' +
-      escapeHTML(payload.recommendedChannel || "priority_visit") +
+      '<p><strong>' + tk("main.labels.recommendedChannel", "Canal recomendado:") + '</strong> ' +
+      escapeHTML(channelLabel(payload.recommendedChannel || "priority_visit")) +
       "</p>" +
-      '<p><strong>Resumen clínico:</strong> ' +
-      escapeHTML(payload.triageSummary || payload.urgencyReason || "Sin observaciones adicionales.") +
+      '<p><strong>' + tk("main.labels.clinicalSummary", "Resumen clínico:") + '</strong> ' +
+      escapeHTML(payload.triageSummary || payload.urgencyReason || tk("main.defaults.noAdditionalNotes", "Sin observaciones adicionales.")) +
       "</p>" +
       (payload.advisory ? '<p class="previsit-advisory">' + escapeHTML(payload.advisory) + "</p>" : "");
   }
@@ -1184,27 +1315,27 @@
 
     var urgencyLevel = "low";
     var recommendedChannel = "home_monitor";
-    var advisory = "Monitoreo en casa con seguimiento pediátrico.";
+    var advisory = tk("main.advisory.homeMonitor", "Monitoreo en casa con seguimiento pediátrico.");
 
     if (score >= 70) {
       urgencyLevel = "critical";
       recommendedChannel = "emergency";
-      advisory = "Acude a emergencias pediátricas de inmediato.";
+      advisory = tk("main.advisory.emergencyNow", "Acude a emergencias pediátricas de inmediato.");
     } else if (score >= 45) {
       urgencyLevel = "high";
       recommendedChannel = "same_day_visit";
-      advisory = "Consulta pediátrica el mismo día.";
+      advisory = tk("main.advisory.sameDay", "Consulta pediátrica el mismo día.");
     } else if (score >= 24) {
       urgencyLevel = "medium";
       recommendedChannel = "priority_visit";
-      advisory = "Consulta prioritaria en las próximas 24 horas.";
+      advisory = tk("main.advisory.priority24h", "Consulta prioritaria en las próximas 24 horas.");
     }
 
     return {
       urgencyLevel: urgencyLevel,
       urgencyScore: score,
       recommendedChannel: recommendedChannel,
-      triageSummary: "Resultado preliminar generado localmente.",
+      triageSummary: tk("main.messages.preliminaryLocal", "Resultado preliminar generado localmente."),
       advisory: advisory
     };
   }
@@ -1222,13 +1353,13 @@
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
-        setStatusMessage(confirmation, "Completa los campos obligatorios para continuar.", true);
+        setStatusMessage(confirmation, tk("main.validation.requiredContinue", "Completa los campos obligatorios para continuar."), true);
         return;
       }
 
       var formData = new FormData(form);
       if (normalizeText(formData.get("companyWebsite"))) {
-        setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        setStatusMessage(confirmation, tk("main.validation.processingFailedRetry", "No fue posible procesar la solicitud. Inténtalo nuevamente."), true);
         return;
       }
 
@@ -1249,7 +1380,7 @@
       };
 
       if (!isValidPhone(payload.guardianPhone)) {
-        setStatusMessage(confirmation, "Ingresa un teléfono válido para poder responderte.", true);
+        setStatusMessage(confirmation, tk("main.validation.invalidPhoneReply", "Ingresa un teléfono válido para poder responderte."), true);
         return;
       }
 
@@ -1271,10 +1402,10 @@
             triageSummary: assessment.triageSummary,
             advisory: advisory
           });
-          setStatusMessage(confirmation, "Pre-triage enviado correctamente y agregado a la bandeja clínica.", false);
+          setStatusMessage(confirmation, tk("main.messages.pretriageSent", "Pre-triage enviado correctamente y agregado a la bandeja clínica."), false);
           return;
         } catch (error) {
-          setStatusMessage(confirmation, "No se pudo enviar el pre-triage al servidor. Mostramos evaluación local.", true);
+          setStatusMessage(confirmation, tk("main.messages.pretriageSendFailedLocal", "No se pudo enviar el pre-triage al servidor. Mostramos evaluación local."), true);
         }
       }
 
@@ -1320,7 +1451,7 @@
     function renderUnlocked() {
       var items = readUnlocked();
       if (!items.length) {
-        listHost.innerHTML = "<p>Aún no hay recursos desbloqueados en este dispositivo.</p>";
+        listHost.innerHTML = "<p>" + tk("main.messages.noUnlockedResources", "Aún no hay recursos desbloqueados en este dispositivo.") + "</p>";
         return;
       }
 
@@ -1346,13 +1477,13 @@
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
-        setStatusMessage(resultHost, "Completa los campos requeridos para activar el recurso.", true);
+        setStatusMessage(resultHost, tk("main.validation.requiredActivateResource", "Completa los campos requeridos para activar el recurso."), true);
         return;
       }
 
       var formData = new FormData(form);
       if (normalizeText(formData.get("companyWebsite"))) {
-        setStatusMessage(resultHost, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        setStatusMessage(resultHost, tk("main.validation.processingFailedRetry", "No fue posible procesar la solicitud. Inténtalo nuevamente."), true);
         return;
       }
 
@@ -1366,7 +1497,7 @@
       };
 
       if (!isValidEmail(payload.parentEmail)) {
-        setStatusMessage(resultHost, "Ingresa un correo electrónico válido.", true);
+        setStatusMessage(resultHost, tk("main.validation.invalidEmail", "Ingresa un correo electrónico válido."), true);
         return;
       }
 
@@ -1393,7 +1524,7 @@
         } catch (error) {
           setStatusMessage(
             resultHost,
-            "No se pudo registrar el recurso en el servidor. Lo activamos localmente en este dispositivo.",
+            tk("main.messages.resourceRegisterFailedLocal", "No se pudo registrar el recurso en el servidor. Lo activamos localmente en este dispositivo."),
             true
           );
         }
@@ -1405,7 +1536,7 @@
       current.unshift(unlockItem);
       writeUnlocked(current.slice(0, 10));
       renderUnlocked();
-      setStatusMessage(resultHost, "Recurso activado correctamente. Ya puedes descargarlo.", false);
+      setStatusMessage(resultHost, tk("main.messages.resourceActivated", "Recurso activado correctamente. Ya puedes descargarlo."), false);
       form.reset();
     });
   }
@@ -1418,7 +1549,7 @@
         resolve(result.replace(/^data:[^;]+;base64,/i, ""));
       };
       reader.onerror = function () {
-        reject(new Error("No fue posible leer una de las imágenes."));
+        reject(new Error(tk("main.messages.cannotReadImage", "No fue posible leer una de las imágenes.")));
       };
       reader.readAsDataURL(file);
     });
@@ -1433,7 +1564,29 @@
     var confirmation = document.getElementById("rapid-eval-confirmation");
     var resultHost = document.getElementById("rapid-eval-result");
     var photosInput = document.getElementById("rapid-photos");
+    var photosTrigger = document.getElementById("rapid-photos-trigger");
+    var photosStatus = document.getElementById("rapid-photos-status");
     var previewHost = document.getElementById("rapid-photo-preview");
+
+    function getSelectedFilesText(files) {
+      var selected = files ? files.length : 0;
+      if (!selected) {
+        return tk("main.files.noneSelected", "Ningún archivo seleccionado");
+      }
+      if (selected === 1) {
+        return tk("main.files.oneSelected", "1 archivo seleccionado");
+      }
+      return tk("main.files.manySelected", "{count} archivos seleccionados", { count: selected });
+    }
+
+    function syncPhotoInputLabels() {
+      if (photosTrigger) {
+        photosTrigger.textContent = tk("main.actions.selectFile", "Seleccionar archivo");
+      }
+      if (photosStatus) {
+        photosStatus.textContent = getSelectedFilesText(photosInput && photosInput.files);
+      }
+    }
 
     function renderPreview(files) {
       if (!previewHost) {
@@ -1456,6 +1609,23 @@
     if (photosInput) {
       photosInput.addEventListener("change", function () {
         renderPreview(photosInput.files);
+        if (photosStatus) {
+          photosStatus.textContent = getSelectedFilesText(photosInput.files);
+        }
+      });
+    }
+
+    if (photosTrigger && photosInput) {
+      photosTrigger.addEventListener("click", function () {
+        photosInput.click();
+      });
+    }
+
+    syncPhotoInputLabels();
+
+    if (i18n && typeof i18n.onLanguageChange === "function") {
+      i18n.onLanguageChange(function () {
+        syncPhotoInputLabels();
       });
     }
 
@@ -1463,13 +1633,13 @@
       event.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
-        setStatusMessage(confirmation, "Completa los campos requeridos para enviar el caso.", true);
+        setStatusMessage(confirmation, tk("main.validation.requiredSendCase", "Completa los campos requeridos para enviar el caso."), true);
         return;
       }
 
       var formData = new FormData(form);
       if (normalizeText(formData.get("companyWebsite"))) {
-        setStatusMessage(confirmation, "No fue posible procesar la solicitud. Inténtalo nuevamente.", true);
+        setStatusMessage(confirmation, tk("main.validation.processingFailedRetry", "No fue posible procesar la solicitud. Inténtalo nuevamente."), true);
         return;
       }
 
@@ -1511,11 +1681,11 @@
       };
 
       if (!isValidPhone(payload.guardianPhone)) {
-        setStatusMessage(confirmation, "Ingresa un teléfono válido para seguimiento clínico.", true);
+        setStatusMessage(confirmation, tk("main.validation.invalidPhoneFollowUp", "Ingresa un teléfono válido para seguimiento clínico."), true);
         return;
       }
       if (payload.guardianEmail && !isValidEmail(payload.guardianEmail)) {
-        setStatusMessage(confirmation, "Ingresa un correo válido o déjalo en blanco.", true);
+        setStatusMessage(confirmation, tk("main.validation.invalidEmailOptional", "Ingresa un correo válido o déjalo en blanco."), true);
         return;
       }
 
@@ -1539,13 +1709,13 @@
           };
           setStatusMessage(
             confirmation,
-            "Caso enviado correctamente. La doctora lo verá en su bandeja priorizada.",
+            tk("main.messages.caseSentSuccess", "Caso enviado correctamente. La doctora lo verá en su bandeja priorizada."),
             false
           );
         } catch (error) {
           setStatusMessage(
             confirmation,
-            "No se pudo enviar el caso al servidor. Mostramos evaluación preliminar local.",
+            tk("main.messages.caseSendFailedLocal", "No se pudo enviar el caso al servidor. Mostramos evaluación preliminar local."),
             true
           );
         }

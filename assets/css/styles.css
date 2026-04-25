@@ -1743,6 +1743,35 @@ ul {
   gap: 0.55rem;
 }
 
+.file-picker-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.file-input-native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-picker-trigger {
+  min-height: 40px;
+  padding: 0.52rem 0.9rem;
+}
+
+.file-picker-status {
+  font-size: 0.86rem;
+  color: var(--primary-700);
+}
+
 .photo-preview-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
