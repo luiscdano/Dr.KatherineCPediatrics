@@ -207,7 +207,6 @@
       "  </div>" +
       '  <div class="shell footer-bottom">' +
       '    <p>© <span id="current-year"></span> ' + data.siteName + '. ' + tk("layout.footer.rightsReserved", "Todos los derechos reservados.") + "</p>" +
-      '    <p class="footer-disclaimer">' + tk("layout.footer.disclaimer", "Este sitio ofrece información general y no sustituye una evaluación médica presencial.") + "</p>" +
       '    <div class="powered-by">' +
       '      <span>' + tk("layout.footer.poweredBy", "Powered by") + "</span>" +
       '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.cmlayerAria", "Ir a CmLayer") + '">' +
