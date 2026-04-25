@@ -18,9 +18,10 @@
     "check:js": "node scripts/check-js-syntax.mjs",
     "check:links": "node scripts/check-internal-links.mjs",
     "check:content": "node scripts/check-content-guards.mjs",
+    "check:i18n": "node scripts/check-i18n-coverage.mjs",
     "check:seo": "node scripts/check-seo-tags.mjs",
     "check:domain": "node scripts/check-domain-config.mjs",
-    "validate": "npm run check:js && npm run check:links && npm run check:content && npm run check:seo && npm run check:domain"
+    "validate": "npm run check:js && npm run check:links && npm run check:content && npm run check:i18n && npm run check:seo && npm run check:domain"
   },
   "dependencies": {
     "cors": "^2.8.5",

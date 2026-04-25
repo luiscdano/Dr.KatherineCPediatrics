@@ -22,12 +22,7 @@
   var reverseExternalDictLower = {};
   var reverseExternalDictFr = {};
   var reverseExternalDictFrLower = {};
-  var reverseWordMap = {};
-  var reverseWordMapFr = {};
-  var AMBIGUOUS_ENGLISH_WORDS = {
-    "a": true,
-    "an": true
-  };
+
 
   var PHRASE_MAP = [
     ["Sobre la doctora", "About the doctor"],
@@ -217,264 +212,6 @@
     ["Mensaje:", "Message :"]
   ];
 
-  var WORD_MAP = {
-    "a": "to",
-    "acceso": "access",
-    "acciones": "actions",
-    "acompañamiento": "support",
-    "acude": "go",
-    "actualización": "update",
-    "actualizado": "updated",
-    "actualizar": "update",
-    "agenda": "appointments",
-    "agendar": "schedule",
-    "agendamiento": "appointment booking",
-    "ahora": "now",
-    "alimentación": "nutrition",
-    "años": "years",
-    "artículo": "article",
-    "artículos": "articles",
-    "atención": "care",
-    "aquí": "here",
-    "autorizo": "I authorize",
-    "ayudarte": "help you",
-    "borrador": "draft",
-    "calendario": "schedule",
-    "canales": "channels",
-    "caracteres": "characters",
-    "casa": "home",
-    "caso": "case",
-    "centro": "center",
-    "cercano": "nearby",
-    "cita": "appointment",
-    "citas": "appointments",
-    "claro": "clear",
-    "clínica": "clinic",
-    "clínico": "clinical",
-    "completa": "complete",
-    "completo": "full",
-    "completa": "complete",
-    "confirmación": "confirmation",
-    "confirmar": "confirm",
-    "consulta": "consultation",
-    "consulta": "consultation",
-    "consultas": "consultations",
-    "consultorio": "clinic",
-    "contacta": "contact",
-    "contactar": "contact",
-    "contacto": "contact",
-    "continuar": "continue",
-    "correo": "email",
-    "cuándo": "when",
-    "cuidado": "care",
-    "datos": "data",
-    "de": "of",
-    "del": "of the",
-    "detallado": "detailed",
-    "detalle": "details",
-    "diagnóstico": "diagnosis",
-    "disponible": "available",
-    "dispositivo": "device",
-    "doctora": "doctor",
-    "doctora": "doctor",
-    "dónde": "where",
-    "edad": "age",
-    "educación": "education",
-    "el": "the",
-    "en": "in",
-    "encuentra": "find",
-    "enfermedad": "disease",
-    "enfermedades": "diseases",
-    "enviar": "send",
-    "envío": "sending",
-    "equipo": "team",
-    "es": "is",
-    "escuela": "school",
-    "esquema": "schedule",
-    "esta": "this",
-    "este": "this",
-    "evaluación": "evaluation",
-    "familia": "family",
-    "familias": "families",
-    "fecha": "date",
-    "fiebre": "fever",
-    "formulario": "form",
-    "formularios": "forms",
-    "general": "general",
-    "guía": "guide",
-    "guías": "guides",
-    "historial": "history",
-    "hijo": "child",
-    "hijos": "children",
-    "hora": "time",
-    "horario": "time slot",
-    "horarios": "hours",
-    "hoy": "today",
-    "idioma": "language",
-    "importante": "important",
-    "incluye": "includes",
-    "información": "information",
-    "inglés": "english",
-    "ingresa": "enter",
-    "inmediato": "immediate",
-    "integral": "comprehensive",
-    "integrativa": "integrative",
-    "la": "the",
-    "las": "the",
-    "leves": "mild",
-    "llama": "call",
-    "llamada": "call",
-    "llamar": "call",
-    "local": "local",
-    "los": "the",
-    "lugar": "place",
-    "manejando": "managing",
-    "manejo": "management",
-    "médica": "medical",
-    "médicas": "medical",
-    "médico": "medical",
-    "médicos": "medical",
-    "mensaje": "message",
-    "mensajes": "messages",
-    "mes": "month",
-    "lunes": "Monday",
-    "lun": "Mon",
-    "martes": "Tuesday",
-    "mar": "Tue",
-    "miércoles": "Wednesday",
-    "miercoles": "Wednesday",
-    "mié": "Wed",
-    "mie": "Wed",
-    "jueves": "Thursday",
-    "jue": "Thu",
-    "viernes": "Friday",
-    "vie": "Fri",
-    "sábado": "Saturday",
-    "sabado": "Saturday",
-    "sáb": "Sat",
-    "sab": "Sat",
-    "domingo": "Sunday",
-    "dom": "Sun",
-    "enero": "January",
-    "ene": "Jan",
-    "febrero": "February",
-    "feb": "Feb",
-    "marzo": "March",
-    "abril": "April",
-    "abr": "Apr",
-    "mayo": "May",
-    "junio": "June",
-    "jun": "Jun",
-    "julio": "July",
-    "jul": "Jul",
-    "agosto": "August",
-    "ago": "Aug",
-    "septiembre": "September",
-    "setiembre": "September",
-    "sep": "Sep",
-    "octubre": "October",
-    "oct": "Oct",
-    "noviembre": "November",
-    "nov": "Nov",
-    "diciembre": "December",
-    "dic": "Dec",
-    "módulos": "modules",
-    "motivo": "reason",
-    "muy": "very",
-    "más": "more",
-    "navegación": "navigation",
-    "niño": "child",
-    "niños": "children",
-    "no": "not",
-    "nombre": "name",
-    "nueva": "new",
-    "nuevo": "new",
-    "o": "or",
-    "obligatorios": "required",
-    "ocupado": "booked",
-    "ocupada": "booked",
-    "online": "online",
-    "orientación": "guidance",
-    "padres": "parents",
-    "paciente": "patient",
-    "pacientes": "patients",
-    "pediatra": "pediatrician",
-    "pediatría": "pediatrics",
-    "pediátrica": "pediatric",
-    "pediátrico": "pediatric",
-    "pendiente": "pending",
-    "perfil": "profile",
-    "personalizado": "personalized",
-    "plan": "plan",
-    "plataforma": "platform",
-    "política": "policy",
-    "por": "by",
-    "para": "for",
-    "privacidad": "privacy",
-    "procesar": "process",
-    "profesional": "professional",
-    "pronto": "soon",
-    "próximo": "next",
-    "publicación": "publication",
-    "página": "page",
-    "que": "that",
-    "qué": "what",
-    "reciente": "recent",
-    "recursos": "resources",
-    "registro": "record",
-    "requeridos": "required",
-    "responder": "respond",
-    "responderemos": "we will respond",
-    "revisión": "review",
-    "ruta": "route",
-    "salud": "health",
-    "se": "it",
-    "seguridad": "safety",
-    "seguimiento": "follow-up",
-    "selecciona": "select",
-    "seleccionado": "selected",
-    "selección": "selection",
-    "servicio": "service",
-    "servicios": "services",
-    "si": "if",
-    "sitio": "site",
-    "solicita": "request",
-    "solicitar": "request",
-    "solicitud": "request",
-    "solicitudes": "requests",
-    "su": "its",
-    "tardó": "took",
-    "te": "you",
-    "tema": "topic",
-    "temperatura": "temperature",
-    "teléfono": "phone",
-    "tiene": "has",
-    "tiempo": "time",
-    "toda": "all",
-    "todo": "all",
-    "trabajando": "working",
-    "tratamiento": "treatment",
-    "tutor": "guardian",
-    "tu": "your",
-    "tus": "your",
-    "un": "a",
-    "una": "a",
-    "urgencia": "emergency",
-    "urgencias": "emergency care",
-    "uso": "use",
-    "usuario": "user",
-    "válida": "valid",
-    "válido": "valid",
-    "versión": "version",
-    "ver": "view",
-    "web": "web",
-    "whatsapp": "WhatsApp",
-    "y": "and",
-    "ya": "already"
-  };
-
-  var WORD_MAP_FR = {};
-
   function getStoredLang() {
     try {
       return String(window.localStorage.getItem(STORAGE_KEY) || "").trim().toLowerCase();
@@ -590,31 +327,47 @@
     });
   }
 
-  function buildReverseWordMap(source, target, options) {
-    var opts = options || {};
-    Object.keys(source).forEach(function (spanishWord) {
-      var translatedWord = String(source[spanishWord] || "").trim().toLowerCase();
-      if (!translatedWord || translatedWord.indexOf(" ") !== -1) {
+  function buildPhraseLookup(pairs, sourceIndex, targetIndex) {
+    var exact = {};
+    var lower = {};
+    pairs.forEach(function (pair) {
+      var sourceRaw = pair[sourceIndex];
+      var targetRaw = pair[targetIndex];
+      var source = normalizeDictionaryKey(sourceRaw);
+      var target = normalizeDictionaryKey(targetRaw);
+      if (!source || !target) {
         return;
       }
-      if (opts.asciiOnly && !/^[a-z]+$/i.test(translatedWord)) {
-        return;
+      if (!exact[source]) {
+        exact[source] = target;
       }
-      if (opts.skipAmbiguous && AMBIGUOUS_ENGLISH_WORDS[translatedWord]) {
-        return;
-      }
-      if (!target[translatedWord]) {
-        target[translatedWord] = spanishWord;
+      var loweredSource = source.toLowerCase();
+      if (!lower[loweredSource]) {
+        lower[loweredSource] = target;
       }
     });
+    return {
+      exact: exact,
+      lower: lower
+    };
+  }
+
+  function lookupPhraseTranslation(text, lookup) {
+    var normalized = normalizeDictionaryKey(text);
+    if (!normalized) {
+      return "";
+    }
+    return lookup.exact[normalized] || lookup.lower[normalized.toLowerCase()] || "";
   }
 
   ingestExternalDictionary(externalDictRaw, externalDict, externalDictLower);
   ingestExternalDictionary(externalDictFrRaw, externalDictFr, externalDictFrLower);
   buildReverseExternalDictionary(externalDict, reverseExternalDict, reverseExternalDictLower);
   buildReverseExternalDictionary(externalDictFr, reverseExternalDictFr, reverseExternalDictFrLower);
-  buildReverseWordMap(WORD_MAP, reverseWordMap, { asciiOnly: true, skipAmbiguous: true });
-  buildReverseWordMap(WORD_MAP_FR, reverseWordMapFr, { asciiOnly: false, skipAmbiguous: false });
+  var phraseLookupEsToEn = buildPhraseLookup(PHRASE_MAP, 0, 1);
+  var phraseLookupEnToEs = buildPhraseLookup(PHRASE_MAP, 1, 0);
+  var phraseLookupEsToFr = buildPhraseLookup(PHRASE_MAP_FR, 0, 1);
+  var phraseLookupFrToEs = buildPhraseLookup(PHRASE_MAP_FR, 1, 0);
 
   function normalizeLanguage(value) {
     var lang = String(value || "").trim().toLowerCase();
@@ -625,33 +378,6 @@
   }
 
   var currentLang = normalizeLanguage(getStoredLang() || DEFAULT_LANG);
-
-  function escapeRegex(text) {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  function phraseRegex(source) {
-    var escaped = escapeRegex(source);
-    if (/^[A-Za-z0-9 ]+$/.test(source)) {
-      return new RegExp("\\b" + escaped.replace(/\s+/g, "\\s+") + "\\b", "g");
-    }
-    return new RegExp(escaped, "g");
-  }
-
-  function preserveCase(source, target) {
-    if (!source) {
-      return target;
-    }
-    if (source === source.toUpperCase()) {
-      return target.toUpperCase();
-    }
-    if (source.charAt(0) === source.charAt(0).toUpperCase()) {
-      return target.charAt(0).toUpperCase() + target.slice(1);
-    }
-    return target;
-  }
-
-  var WORD_TOKEN_REGEX = /[A-Za-zÀ-ÖØ-öø-ÿÁÉÍÓÚÜÑáéíóúüñ]+/g;
 
   function canSkipTranslation(text) {
     if (typeof text !== "string" || !text.trim()) {
@@ -667,18 +393,6 @@
       return true;
     }
     return false;
-  }
-
-  function translateSpanishWordToEnglishToken(token) {
-    var key = token.toLowerCase();
-    if (key === "a" && token === "A") {
-      return "A";
-    }
-    var mapped = WORD_MAP[key];
-    if (!mapped) {
-      return token;
-    }
-    return preserveCase(token, mapped);
   }
 
   function translateSpanishToEnglish(text) {
@@ -699,39 +413,11 @@
       return leading + exactMatch + trailing;
     }
 
-    var out = text;
-
-    PHRASE_MAP.forEach(function (pair) {
-      var source = pair[0];
-      var target = pair[1];
-      if (!source || source === target) {
-        return;
-      }
-      var re = phraseRegex(source);
-      out = out.replace(re, target);
-    });
-
-    out = out.replace(WORD_TOKEN_REGEX, function (token) {
-      return translateSpanishWordToEnglishToken(token);
-    });
-
-    out = out
-      .replace(/\bof the of\b/gi, "of the")
-      .replace(/\bthe the\b/gi, "the")
-      .replace(/\bto the the\b/gi, "to the")
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+([,.;:!?])/g, "$1");
-
-    return out;
-  }
-
-  function translateSpanishWordToFrenchToken(token) {
-    var key = token.toLowerCase();
-    var mapped = WORD_MAP_FR[key];
-    if (!mapped) {
-      return token;
+    var phraseMatch = lookupPhraseTranslation(core, phraseLookupEsToEn);
+    if (phraseMatch) {
+      return leading + phraseMatch + trailing;
     }
-    return preserveCase(token, mapped);
+    return text;
   }
 
   function translateSpanishToFrench(text) {
@@ -752,39 +438,11 @@
       return leading + exactMatch + trailing;
     }
 
-    var out = text;
-
-    PHRASE_MAP_FR.forEach(function (pair) {
-      var source = pair[0];
-      var target = pair[1];
-      if (!source || source === target) {
-        return;
-      }
-      var re = phraseRegex(source);
-      out = out.replace(re, target);
-    });
-
-    out = out.replace(WORD_TOKEN_REGEX, function (token) {
-      return translateSpanishWordToFrenchToken(token);
-    });
-
-    out = out
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+([,.;:!?])/g, "$1");
-
-    return out;
-  }
-
-  function translateEnglishWordToken(token) {
-    var key = token.toLowerCase();
-    if (key === "a") {
-      return preserveCase(token, "a");
+    var phraseMatch = lookupPhraseTranslation(core, phraseLookupEsToFr);
+    if (phraseMatch) {
+      return leading + phraseMatch + trailing;
     }
-    var mapped = reverseWordMap[key];
-    if (!mapped) {
-      return token;
-    }
-    return preserveCase(token, mapped);
+    return text;
   }
 
   function translateEnglishToSpanish(text) {
@@ -805,46 +463,18 @@
       return leading + exactMatch + trailing;
     }
 
+    var phraseMatch = lookupPhraseTranslation(core, phraseLookupEnToEs);
+    if (phraseMatch) {
+      return leading + phraseMatch + trailing;
+    }
+
     if (isLikelySpanish(core) && !isLikelyEnglish(core)) {
       return text;
     }
     if (isLikelyFrench(core) && !isLikelyEnglish(core)) {
       return text;
     }
-
-    var out = text;
-
-    PHRASE_MAP.forEach(function (pair) {
-      var source = pair[1];
-      var target = pair[0];
-      if (!source || source === target) {
-        return;
-      }
-      var re = phraseRegex(source);
-      out = out.replace(re, target);
-    });
-
-    out = out.replace(WORD_TOKEN_REGEX, function (token) {
-      return translateEnglishWordToken(token);
-    });
-
-    out = out
-      .replace(/\bde de\b/gi, "de")
-      .replace(/\bel el\b/gi, "el")
-      .replace(/\bla la\b/gi, "la")
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+([,.;:!?])/g, "$1");
-
-    return out;
-  }
-
-  function translateFrenchWordToken(token) {
-    var key = token.toLowerCase();
-    var mapped = reverseWordMapFr[key];
-    if (!mapped) {
-      return token;
-    }
-    return preserveCase(token, mapped);
+    return text;
   }
 
   function translateFrenchToSpanish(text) {
@@ -865,34 +495,15 @@
       return leading + exactMatch + trailing;
     }
 
+    var phraseMatch = lookupPhraseTranslation(core, phraseLookupFrToEs);
+    if (phraseMatch) {
+      return leading + phraseMatch + trailing;
+    }
+
     if (isLikelySpanish(core) && !isLikelyFrench(core)) {
       return text;
     }
-
-    var out = text;
-
-    PHRASE_MAP_FR.forEach(function (pair) {
-      var source = pair[1];
-      var target = pair[0];
-      if (!source || source === target) {
-        return;
-      }
-      var re = phraseRegex(source);
-      out = out.replace(re, target);
-    });
-
-    out = out.replace(WORD_TOKEN_REGEX, function (token) {
-      return translateFrenchWordToken(token);
-    });
-
-    out = out
-      .replace(/\bde de\b/gi, "de")
-      .replace(/\bel el\b/gi, "el")
-      .replace(/\bla la\b/gi, "la")
-      .replace(/\s{2,}/g, " ")
-      .replace(/\s+([,.;:!?])/g, "$1");
-
-    return out;
+    return text;
   }
 
   function translateAnyToSpanish(text) {
