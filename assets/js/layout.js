@@ -130,24 +130,6 @@
       .join("");
   }
 
-  function legalLinksTemplate() {
-    if (!Array.isArray(data.legalLinks) || !data.legalLinks.length) {
-      return "";
-    }
-    return (
-      '<div class="footer-legal">' +
-      "<h3>" + tk("layout.footer.legalTitle", "Legal") + "</h3>" +
-      '<ul class="footer-legal-list">' +
-      data.legalLinks
-        .map(function (item) {
-          return '<li><a href="' + localUrl(item.href) + '">' + item.label + "</a></li>";
-        })
-        .join("") +
-      "</ul>" +
-      "</div>"
-    );
-  }
-
   if (headerHost) {
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
@@ -181,17 +163,6 @@
       '        <li><a href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer">' + tk("layout.footer.googleMaps", "Google Maps") + "</a></li>" +
       '        <li><a href="' + data.clinic.instagramUrl + '" target="_blank" rel="noopener noreferrer">' + tk("layout.footer.instagram", "Instagram") + "</a></li>" +
       '      </ul>' +
-      "    </section>" +
-      '    <section class="footer-links">' +
-      '      <h3>' + tk("layout.footer.siteMap", "Mapa del sitio") + "</h3>" +
-      "      <ul>" +
-      data.nav
-        .map(function (item) {
-          return '<li><a href="' + localUrl(item.href) + '">' + item.label + "</a></li>";
-        })
-        .join("") +
-      "      </ul>" +
-      legalLinksTemplate() +
       "    </section>" +
       '    <section class="footer-hours">' +
       '      <h3>' + tk("layout.footer.hours", "Horarios") + "</h3>" +

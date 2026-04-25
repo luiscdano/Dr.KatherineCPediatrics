@@ -1791,29 +1791,26 @@ ul {
   margin-top: 2.2rem;
   background: var(--primary-700);
   color: #fff;
-  padding: 2.2rem 0 1.2rem;
+  padding: 1.8rem 0 1rem;
 }
 
 .footer-grid {
-  grid-template-columns: 1.2fr 1fr 1fr;
+  grid-template-columns: 1.45fr 1fr;
   align-items: start;
 }
 
 .footer-main,
-.footer-links,
 .footer-hours {
   display: grid;
   gap: 0.55rem;
 }
 
 .footer-main h2,
-.footer-links h3,
 .footer-hours h3 {
   color: #fff;
 }
 
 .footer-contact-list,
-.footer-links ul,
 .footer-hours ul {
   list-style: none;
   display: grid;
@@ -1821,48 +1818,25 @@ ul {
 }
 
 .footer-main p,
-.footer-links li,
 .footer-hours li,
-.footer-legal-list li,
 .footer-bottom p {
   color: rgba(255, 255, 255, 0.84);
 }
 
 .footer-contact-list a,
-.footer-links a,
-.footer-hours a,
-.footer-legal-list a {
+.footer-hours a {
   text-decoration: none;
 }
 
 .footer-contact-list a:hover,
-.footer-links a:hover,
-.footer-hours a:hover,
-.footer-legal-list a:hover {
+.footer-hours a:hover {
   color: #fff;
-}
-
-.footer-legal {
-  margin-top: 0.5rem;
-  display: grid;
-  gap: 0.4rem;
-}
-
-.footer-legal h3 {
-  color: #fff;
-  font-size: 0.96rem;
-}
-
-.footer-legal-list {
-  list-style: none;
-  display: grid;
-  gap: 0.26rem;
 }
 
 .footer-bottom {
-  margin-top: 1.05rem;
+  margin-top: 0.85rem;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
-  padding-top: 0.9rem;
+  padding-top: 0.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
