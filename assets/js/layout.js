@@ -206,9 +206,9 @@
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +
-      '    <p>© <span id="current-year"></span> ' + data.siteName + '. ' + tk("layout.footer.rightsReserved", "Todos los derechos reservados.") + "</p>" +
+      '    <p>© <span id="current-year"></span> ' + data.siteName + '. <span data-i18n-key="layout.footer.rightsReserved">' + tk("layout.footer.rightsReserved", "Todos los derechos reservados.") + "</span></p>" +
       '    <div class="powered-by">' +
-      '      <span>' + tk("layout.footer.poweredBy", "Powered by") + "</span>" +
+      '      <span data-i18n-key="layout.footer.poweredBy">' + tk("layout.footer.poweredBy", "Powered by") + "</span>" +
       '      <a class="footer-cmlayer-link" href="https://cmlayer.com" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.cmlayerAria", "Ir a CmLayer") + '">' +
       '        <span class="footer-cmlayer-logo" aria-hidden="true"></span>' +
       '        <span>CmLayer</span>' +
