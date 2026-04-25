@@ -191,11 +191,11 @@
       '  <div class="shell footer-grid">' +
       '    <section class="footer-main">' +
       '      <img class="footer-brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="' + tk("layout.header.logoAltPrefix", "Logo") + " " + data.siteName + '" loading="lazy" />' +
-      '      <p class="footer-main-description">' + tk("layout.footer.mainDescription", "Cuidado pediátrico profesional y cercano para cada etapa de la infancia.") + "</p>" +
+      '      <p class="footer-main-description" data-i18n-key="layout.footer.mainDescription">' + tk("layout.footer.mainDescription", "Cuidado pediátrico profesional y cercano para cada etapa de la infancia.") + "</p>" +
       '      <ul class="footer-contact-list">' +
-      '        <li><a class="footer-contact-link" href="' + data.clinic.whatsappHref + '" target="_blank" rel="noopener noreferrer">' +
-      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/w.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
-      '          <span>' + footerPhoneDisplay() + "</span>" +
+        '        <li><a class="footer-contact-link" href="' + data.clinic.whatsappHref + '" target="_blank" rel="noopener noreferrer">' +
+          '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/w.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+          '          <span>' + footerPhoneDisplay() + "</span>" +
       "        </a></li>" +
       '        <li><a class="footer-contact-link" href="mailto:' + data.clinic.email + '">' +
       '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/c.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
@@ -218,7 +218,7 @@
       "      </div>" +
       "    </section>" +
       '    <section class="footer-hours">' +
-      '      <h3>' + tk("layout.footer.hours", "Horario") + "</h3>" +
+      '      <h3 data-i18n-key="layout.footer.hours">' + tk("layout.footer.hours", "Horario") + "</h3>" +
       "      <ul>" +
       data.clinic.officeHours
         .map(function (slot) {
@@ -226,7 +226,7 @@
         })
         .join("") +
       "      </ul>" +
-      '      <a class="btn btn-secondary footer-hours-cta" href="' + localUrl("/citas/") + '">' + tk("layout.footer.onlineAppointments", "Citas en líneas") + "</a>" +
+      '      <a class="btn btn-secondary footer-hours-cta" href="' + localUrl("/citas/") + '" data-i18n-key="layout.footer.onlineAppointments">' + tk("layout.footer.onlineAppointments", "Citas en líneas") + "</a>" +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +
