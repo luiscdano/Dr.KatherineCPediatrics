@@ -1806,6 +1806,7 @@ ul {
 .footer-hours {
   display: grid;
   gap: 0.62rem;
+  min-width: 0;
 }
 
 .footer-hours h3 {
@@ -1822,6 +1823,7 @@ ul {
   color: rgba(255, 255, 255, 0.84);
   font-size: clamp(1.02rem, 1.2vw, 1.23rem);
   line-height: 1.36;
+  overflow-wrap: anywhere;
 }
 
 .footer-contact-list,
@@ -1876,7 +1878,12 @@ ul {
   text-decoration: none;
   font-size: clamp(1rem, 1.5vw, 1.07rem);
   line-height: 1.34;
-  padding-top: clamp(2.9rem, 4.6vw, 3.5rem);
+  padding-top: clamp(0.55rem, 1.15vw, 1rem);
+  min-width: 0;
+}
+
+.footer-location-link span {
+  overflow-wrap: anywhere;
 }
 
 .footer-location-icon {
@@ -1889,7 +1896,8 @@ ul {
 .footer-map-card {
   position: relative;
   width: 100%;
-  min-height: 258px;
+  min-height: 240px;
+  aspect-ratio: 1 / 1;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
@@ -1897,7 +1905,7 @@ ul {
 .footer-map-card iframe {
   width: 100%;
   height: 100%;
-  min-height: 258px;
+  min-height: 0;
   border: 0;
 }
 
@@ -1912,7 +1920,6 @@ ul {
   font-weight: 700;
   letter-spacing: 0;
   margin-bottom: 0.06rem;
-  white-space: nowrap;
 }
 
 .footer-hours li {
@@ -1930,6 +1937,21 @@ ul {
   border-color: transparent;
   font-weight: 700;
   font-size: clamp(1rem, 1.4vw, 1.06rem);
+}
+
+@media (max-width: 1360px) and (min-width: 1121px) {
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 1rem;
+  }
+
+  .footer-main {
+    grid-column: 1 / -1;
+  }
+
+  .footer-location {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  }
 }
 
 .footer-bottom {

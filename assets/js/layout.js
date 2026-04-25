@@ -209,22 +209,19 @@
       "    </section>" +
       '    <section class="footer-location">' +
       '      <a class="footer-location-link" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '">' +
-      '        <img class="footer-location-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
-      "        <span>" + data.clinic.address + "</span>" +
+        '        <img class="footer-location-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+        '        <span data-i18n-key="layout.footer.address">' + tk("layout.footer.address", data.clinic.address) + "</span>" +
       "      </a>" +
       '      <div class="footer-map-card">' +
-      '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
-      '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
+        '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
+        '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
       "      </div>" +
       "    </section>" +
       '    <section class="footer-hours">' +
       '      <h3 data-i18n-key="layout.footer.hours">' + tk("layout.footer.hours", "Horario") + "</h3>" +
       "      <ul>" +
-      data.clinic.officeHours
-        .map(function (slot) {
-          return "<li>" + slot + "</li>";
-        })
-        .join("") +
+      '        <li data-i18n-key="layout.footer.hoursWeekdays">' + tk("layout.footer.hoursWeekdays", data.clinic.officeHours[0] || "Lunes a Viernes de 8:00 a.m. a 5:30 p.m.") + "</li>" +
+      '        <li data-i18n-key="layout.footer.hoursSaturday">' + tk("layout.footer.hoursSaturday", data.clinic.officeHours[1] || "Sábados de 8:00 a.m. a 1:00 p.m.") + "</li>" +
       "      </ul>" +
       '      <a class="btn btn-secondary footer-hours-cta" href="' + localUrl("/citas/") + '" data-i18n-key="layout.footer.onlineAppointments">' + tk("layout.footer.onlineAppointments", "Citas en líneas") + "</a>" +
       "    </section>" +
