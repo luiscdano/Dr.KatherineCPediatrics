@@ -45,13 +45,13 @@
     if (i18n && typeof i18n.getLanguage === "function") {
       return i18n.getLanguage();
     }
-    return "es";
+    return "en";
   }
 
   function normalizeUiLang(lang) {
     var key = String(lang || "").trim().toLowerCase();
     if (!Object.prototype.hasOwnProperty.call(LANGUAGE_UI_LABELS, key)) {
-      return "es";
+      return "en";
     }
     return key;
   }
@@ -68,7 +68,7 @@
   }
 
   function labelsForCurrentLanguage(lang) {
-    return LANGUAGE_UI_LABELS[normalizeUiLang(lang)] || LANGUAGE_UI_LABELS.es;
+    return LANGUAGE_UI_LABELS[normalizeUiLang(lang)] || LANGUAGE_UI_LABELS.en;
   }
 
   function languageSelectorTemplate() {

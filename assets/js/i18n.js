@@ -1,6 +1,6 @@
   (function () {
   var STORAGE_KEY = "dr_katherine_lang";
-  var DEFAULT_LANG = "es";
+  var DEFAULT_LANG = "en";
   var SUPPORTED_LANGS = {
     en: true,
     es: true,
