@@ -2094,9 +2094,23 @@ ul {
   .agenda-grid,
   .previsit-grid,
   .review-wrap,
-  .cta-section .cta-wrap,
-  .footer-grid {
+  .cta-section .cta-wrap {
     grid-template-columns: 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    column-gap: 1rem;
+  }
+
+  .footer-main {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .footer-location,
+  .footer-hours {
+    grid-column: 2;
   }
 
   .footer-location {
@@ -2110,7 +2124,7 @@ ul {
 
   .footer-map-card,
   .footer-map-card iframe {
-    min-height: 260px;
+    min-height: 230px;
   }
 
   .cta-image {
@@ -2226,6 +2240,21 @@ ul {
   .form-row-2,
   .form-row-3 {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-main,
+  .footer-location,
+  .footer-hours {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .footer-location {
+    grid-template-columns: 1fr;
   }
 }
 
