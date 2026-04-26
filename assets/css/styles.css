@@ -1791,13 +1791,17 @@ ul {
   margin-top: 2.2rem;
   background: var(--primary-700);
   color: #fff;
-  padding: 1.85rem 0 1rem;
+  padding: 2rem 0 1rem;
+}
+
+.site-footer .shell {
+  width: min(1800px, 95vw);
 }
 
 .footer-grid {
-  grid-template-columns: minmax(300px, 1.2fr) minmax(420px, 1.7fr) minmax(240px, 1fr);
+  grid-template-columns: minmax(360px, 1.2fr) minmax(460px, 1.45fr) minmax(250px, 0.95fr);
   align-items: start;
-  column-gap: 1.1rem;
+  column-gap: 1.35rem;
   row-gap: 0.9rem;
 }
 
@@ -1814,7 +1818,7 @@ ul {
 }
 
 .footer-brand-logo {
-  width: min(100%, 430px);
+  width: min(100%, 500px);
   height: auto;
   margin-bottom: 0.1rem;
 }
@@ -1824,6 +1828,7 @@ ul {
   font-size: clamp(1.02rem, 1.2vw, 1.23rem);
   line-height: 1.36;
   overflow-wrap: anywhere;
+  max-width: 36ch;
 }
 
 .footer-contact-list,
@@ -1865,7 +1870,7 @@ ul {
 }
 
 .footer-location {
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
   column-gap: 0.9rem;
   align-items: start;
 }
