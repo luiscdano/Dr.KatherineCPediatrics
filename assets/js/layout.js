@@ -190,30 +190,30 @@
       '<footer class="site-footer">' +
       '  <div class="shell footer-grid">' +
       '    <section class="footer-main">' +
-      '      <img class="footer-brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="' + tk("layout.header.logoAltPrefix", "Logo") + " " + data.siteName + '" loading="lazy" />' +
+      '      <img class="footer-brand-logo" src="' + localUrl("/assets/img/drkatherinecpediatrics.png?v=" + brandAssetVersion) + '" alt="' + tk("layout.header.logoAltPrefix", "Logo") + " " + data.siteName + '" loading="eager" />' +
       '      <p class="footer-main-description" data-i18n-key="layout.footer.mainDescription">' + tk("layout.footer.mainDescription", "Cuidado pediátrico profesional y cercano para cada etapa de la infancia.") + "</p>" +
       '      <ul class="footer-contact-list">' +
         '        <li><a class="footer-contact-link" href="' + data.clinic.whatsappHref + '" target="_blank" rel="noopener noreferrer">' +
-          '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/w.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+          '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/w.png") + '" alt="" aria-hidden="true" loading="eager" />' +
           '          <span>' + footerPhoneDisplay() + "</span>" +
       "        </a></li>" +
       '        <li><a class="footer-contact-link" href="mailto:' + data.clinic.email + '">' +
-      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/c.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/c.png") + '" alt="" aria-hidden="true" loading="eager" />' +
       "          <span>" + data.clinic.email + "</span>" +
       "        </a></li>" +
       '        <li><a class="footer-contact-link" href="' + data.clinic.instagramUrl + '" target="_blank" rel="noopener noreferrer">' +
-      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/i.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/i.png") + '" alt="" aria-hidden="true" loading="eager" />' +
       "          <span>" + footerInstagramHandle() + "</span>" +
       "        </a></li>" +
       '      </ul>' +
       "    </section>" +
       '    <section class="footer-location">' +
       '      <a class="footer-location-link" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '">' +
-        '        <img class="footer-location-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="lazy" />' +
+        '        <img class="footer-location-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="eager" />' +
         '        <span data-i18n-key="layout.footer.address">' + tk("layout.footer.address", data.clinic.address) + "</span>" +
       "      </a>" +
       '      <div class="footer-map-card">' +
-        '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="lazy" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
+        '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="eager" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
         '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
       "      </div>" +
       "    </section>" +
