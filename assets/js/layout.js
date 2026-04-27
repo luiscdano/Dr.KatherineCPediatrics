@@ -205,17 +205,18 @@
       '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/i.png") + '" alt="" aria-hidden="true" loading="eager" />' +
       "          <span>" + footerInstagramHandle() + "</span>" +
       "        </a></li>" +
+      '        <li><a class="footer-contact-link footer-contact-link-location" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '">' +
+      '          <img class="footer-contact-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="eager" />' +
+      '          <span class="sr-only" data-i18n-key="layout.footer.openMap">' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + "</span>" +
+      "        </a></li>" +
       '      </ul>' +
       "    </section>" +
       '    <section class="footer-location">' +
-      '      <a class="footer-location-link" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '">' +
-        '        <img class="footer-location-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="eager" />' +
-        '        <span data-i18n-key="layout.footer.address">' + tk("layout.footer.address", data.clinic.address) + "</span>" +
-      "      </a>" +
       '      <div class="footer-map-card">' +
         '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="eager" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
         '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
       "      </div>" +
+      '      <a class="footer-location-address" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" data-i18n-key="layout.footer.address">' + tk("layout.footer.address", data.clinic.address) + "</a>" +
       "    </section>" +
       '    <section class="footer-hours">' +
       '      <h3 data-i18n-key="layout.footer.hours">' + tk("layout.footer.hours", "Horario") + "</h3>" +
