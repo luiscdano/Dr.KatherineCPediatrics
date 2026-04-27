@@ -1847,11 +1847,6 @@ ul {
   text-decoration: none;
 }
 
-.footer-contact-link-location {
-  width: fit-content;
-  gap: 0;
-}
-
 .footer-contact-icon {
   width: 36px;
   height: 36px;
@@ -1882,14 +1877,24 @@ ul {
 }
 
 .footer-location-address {
-  display: block;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.62rem;
   color: rgba(255, 255, 255, 0.84);
   text-decoration: none;
   font-size: clamp(0.98rem, 1.35vw, 1.03rem);
   line-height: 1.34;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+
+.footer-location-address-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  margin-top: 0.02rem;
 }
 
 .footer-location-address:hover {
@@ -1898,11 +1903,12 @@ ul {
 
 .footer-map-card {
   position: relative;
-  width: 100%;
-  min-height: 240px;
+  width: 50%;
+  min-height: 0;
   aspect-ratio: 1 / 1;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  justify-self: start;
 }
 
 .footer-map-card iframe {
@@ -1963,7 +1969,7 @@ ul {
 
   .footer-map-card,
   .footer-map-card iframe {
-    min-height: 230px;
+    min-height: 0;
   }
 }
 
@@ -2134,8 +2140,7 @@ ul {
     gap: 0.62rem;
   }
 
-  .footer-contact-icon,
-  .footer-contact-link-location .footer-contact-icon {
+  .footer-contact-icon {
     width: 34px;
     height: 34px;
   }
@@ -2157,7 +2162,7 @@ ul {
 
   .footer-map-card,
   .footer-map-card iframe {
-    min-height: 220px;
+    min-height: 0;
   }
 
   .cta-image {
@@ -2291,9 +2296,11 @@ ul {
   }
 
   .footer-location-address {
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
+    width: 100%;
+  }
+
+  .footer-map-card {
+    width: 100%;
   }
 }
 
@@ -2448,7 +2455,7 @@ ul {
   }
 
   .footer-contact-icon,
-  .footer-contact-link-location .footer-contact-icon {
+  .footer-location-address-icon {
     width: 32px;
     height: 32px;
   }
