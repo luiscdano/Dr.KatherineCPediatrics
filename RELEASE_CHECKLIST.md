@@ -17,6 +17,12 @@ npm run release:check
 OPS_HEALTH_URLS="http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health" npm run monitor:health
 ```
 
+Opcional para entornos con arranque más lento:
+
+```bash
+OPS_HEALTH_RETRIES=6 OPS_HEALTH_RETRY_DELAY_MS=1500 npm run monitor:health
+```
+
 ## Staging
 
 1. Copiar y completar `deploy/staging/.env.staging.example` como `deploy/staging/.env.staging`.

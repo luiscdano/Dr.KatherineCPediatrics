@@ -1,6 +1,17 @@
 import process from "node:process";
 
-const DEFAULT_TIMEOUT_MS = Number(process.env.OPS_HEALTH_TIMEOUT_MS || 8000);
+function toInteger(value, fallback, { min = Number.NEGATIVE_INFINITY } = {}) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+  return Math.max(min, Math.trunc(parsed));
+}
+
+const DEFAULT_TIMEOUT_MS = toInteger(process.env.OPS_HEALTH_TIMEOUT_MS, 8000, { min: 1000 });
+const DEFAULT_RETRIES = toInteger(process.env.OPS_HEALTH_RETRIES, 3, { min: 1 });
+const DEFAULT_RETRY_DELAY_MS = toInteger(process.env.OPS_HEALTH_RETRY_DELAY_MS, 1500, { min: 0 });
+
 function extractUrlCandidate(value) {
   const raw = String(value || "")
     .trim()
@@ -44,6 +55,12 @@ function withTimeout(url, timeoutMs) {
     });
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function sendAlert(message, details) {
   const webhookUrl = extractUrlCandidate(process.env.ALERT_WEBHOOK_URL);
   if (!webhookUrl) {
@@ -70,24 +87,45 @@ async function sendAlert(message, details) {
 
 const failures = [];
 for (const url of urls) {
-  try {
-    const response = await withTimeout(url, DEFAULT_TIMEOUT_MS);
-    const payload = await response.json().catch(() => null);
+  let passed = false;
+  let lastFailure = null;
 
-    if (!response.ok || !payload || payload.ok !== true) {
-      failures.push({
-        url,
-        status: response.status,
-        payload
-      });
-      continue;
+  for (let attempt = 1; attempt <= DEFAULT_RETRIES; attempt += 1) {
+    try {
+      const response = await withTimeout(url, DEFAULT_TIMEOUT_MS);
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok || !payload || payload.ok !== true) {
+        lastFailure = {
+          status: response.status,
+          payload
+        };
+      } else {
+        console.log(`[ops-health-check] OK ${url} (attempt ${attempt}/${DEFAULT_RETRIES})`);
+        passed = true;
+        break;
+      }
+    } catch (error) {
+      lastFailure = {
+        error: error?.message || String(error)
+      };
     }
 
-    console.log(`[ops-health-check] OK ${url}`);
-  } catch (error) {
+    if (attempt < DEFAULT_RETRIES) {
+      console.warn(
+        `[ops-health-check] Retry ${attempt}/${DEFAULT_RETRIES - 1} for ${url} in ${DEFAULT_RETRY_DELAY_MS}ms`
+      );
+      if (DEFAULT_RETRY_DELAY_MS > 0) {
+        await sleep(DEFAULT_RETRY_DELAY_MS);
+      }
+    }
+  }
+
+  if (!passed) {
     failures.push({
       url,
-      error: error?.message || String(error)
+      attempts: DEFAULT_RETRIES,
+      ...lastFailure
     });
   }
 }

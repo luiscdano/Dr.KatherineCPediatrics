@@ -38,4 +38,9 @@ jobs:
             echo "Configura OPS_HEALTH_URLS para activar el monitoreo externo."
             exit 0
           fi
+          if ! printf '%s' "$OPS_HEALTH_URLS" | grep -Eiq 'https?://'; then
+            echo "OPS_HEALTH_URLS no contiene URLs válidas (http/https)."
+            echo "Se omite monitor hasta definir endpoints reales con cliente."
+            exit 0
+          fi
           npm run monitor:health

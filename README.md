@@ -238,6 +238,9 @@ En `.env` del proyecto principal:
 - `ALERT_WEBHOOK_URL=<webhook_slack_discord_teams_opcional>`
 - `ALERT_COOLDOWN_MS=300000`
 - `OPS_HEALTH_URLS=<urls_para_check_automatico_separadas_por_coma>`
+- `OPS_HEALTH_TIMEOUT_MS=8000`
+- `OPS_HEALTH_RETRIES=3`
+- `OPS_HEALTH_RETRY_DELAY_MS=1500`
 - `LOG_LEVEL=info`
 - `LOG_DIR=server/logs`
 
@@ -258,8 +261,9 @@ OPS_HEALTH_URLS="http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/healt
 Estado cerrado con lo disponible hoy:
 
 - Auth admin endurecido (cookie `httpOnly`, CSRF, rate-limit y opción de allowlist IP).
-- Variables de monitoreo y alerta configuradas en GitHub (`ALERT_WEBHOOK_URL`, `OPS_HEALTH_URLS`, `ADMIN_COOKIE_SECURE`, `ADMIN_ALLOWED_IPS`).
+- Secrets/variables de monitoreo y alerta listos en GitHub (`ALERT_WEBHOOK_URL`, `ADMIN_COOKIE_SECURE`, `ADMIN_ALLOWED_IPS`) con `OPS_HEALTH_URLS` pendiente del endpoint definitivo del cliente.
 - Dashboard y backend operativos con la configuración actual.
+- Workflows de salud endurecidos para evitar fallas por placeholders inválidos y arranque en frío.
 
 Pendiente para endurecimiento final tras reunión con cliente:
 

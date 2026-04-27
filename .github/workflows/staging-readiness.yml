@@ -66,9 +66,29 @@ jobs:
       - name: Start WhatsApp stack
         run: docker compose -f whatsapp-backend/docker-compose.yml -f whatsapp-backend/docker-compose.override.local.yml up --build -d
 
+      - name: Wait for health endpoints
+        run: |
+          for target in "http://127.0.0.1:8787/api/v1/health" "http://127.0.0.1:3000/health"; do
+            echo "Esperando ${target}"
+            ok=0
+            for attempt in $(seq 1 20); do
+              if curl -fsS "$target" >/dev/null; then
+                ok=1
+                break
+              fi
+              sleep 2
+            done
+            if [ "$ok" -ne 1 ]; then
+              echo "No fue posible validar ${target} durante ventana de espera."
+              exit 1
+            fi
+          done
+
       - name: Smoke health checks
         env:
           OPS_HEALTH_URLS: http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health
+          OPS_HEALTH_RETRIES: "6"
+          OPS_HEALTH_RETRY_DELAY_MS: "1500"
         run: npm run monitor:health
 
       - name: Stop stacks
