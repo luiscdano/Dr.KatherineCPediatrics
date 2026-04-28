@@ -208,14 +208,14 @@
       '      </ul>' +
       "    </section>" +
       '    <section class="footer-location">' +
-      '      <div class="footer-map-card">' +
-        '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="eager" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
-        '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
-      "      </div>" +
       '      <a class="footer-location-address" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer">' +
       '        <img class="footer-location-address-icon" src="' + localUrl("/assets/img/l.png") + '" alt="" aria-hidden="true" loading="eager" />' +
       '        <span data-i18n-key="layout.footer.address">' + tk("layout.footer.address", data.clinic.address) + "</span>" +
       "      </a>" +
+      '      <div class="footer-map-card">' +
+        '        <iframe title="' + tk("layout.footer.googleMaps", "Google Maps") + '" src="' + footerMapEmbedUrl() + '" loading="eager" referrerpolicy="no-referrer-when-downgrade" tabindex="-1" aria-hidden="true"></iframe>' +
+        '        <a class="footer-map-overlay" href="' + data.clinic.mapsUrl + '" target="_blank" rel="noopener noreferrer" aria-label="' + tk("layout.footer.openMap", "Abrir ubicación en Google Maps") + '"></a>' +
+      "      </div>" +
       "    </section>" +
       '    <section class="footer-hours">' +
       '      <h3 data-i18n-key="layout.footer.hours">' + tk("layout.footer.hours", "Horario") + "</h3>" +

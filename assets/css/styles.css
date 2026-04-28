@@ -1791,7 +1791,7 @@ ul {
   margin-top: 2.2rem;
   background: var(--primary-700);
   color: #fff;
-  padding: 2rem 0 1rem;
+  padding: 1.85rem 0 1rem;
 }
 
 .site-footer .shell {
@@ -1799,9 +1799,9 @@ ul {
 }
 
 .footer-grid {
-  grid-template-columns: minmax(340px, 1.18fr) minmax(440px, 1.58fr) minmax(230px, 0.82fr);
+  grid-template-columns: minmax(360px, 1.3fr) minmax(430px, 1.55fr) minmax(260px, 0.85fr);
   align-items: start;
-  column-gap: 1.35rem;
+  column-gap: 1.3rem;
   row-gap: 0.9rem;
 }
 
@@ -1870,31 +1870,28 @@ ul {
 }
 
 .footer-location {
-  grid-template-columns: 1fr;
-  column-gap: 0;
-  row-gap: 0.72rem;
+  grid-template-columns: minmax(230px, 1fr) 350px;
+  column-gap: 1rem;
+  row-gap: 0;
   align-items: start;
 }
 
 .footer-location-address {
   display: inline-flex;
   align-items: flex-start;
-  gap: 0.62rem;
+  gap: 0.7rem;
   color: rgba(255, 255, 255, 0.84);
   text-decoration: none;
-  font-size: clamp(0.98rem, 1.35vw, 1.03rem);
+  font-size: clamp(1rem, 1.5vw, 1.07rem);
   line-height: 1.34;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
+  padding-top: clamp(2.9rem, 4.6vw, 3.5rem);
 }
 
 .footer-location-address-icon {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
-  margin-top: 0.02rem;
+  margin-top: 0.06rem;
 }
 
 .footer-location-address:hover {
@@ -1903,18 +1900,16 @@ ul {
 
 .footer-map-card {
   position: relative;
-  width: 50%;
-  min-height: 0;
-  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-height: 300px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  justify-self: start;
 }
 
 .footer-map-card iframe {
   width: 100%;
   height: 100%;
-  min-height: 0;
+  min-height: 300px;
   border: 0;
 }
 
@@ -1940,34 +1935,12 @@ ul {
 .footer-hours-cta {
   margin-top: 0.72rem;
   min-height: 54px;
-  width: min(100%, 260px);
+  min-width: min(100%, 260px);
   background: rgba(164, 186, 156, 0.62);
   color: rgba(46, 64, 45, 0.92);
   border-color: transparent;
   font-weight: 700;
   font-size: clamp(1rem, 1.4vw, 1.06rem);
-}
-
-@media (min-width: 1121px) {
-  .footer-map-card {
-    margin-left: -4.5rem;
-  }
-
-  .footer-location-address {
-    align-items: flex-end;
-    margin-top: 0.34rem;
-    transform: translateY(8px);
-  }
-
-  .footer-location-address-icon {
-    margin-top: 0;
-    transform: translateY(0.18rem);
-  }
-
-  .footer-location-address span {
-    display: block;
-    padding-top: 0.2rem;
-  }
 }
 
 @media (max-width: 1360px) and (min-width: 1121px) {
@@ -1981,8 +1954,9 @@ ul {
   }
 
   .footer-location {
-    grid-template-columns: 1fr;
-    gap: 0.72rem;
+    grid-template-columns: minmax(210px, 1fr) 320px;
+    column-gap: 0.9rem;
+    row-gap: 0;
   }
 
   .footer-main-description {
@@ -1991,7 +1965,7 @@ ul {
 
   .footer-map-card,
   .footer-map-card iframe {
-    min-height: 0;
+    min-height: 260px;
   }
 }
 
@@ -2146,6 +2120,7 @@ ul {
 
   .footer-location-address {
     font-size: clamp(0.9rem, 1.2vw, 0.98rem);
+    padding-top: 0;
   }
 
   .footer-brand-logo {
