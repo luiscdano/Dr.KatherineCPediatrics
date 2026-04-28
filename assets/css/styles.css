@@ -1948,6 +1948,27 @@ ul {
   font-size: clamp(1rem, 1.4vw, 1.06rem);
 }
 
+@media (min-width: 1121px) {
+  .footer-map-card {
+    margin-left: -4.5rem;
+  }
+
+  .footer-location-address {
+    align-items: flex-end;
+    margin-top: 0.34rem;
+  }
+
+  .footer-location-address-icon {
+    margin-top: 0;
+    transform: translateY(0.18rem);
+  }
+
+  .footer-location-address span {
+    display: block;
+    padding-top: 0.2rem;
+  }
+}
+
 @media (max-width: 1360px) and (min-width: 1121px) {
   .footer-grid {
     grid-template-columns: minmax(300px, 1.12fr) minmax(360px, 1.2fr) minmax(220px, 0.82fr);
