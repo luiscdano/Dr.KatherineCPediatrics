@@ -1956,6 +1956,7 @@ ul {
   .footer-location-address {
     align-items: flex-end;
     margin-top: 0.34rem;
+    transform: translateY(8px);
   }
 
   .footer-location-address-icon {
