@@ -1892,6 +1892,7 @@ ul {
   height: 38px;
   flex-shrink: 0;
   margin-top: 0.06rem;
+  transform: translateY(20px);
 }
 
 .footer-location-address:hover {
