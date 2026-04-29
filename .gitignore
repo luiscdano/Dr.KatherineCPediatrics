@@ -20,5 +20,6 @@ build/
 tmp/
 
 .vscode/
+.well-known/appspecific/com.chrome.devtools.json
 
 server/data/submissions.json

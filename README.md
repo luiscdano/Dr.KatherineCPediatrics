@@ -256,6 +256,28 @@ npm run release:check
 OPS_HEALTH_URLS="http://127.0.0.1:8787/api/v1/health,http://127.0.0.1:3000/health" npm run monitor:health
 ```
 
+### Ajustes visuales en vivo (Chrome DevTools + VS Code)
+
+Configurado para que puedas mover elementos visualmente y guardar cambios al código real:
+
+```bash
+npm run devtools:workspace
+npm run dev:preview
+```
+
+Después:
+
+1. Abre `http://localhost:8080/inicio/` en Google Chrome.
+2. Abre DevTools (`Cmd + Option + I`).
+3. Ve a `Sources` -> `Workspaces` y pulsa `Connect`.
+4. Selecciona la carpeta del proyecto y acepta `Edit files`.
+5. Ajusta CSS en DevTools y guarda con `Cmd + S`.
+
+Notas:
+
+- El archivo local de conexión se genera en `.well-known/appspecific/com.chrome.devtools.json`.
+- Ese archivo se ignora en git para no subir rutas absolutas de tu máquina.
+
 ### Estado actual y pendientes (seguridad/ops)
 
 Estado cerrado con lo disponible hoy:
