@@ -17,6 +17,10 @@
   --radius-sm: 12px;
   --container: min(1220px, 92vw);
   --transition: 0.28s ease;
+  --footer-location-address-shift-y: 0px;
+  --footer-location-icon-shift-y: 20px;
+  --footer-map-shift-x: 0px;
+  --footer-map-shift-y: 0px;
 }
 
 * {
@@ -1885,6 +1889,7 @@ ul {
   font-size: clamp(1rem, 1.5vw, 1.07rem);
   line-height: 1.34;
   padding-top: clamp(2.9rem, 4.6vw, 3.5rem);
+  transform: translateY(var(--footer-location-address-shift-y));
 }
 
 .footer-location-address-icon {
@@ -1892,7 +1897,7 @@ ul {
   height: 38px;
   flex-shrink: 0;
   margin-top: 0.06rem;
-  transform: translateY(20px);
+  transform: translateY(var(--footer-location-icon-shift-y));
 }
 
 .footer-location-address:hover {
@@ -1905,6 +1910,7 @@ ul {
   min-height: 300px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  transform: translate(var(--footer-map-shift-x), var(--footer-map-shift-y));
 }
 
 .footer-map-card iframe {
@@ -2039,6 +2045,13 @@ ul {
 }
 
 @media (max-width: 1120px) {
+  :root {
+    --footer-location-address-shift-y: 0px;
+    --footer-location-icon-shift-y: 0px;
+    --footer-map-shift-x: 0px;
+    --footer-map-shift-y: 0px;
+  }
+
   .coming-hero {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto auto;
