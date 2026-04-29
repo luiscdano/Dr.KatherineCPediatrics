@@ -18,7 +18,8 @@
   --container: min(1220px, 92vw);
   --transition: 0.28s ease;
   --footer-location-address-shift-x: 15%;
-  --footer-location-address-shift-y: 250%;
+  --footer-location-address-shift-y: 265%;
+  --footer-location-text-shift-y: 10%;
   --footer-location-icon-shift-y: 0px;
   --footer-map-shift-x: 0px;
   --footer-map-shift-y: 0px;
@@ -1895,9 +1896,11 @@ ul {
 }
 
 .footer-location-address span {
+  display: inline-block;
   white-space: nowrap;
   overflow-wrap: normal;
   word-break: normal;
+  transform: translateY(var(--footer-location-text-shift-y));
 }
 
 .footer-location-address-icon {
@@ -2104,6 +2107,7 @@ ul {
   :root {
     --footer-location-address-shift-x: 0px;
     --footer-location-address-shift-y: 0px;
+    --footer-location-text-shift-y: 0px;
     --footer-location-icon-shift-y: 0px;
     --footer-map-shift-x: 0px;
     --footer-map-shift-y: 0px;
