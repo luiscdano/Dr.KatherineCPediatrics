@@ -1952,11 +1952,11 @@ ul {
 
 @media (min-width: 1361px) {
   .site-footer .shell {
-    width: min(2200px, 95vw);
+    width: min(2000px, 95vw);
   }
 
   .footer-grid {
-    grid-template-columns: minmax(520px, 1.2fr) minmax(610px, 1.3fr) minmax(360px, 0.86fr);
+    grid-template-columns: minmax(500px, 1.2fr) minmax(540px, 1.18fr) minmax(420px, 0.9fr);
     column-gap: 1.05rem;
     row-gap: 0.8rem;
   }
@@ -1975,12 +1975,18 @@ ul {
   }
 
   .footer-location {
-    grid-template-columns: minmax(220px, 1fr) 340px;
+    grid-template-columns: minmax(180px, 1fr) minmax(320px, 340px);
     column-gap: 0.9rem;
+    overflow: hidden;
   }
 
   .footer-location-address {
     padding-top: clamp(7.8rem, 8.8vw, 9.3rem);
+  }
+
+  .footer-map-card {
+    max-width: 340px;
+    justify-self: start;
   }
 
   .footer-map-card,
