@@ -17,7 +17,7 @@
   --radius-sm: 12px;
   --container: min(1220px, 92vw);
   --transition: 0.28s ease;
-  --footer-location-address-shift-y: 40%;
+  --footer-location-address-shift-y: 95%;
   --footer-location-icon-shift-y: 0px;
   --footer-map-shift-x: 0px;
   --footer-map-shift-y: 0px;
@@ -1977,11 +1977,14 @@ ul {
   .footer-location {
     grid-template-columns: minmax(180px, 1fr) minmax(320px, 340px);
     column-gap: 0.9rem;
-    overflow: hidden;
   }
 
   .footer-location-address {
     padding-top: clamp(7.8rem, 8.8vw, 9.3rem);
+  }
+
+  .footer-location-address span {
+    white-space: nowrap;
   }
 
   .footer-map-card {
