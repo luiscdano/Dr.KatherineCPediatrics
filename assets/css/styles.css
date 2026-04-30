@@ -24,6 +24,7 @@
   --footer-map-shift-x: -60%;
   --footer-map-shift-y: 40%;
   --footer-map-scale: 0.75;
+  --footer-hours-shift-y: 30%;
 }
 
 * {
@@ -1818,6 +1819,7 @@ ul {
   display: grid;
   gap: 0.62rem;
   min-width: 0;
+  transform: translateY(var(--footer-hours-shift-y));
 }
 
 .footer-hours h3 {
@@ -2114,6 +2116,7 @@ ul {
     --footer-map-shift-x: 0px;
     --footer-map-shift-y: 0px;
     --footer-map-scale: 1;
+    --footer-hours-shift-y: 0px;
   }
 
   .coming-hero {
