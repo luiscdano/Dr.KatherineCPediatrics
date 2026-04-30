@@ -23,6 +23,7 @@
   --footer-location-icon-shift-y: 0px;
   --footer-map-shift-x: -55%;
   --footer-map-shift-y: 20%;
+  --footer-map-scale: 0.75;
 }
 
 * {
@@ -1921,7 +1922,8 @@ ul {
   min-height: 300px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  transform: translate(var(--footer-map-shift-x), var(--footer-map-shift-y));
+  transform: translate(var(--footer-map-shift-x), var(--footer-map-shift-y)) scale(var(--footer-map-scale));
+  transform-origin: top left;
 }
 
 .footer-map-card iframe {
@@ -2111,6 +2113,7 @@ ul {
     --footer-location-icon-shift-y: 0px;
     --footer-map-shift-x: 0px;
     --footer-map-shift-y: 0px;
+    --footer-map-scale: 1;
   }
 
   .coming-hero {
