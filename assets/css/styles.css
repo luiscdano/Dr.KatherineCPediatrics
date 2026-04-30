@@ -1819,6 +1819,9 @@ ul {
   display: grid;
   gap: 0.62rem;
   min-width: 0;
+}
+
+.footer-hours {
   transform: translateY(var(--footer-hours-shift-y));
 }
 
