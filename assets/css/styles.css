@@ -1822,6 +1822,8 @@ ul {
 }
 
 .footer-hours {
+  position: relative;
+  z-index: 3;
   transform: translateY(var(--footer-hours-shift-y));
 }
 
@@ -1960,13 +1962,20 @@ ul {
 
 .footer-hours-cta {
   margin-top: 0.72rem;
-  min-height: 54px;
-  min-width: min(100%, 260px);
+  min-height: 46px;
+  min-width: min(100%, 221px);
   background: rgba(164, 186, 156, 0.62);
-  color: rgba(46, 64, 45, 0.92);
+  color: #fff;
   border-color: transparent;
   font-weight: 700;
-  font-size: calc(clamp(1rem, 1.4vw, 1.06rem) - 1px);
+  font-size: calc(clamp(0.85rem, 1.19vw, 0.9rem) - 1px);
+  position: relative;
+  z-index: 4;
+}
+
+.footer-hours .footer-hours-cta:hover,
+.footer-hours .footer-hours-cta:focus-visible {
+  color: var(--primary-900);
 }
 
 @media (min-width: 1361px) {
@@ -2238,8 +2247,8 @@ ul {
 
   .footer-hours-cta {
     margin-top: 0.5rem;
-    min-height: 50px;
-    width: min(100%, 240px);
+    min-height: 43px;
+    width: min(100%, 204px);
   }
 
   .footer-map-card,
