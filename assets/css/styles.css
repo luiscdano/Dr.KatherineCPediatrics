@@ -18,7 +18,7 @@
   --container: min(1220px, 92vw);
   --transition: 0.28s ease;
   --footer-location-address-shift-x: 15%;
-  --footer-location-address-shift-y: 260%;
+  --footer-location-address-shift-y: 255%;
   --footer-location-text-shift-y: 70%;
   --footer-location-icon-shift-y: 0px;
   --footer-map-shift-x: -65%;
