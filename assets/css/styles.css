@@ -1830,14 +1830,14 @@ ul {
 }
 
 .footer-brand-logo {
-  width: min(100%, 440px);
+  width: min(100%, 396px);
   height: auto;
   margin-bottom: 0.1rem;
 }
 
 .footer-main-description {
   color: rgba(255, 255, 255, 0.84);
-  font-size: clamp(1.02rem, 1.2vw, 1.23rem);
+  font-size: calc(clamp(1.02rem, 1.2vw, 1.23rem) - 1px);
   line-height: 1.36;
   overflow-wrap: anywhere;
   max-width: 46ch;
@@ -1854,14 +1854,14 @@ ul {
   display: inline-flex;
   align-items: center;
   gap: 0.76rem;
-  font-size: clamp(1.04rem, 1.55vw, 1.08rem);
+  font-size: calc(clamp(1.04rem, 1.55vw, 1.08rem) - 1px);
   color: rgba(255, 255, 255, 0.84);
   text-decoration: none;
 }
 
 .footer-contact-icon {
-  width: 36px;
-  height: 36px;
+  width: 32.4px;
+  height: 32.4px;
   flex-shrink: 0;
 }
 
@@ -1894,7 +1894,7 @@ ul {
   gap: 0.7rem;
   color: rgba(255, 255, 255, 0.84);
   text-decoration: none;
-  font-size: clamp(1rem, 1.5vw, 1.07rem);
+  font-size: calc(clamp(1rem, 1.5vw, 1.07rem) - 1px);
   line-height: 1.34;
   padding-top: clamp(2.9rem, 4.6vw, 3.5rem);
   white-space: nowrap;
@@ -1910,8 +1910,8 @@ ul {
 }
 
 .footer-location-address-icon {
-  width: 38px;
-  height: 38px;
+  width: 34.2px;
+  height: 34.2px;
   flex-shrink: 0;
   margin-top: 0;
   transform: translateY(var(--footer-location-icon-shift-y));
@@ -1945,14 +1945,14 @@ ul {
 }
 
 .footer-hours h3 {
-  font-size: clamp(1.2rem, 1.9vw, 1.4rem);
+  font-size: calc(clamp(1.2rem, 1.9vw, 1.4rem) - 1px);
   font-weight: 700;
   letter-spacing: 0;
   margin-bottom: 0.06rem;
 }
 
 .footer-hours li {
-  font-size: clamp(1rem, 1.45vw, 1.03rem);
+  font-size: calc(clamp(1rem, 1.45vw, 1.03rem) - 1px);
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
@@ -1965,7 +1965,7 @@ ul {
   color: rgba(46, 64, 45, 0.92);
   border-color: transparent;
   font-weight: 700;
-  font-size: clamp(1rem, 1.4vw, 1.06rem);
+  font-size: calc(clamp(1rem, 1.4vw, 1.06rem) - 1px);
 }
 
 @media (min-width: 1361px) {
@@ -1980,7 +1980,7 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 560px;
+    max-width: 504px;
   }
 
   .footer-main-description {
@@ -2019,7 +2019,7 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 460px;
+    max-width: 414px;
   }
 
   .footer-location {
@@ -2208,30 +2208,30 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 400px;
+    max-width: 360px;
   }
 
   .footer-main-description {
     max-width: 30ch;
-    font-size: clamp(0.96rem, 1.45vw, 1.08rem);
+    font-size: calc(clamp(0.96rem, 1.45vw, 1.08rem) - 1px);
   }
 
   .footer-contact-link {
-    font-size: clamp(0.95rem, 1.3vw, 1.02rem);
+    font-size: calc(clamp(0.95rem, 1.3vw, 1.02rem) - 1px);
     gap: 0.62rem;
   }
 
   .footer-contact-icon {
-    width: 34px;
-    height: 34px;
+    width: 30.6px;
+    height: 30.6px;
   }
 
   .footer-hours h3 {
-    font-size: clamp(1.06rem, 1.6vw, 1.22rem);
+    font-size: calc(clamp(1.06rem, 1.6vw, 1.22rem) - 1px);
   }
 
   .footer-hours li {
-    font-size: clamp(0.94rem, 1.2vw, 0.99rem);
+    font-size: calc(clamp(0.94rem, 1.2vw, 0.99rem) - 1px);
     line-height: 1.35;
   }
 
@@ -2532,13 +2532,13 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 310px;
+    max-width: 279px;
   }
 
   .footer-contact-icon,
   .footer-location-address-icon {
-    width: 32px;
-    height: 32px;
+    width: 28.8px;
+    height: 28.8px;
   }
 
   .footer-map-card,
