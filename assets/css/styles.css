@@ -1830,7 +1830,7 @@ ul {
 }
 
 .footer-brand-logo {
-  width: min(100%, 396px);
+  width: min(100%, 336.6px);
   height: auto;
   margin-bottom: 0.1rem;
 }
@@ -1860,8 +1860,8 @@ ul {
 }
 
 .footer-contact-icon {
-  width: 32.4px;
-  height: 32.4px;
+  width: 27.5px;
+  height: 27.5px;
   flex-shrink: 0;
 }
 
@@ -1910,8 +1910,8 @@ ul {
 }
 
 .footer-location-address-icon {
-  width: 34.2px;
-  height: 34.2px;
+  width: 29.1px;
+  height: 29.1px;
   flex-shrink: 0;
   margin-top: 0;
   transform: translateY(var(--footer-location-icon-shift-y));
@@ -1980,7 +1980,7 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 504px;
+    max-width: 428.4px;
   }
 
   .footer-main-description {
@@ -2019,7 +2019,7 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 414px;
+    max-width: 351.9px;
   }
 
   .footer-location {
@@ -2208,7 +2208,7 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 360px;
+    max-width: 306px;
   }
 
   .footer-main-description {
@@ -2222,8 +2222,8 @@ ul {
   }
 
   .footer-contact-icon {
-    width: 30.6px;
-    height: 30.6px;
+    width: 26px;
+    height: 26px;
   }
 
   .footer-hours h3 {
@@ -2532,13 +2532,13 @@ ul {
   }
 
   .footer-brand-logo {
-    max-width: 279px;
+    max-width: 237.2px;
   }
 
   .footer-contact-icon,
   .footer-location-address-icon {
-    width: 28.8px;
-    height: 28.8px;
+    width: 24.5px;
+    height: 24.5px;
   }
 
   .footer-map-card,
