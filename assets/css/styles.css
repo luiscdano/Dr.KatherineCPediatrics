@@ -1926,6 +1926,7 @@ ul {
   width: 100%;
   min-height: 300px;
   background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   overflow: hidden;
   transform: translate(var(--footer-map-shift-x), var(--footer-map-shift-y)) scale(var(--footer-map-scale));
   transform-origin: top left;
