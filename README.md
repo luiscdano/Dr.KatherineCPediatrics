@@ -336,7 +336,7 @@ Guía operativa completa: `DEPLOYMENT.md`.
 ## Datos reales cargados
 
 - Nombre profesional: `Dr. Katherine Cedano`
-- Teléfono/WhatsApp: `(849) 564-6212`
+- Teléfono/WhatsApp: `+1 (809) 455-4058`
 - Dirección: `Edificio Centur, Blvd. 1ro. de Noviembre 407, Punta Cana 23000`
 - Google Maps: URL oficial del consultorio
 - Instagram: `https://www.instagram.com/drkatherinecpediatrics/`
