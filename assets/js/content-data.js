@@ -18,8 +18,8 @@ window.DR_KATHERINE_DATA = {
     instagramUrl: "https://www.instagram.com/drkatherinecpediatrics/",
     emergencyNotice: "Si tu hijo presenta signos de alarma o una emergencia médica, acude al centro de urgencias más cercano o llama al 9-1-1.",
     officeHours: [
-      "Lunes a Viernes de 8:00 a.m. a 5:30 p.m.",
-      "Sábados de 8:00 a.m. a 1:00 p.m."
+      "Lunes a Viernes de 9:00 a.m. a 5:00 p.m.",
+      "Sábados: Teleorientación por WhatsApp"
     ]
   },
   nav: [
