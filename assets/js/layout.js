@@ -166,6 +166,18 @@
     return "https://www.google.com/maps?q=" + encodeURIComponent(data.clinic.address || source) + "&z=16&output=embed";
   }
 
+  function bookingUrl() {
+    return String(data.clinic.onlineAppointmentsUrl || "https://ff.healthatom.io/PXoRpm").trim();
+  }
+
+  function syncBookingLinks() {
+    document.querySelectorAll("[data-online-appointments-link]").forEach(function (link) {
+      link.setAttribute("href", bookingUrl());
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
+    });
+  }
+
   if (headerHost) {
     headerHost.innerHTML =
       '<header class="site-header" id="inicio">' +
@@ -223,7 +235,7 @@
       '        <li data-i18n-key="layout.footer.hoursWeekdays">' + tk("layout.footer.hoursWeekdays", data.clinic.officeHours[0] || "Lunes a Viernes de 8:00 a.m. a 5:30 p.m.") + "</li>" +
       '        <li data-i18n-key="layout.footer.hoursSaturday">' + tk("layout.footer.hoursSaturday", data.clinic.officeHours[1] || "Sábados de 8:00 a.m. a 1:00 p.m.") + "</li>" +
       "      </ul>" +
-      '      <a class="btn btn-secondary footer-hours-cta" href="https://ff.healthatom.io/PXoRpm" target="_blank" rel="noopener noreferrer" data-i18n-key="layout.footer.onlineAppointments">' + tk("layout.footer.onlineAppointments", "Citas en líneas") + "</a>" +
+      '      <a class="btn btn-secondary footer-hours-cta" href="' + bookingUrl() + '" target="_blank" rel="noopener noreferrer" data-online-appointments-link="true" data-i18n-key="layout.footer.onlineAppointments">' + tk("layout.footer.onlineAppointments", "Citas en líneas") + "</a>" +
       "    </section>" +
       "  </div>" +
       '  <div class="shell footer-bottom">' +
@@ -348,6 +360,7 @@
   if (i18n && typeof i18n.onLanguageChange === "function") {
     i18n.onLanguageChange(function (lang) {
       syncLanguageUI(lang);
+      syncBookingLinks();
     });
   }
 
@@ -358,4 +371,5 @@
   }
 
   syncLanguageUI(currentLang());
+  syncBookingLinks();
 })();
