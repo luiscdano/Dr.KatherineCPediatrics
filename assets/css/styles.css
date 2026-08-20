@@ -1964,6 +1964,7 @@ ul {
   margin-top: 0.72rem;
   min-height: 46px;
   min-width: min(100%, 221px);
+  display: inline-flex;
   background: rgba(164, 186, 156, 0.62);
   color: #fff;
   border-color: transparent;
@@ -1971,6 +1972,10 @@ ul {
   font-size: calc(clamp(0.85rem, 1.19vw, 0.9rem) - 1px);
   position: relative;
   z-index: 4;
+}
+
+.footer-hours-cta-label {
+  pointer-events: none;
 }
 
 .footer-hours .footer-hours-cta:hover,
